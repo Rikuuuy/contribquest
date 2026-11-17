@@ -43,6 +43,12 @@ This repository currently holds the **design prototype**, created on 16 Nov 2026
 | Current streak | Streak Aura: +1 ATK, +5 HP, and a wider perfect-timing window per full week, up to 4 weeks |
 | Your busiest weekday | A trait: +2 ATK when fighting in that weekday's row |
 
+## Sound and effects
+
+- All sound effects and the ambient score are synthesized in the browser with the Web Audio API. There are no audio files and no third-party music. Press **M** or use the footer button to mute.
+- Effects include lantern lighting and drifting fog on the map, particle bursts, floating damage numbers, hit-stop on critical hits, slow motion on a perfect dodge, a boss intro, and a low-HP heartbeat.
+- With `prefers-reduced-motion` turned on, screen shake, flashes, slow motion, and hop animations are off. The timing tests keep working.
+
 ## Data source and privacy
 
 Contribution counts come from the open-source community API [grubersjoe/github-contributions-api](https://github.com/grubersjoe/github-contributions-api), which reads the public contribution calendar on a GitHub profile. This means:

@@ -81,6 +81,7 @@
   .hud .boss.down { color: var(--g4); }
   .board { position: relative; display: flex; justify-content: center; width: fit-content; max-width: 100%; margin: 0 auto; }
   #map { display: block; max-width: 100%; border-radius: 10px; outline: none; box-shadow: 0 0 0 2px var(--line); }
+  .board::after { content: ''; position: absolute; inset: 0; pointer-events: none; border-radius: 10px; background: repeating-linear-gradient(0deg, rgba(0,0,0,.14) 0 1px, transparent 1px 3px); }
   #map:focus-visible { box-shadow: 0 0 0 2px #5d3fb0, 0 0 24px rgba(157,123,255,.25); }
   #log { margin-top: 10px; min-height: 76px; font-size: 14px; color: var(--muted); padding: 10px 14px; }
   #log div:last-child { color: var(--text); }
@@ -113,6 +114,40 @@
   .shake { animation: shake .25s; }
   @keyframes shake { 25% { transform: translateX(-4px); } 75% { transform: translateX(4px); } }
 
+  /* ---------- juice: background, transitions, flashes ---------- */
+  #bg { position: fixed; inset: 0; z-index: -1; pointer-events: none; }
+  .screen { animation: screenIn .35s ease-out; }
+  @keyframes screenIn { from { opacity: 0; transform: translateY(10px); } }
+  h1.title { animation: flicker 7s infinite; }
+  @keyframes flicker { 0%, 90%, 100% { opacity: 1; } 91% { opacity: .5; } 92% { opacity: 1; } 95% { opacity: .7; } 96% { opacity: 1; } }
+  button { transition: filter .15s, transform .05s; }
+  button:hover { filter: brightness(1.15) drop-shadow(0 0 8px rgba(180,140,255,.4)); }
+  #combat { position: fixed; inset: 0; z-index: 4; overflow: auto; padding: 12px; background: rgba(4,5,10,.8); border-radius: 0; backdrop-filter: blur(2px); }
+  .fight { position: relative; overflow: hidden; animation: fightIn .3s cubic-bezier(.2,1.4,.4,1); margin: auto; }
+  @keyframes fightIn { from { transform: scale(.55) rotate(-4deg); opacity: 0; } }
+  .fight.boss { border-color: #b48cff; animation: fightIn .3s cubic-bezier(.2,1.4,.4,1), bossPulse 1.6s ease-in-out .3s infinite; }
+  @keyframes bossPulse { 0%, 100% { box-shadow: 0 0 50px rgba(157,123,255,.45), inset 0 0 30px rgba(93,63,176,.3); } 50% { box-shadow: 0 0 90px rgba(157,123,255,.85), inset 0 0 60px rgba(93,63,176,.55); } }
+  .fight::after { content: ''; position: absolute; inset: 0; pointer-events: none; opacity: 0; }
+  .fight.flash-gold::after { background: radial-gradient(circle at 50% 40%, rgba(255,226,130,.6), transparent 70%); animation: flashOut .4s ease-out; }
+  .fight.flash-red::after { background: radial-gradient(circle at 50% 40%, rgba(255,50,50,.5), transparent 70%); animation: flashOut .4s ease-out; }
+  @keyframes flashOut { from { opacity: 1; } to { opacity: 0; } }
+  #c-stage { display: block; margin: 0 auto 6px; width: 100% !important; max-width: 440px; height: auto !important; border-radius: 8px; image-rendering: pixelated; }
+  .hprow { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; text-align: center; font-size: 13px; }
+  .bar { position: relative; }
+  .bar i { position: absolute; left: 0; top: 0; height: 100%; width: 100%; transition: width .35s cubic-bezier(.2,.8,.2,1); }
+  .bar i.ghost { background: rgba(255,255,255,.55) !important; transition: width .6s ease .35s; }
+  .hud b.bump, .hud span.bump { display: inline-block; animation: bump .4s; }
+  @keyframes bump { 40% { transform: scale(1.5); color: #ffd257; } }
+  .hud.lvl { animation: lvl .9s; }
+  @keyframes lvl { 30% { box-shadow: 0 0 34px rgba(255,210,87,.75); border-color: #ffd257; } }
+  .sound-btn { font-size: 9px; padding: 7px 9px; margin-left: auto; box-shadow: none; }
+  #danger { position: fixed; inset: 0; pointer-events: none; z-index: 5; box-shadow: inset 0 0 140px rgba(255,20,20,.6); opacity: 0; }
+  #danger.on { animation: danger 1s ease-in-out infinite; }
+  @keyframes danger { 0%, 100% { opacity: .3; } 50% { opacity: 1; } }
+  #whiteout { position: fixed; inset: 0; background: #fff; opacity: 0; pointer-events: none; z-index: 6; }
+  #whiteout.go { animation: flashOut .9s ease-out; }
+  .grade.miss.pop { animation: pop .35s ease-out, shake .25s .1s; }
+
   /* results */
   .end h2 { text-align: center; font-size: 18px; margin: 6px 0 4px; }
   .end h2.win { color: var(--g4); } .end h2.lose { color: var(--red); }
@@ -127,6 +162,9 @@
 </style>
 </head>
 <body>
+<canvas id="bg" aria-hidden="true"></canvas>
+<div id="danger" aria-hidden="true"></div>
+<div id="whiteout" aria-hidden="true"></div>
 <main>
   <!-- START -->
   <section id="screen-start" class="screen">
@@ -194,11 +232,8 @@
         <div class="fight" role="dialog" aria-labelledby="m-name">
           <h3 id="m-name"></h3>
           <div class="src" id="m-src"></div>
-          <div class="versus">
-            <div class="fighter"><canvas id="c-hero"></canvas><div id="c-hero-hp"></div></div>
-            <div class="vs">VS</div>
-            <div class="fighter"><canvas id="c-mon"></canvas><div id="c-mon-hp"></div></div>
-          </div>
+          <canvas id="c-stage" aria-hidden="true"></canvas>
+          <div class="hprow"><div id="c-hero-hp"></div><div id="c-mon-hp"></div></div>
           <div class="clog" id="clog" aria-live="polite"></div>
           <div class="grade" id="qte-grade" aria-live="assertive"></div>
           <canvas id="qte" aria-hidden="true"></canvas>
@@ -242,7 +277,7 @@
     </div>
   </section>
 
-  <footer>ContribQuest preview for Kiroween 2026. Not affiliated with GitHub.</footer>
+  <footer>ContribQuest preview for Kiroween 2026. Not affiliated with GitHub. · <button type="button" id="btn-sound" class="ghost sound-btn" aria-pressed="true">Sound: on (M)</button></footer>
 </main>
 
 <script>
@@ -413,9 +448,112 @@ const QTE = {
   counter: 0.5, dmgScale: 1.25
 };
 const SETTINGS_KEY = 'cq:v1:settings';
-let settings = { calm: false, assist: false };
+let settings = { calm: false, assist: false, mute: false };
 try { settings = { ...settings, ...JSON.parse(localStorage.getItem(SETTINGS_KEY) || '{}') }; } catch (_) {}
 const saveSettings = () => { try { localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings)); } catch (_) {} };
+
+/* ---------- sound: every effect and the ambient score are synthesized with Web Audio ---------- */
+const Sfx = (() => {
+  let ac = null, master, sfxBus, musicBus, noiseBuf, drone = null, mode = 'off', lowHp = false, nextBell = 0, nextBeat = 0;
+  const BELLS = [220, 261.63, 293.66, 329.63, 392, 440, 523.25];
+  function init() {
+    if (ac) { if (ac.state === 'suspended') ac.resume(); return; }
+    const AC = window.AudioContext || window.webkitAudioContext; if (!AC) return;
+    try {
+      ac = new AC();
+      const comp = ac.createDynamicsCompressor(); comp.connect(ac.destination);
+      master = ac.createGain(); master.gain.value = settings.mute ? 0 : 0.55; master.connect(comp);
+      sfxBus = ac.createGain(); sfxBus.connect(master);
+      musicBus = ac.createGain(); musicBus.gain.value = 0.9;
+      const delay = ac.createDelay(1); delay.delayTime.value = 0.34; const fb = ac.createGain(); fb.gain.value = 0.38;
+      musicBus.connect(master); musicBus.connect(delay); delay.connect(fb); fb.connect(delay); delay.connect(master);
+      noiseBuf = ac.createBuffer(1, ac.sampleRate, ac.sampleRate);
+      const d = noiseBuf.getChannelData(0); for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
+      startDrone(); setMode(mode, true);
+      setInterval(tick, 60);
+    } catch (_) { ac = null; }
+  }
+  function tone({ type = 'square', f = 440, f2, dur = 0.1, vol = 0.15, at = 0, attack = 0.004, bus }) {
+    const t = ac.currentTime + at, o = ac.createOscillator(), g = ac.createGain();
+    o.type = type; o.frequency.setValueAtTime(f, t); if (f2) o.frequency.exponentialRampToValueAtTime(f2, t + dur);
+    g.gain.setValueAtTime(0.0001, t); g.gain.linearRampToValueAtTime(vol, t + attack); g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+    o.connect(g); g.connect(bus || sfxBus); o.start(t); o.stop(t + dur + 0.05);
+  }
+  function noise({ dur = 0.2, vol = 0.15, at = 0, type = 'lowpass', f = 2000, f2, q = 1 }) {
+    const t = ac.currentTime + at, s = ac.createBufferSource(), fl = ac.createBiquadFilter(), g = ac.createGain();
+    s.buffer = noiseBuf; fl.type = type; fl.Q.value = q; fl.frequency.setValueAtTime(f, t); if (f2) fl.frequency.exponentialRampToValueAtTime(f2, t + dur);
+    g.gain.setValueAtTime(vol, t); g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+    s.connect(fl); fl.connect(g); g.connect(sfxBus); s.start(t, Math.random() * 0.5); s.stop(t + dur + 0.05);
+  }
+  const arp = (notes, gap, o = {}) => notes.forEach((f, i) => tone({ f, at: i * gap, dur: o.dur || 0.14, vol: o.vol || 0.06, type: o.type || 'square' }));
+  const P = {
+    ui() { tone({ f: 880, dur: 0.04, vol: 0.04 }); },
+    rise() { noise({ dur: 1.3, vol: 0.09, type: 'bandpass', f: 200, f2: 3200, q: 2 }); arp([130.81, 164.81, 196, 261.63, 329.63, 392], 0.15, { type: 'triangle', vol: 0.06, dur: 0.5 }); },
+    step() { tone({ type: 'triangle', f: 150 + Math.random() * 40, f2: 80, dur: 0.06, vol: 0.07 }); noise({ dur: 0.04, vol: 0.03, type: 'highpass', f: 2500 }); },
+    blocked() { tone({ f: 110, f2: 80, dur: 0.12, vol: 0.1 }); noise({ dur: 0.08, vol: 0.06, f: 600 }); },
+    wisp() { arp([880, 1174.7, 1568], 0.05, { type: 'sine', vol: 0.08, dur: 0.3 }); noise({ dur: 0.25, vol: 0.03, type: 'highpass', f: 6000 }); },
+    chest() { arp([523.25, 659.25, 783.99, 1046.5], 0.05, { vol: 0.06 }); tone({ f: 1568, f2: 2093, dur: 0.12, vol: 0.05, at: 0.22 }); tone({ f: 2093, dur: 0.18, vol: 0.04, at: 0.3, type: 'triangle' }); },
+    encounter() { tone({ type: 'sawtooth', f: 220, f2: 110, dur: 0.28, vol: 0.09 }); tone({ type: 'square', f: 330, f2: 165, dur: 0.2, vol: 0.05, at: 0.05 }); noise({ dur: 0.3, vol: 0.08, f: 900, f2: 200 }); },
+    boss() {
+      tone({ type: 'sawtooth', f: 110, f2: 40, dur: 1.3, vol: 0.16 }); tone({ type: 'sawtooth', f: 116, f2: 42, dur: 1.3, vol: 0.12 });
+      tone({ type: 'square', f: 55, dur: 1.2, vol: 0.08 }); noise({ dur: 1.4, vol: 0.18, f: 400, f2: 60 });
+    },
+    windup() { tone({ type: 'triangle', f: 300, f2: 900, dur: 0.18, vol: 0.05 }); },
+    warn() { tone({ f: 523, dur: 0.05, vol: 0.05 }); tone({ f: 523, dur: 0.05, vol: 0.05, at: 0.09 }); },
+    hit() { noise({ dur: 0.12, vol: 0.22, type: 'bandpass', f: 1300, q: 0.8 }); tone({ f: 220, f2: 60, dur: 0.12, vol: 0.12 }); },
+    crit() {
+      noise({ dur: 0.18, vol: 0.3, type: 'bandpass', f: 1800, q: 0.7 }); tone({ type: 'sine', f: 95, f2: 35, dur: 0.35, vol: 0.35 });
+      tone({ type: 'sine', f: 1320, f2: 2640, dur: 0.22, vol: 0.09, at: 0.02 }); noise({ dur: 0.3, vol: 0.12, type: 'highpass', f: 5000, at: 0.03 });
+    },
+    glance() { noise({ dur: 0.09, vol: 0.12, f: 700 }); tone({ type: 'triangle', f: 160, f2: 110, dur: 0.08, vol: 0.06 }); },
+    block() { tone({ f: 1046, dur: 0.05, vol: 0.06 }); tone({ type: 'triangle', f: 1975, f2: 1318, dur: 0.22, vol: 0.08 }); noise({ dur: 0.08, vol: 0.1, type: 'highpass', f: 3500 }); },
+    dodge() { noise({ dur: 0.28, vol: 0.2, type: 'bandpass', f: 400, f2: 3500, q: 1.5 }); tone({ type: 'sine', f: 1568, dur: 0.25, vol: 0.09, at: 0.08 }); tone({ type: 'sine', f: 2093, dur: 0.35, vol: 0.08, at: 0.14 }); },
+    hurt() { tone({ type: 'sawtooth', f: 320, f2: 70, dur: 0.26, vol: 0.14 }); noise({ dur: 0.22, vol: 0.2, f: 1200, f2: 300 }); },
+    death() { tone({ f: 440, f2: 55, dur: 0.55, vol: 0.09 }); noise({ dur: 0.5, vol: 0.12, f: 3000, f2: 200 }); arp([392, 311, 262], 0.07, { type: 'triangle', vol: 0.05, dur: 0.2 }); },
+    levelup() { arp([523.25, 659.25, 783.99, 1046.5, 1318.5], 0.07, { vol: 0.06, dur: 0.18 }); tone({ type: 'triangle', f: 261.6, dur: 0.6, vol: 0.08, at: 0.28 }); },
+    shard() { arp([1046.5, 1568, 2093, 2637], 0.04, { type: 'sine', vol: 0.07, dur: 0.4 }); },
+    ward() { noise({ dur: 0.6, vol: 0.22, type: 'highpass', f: 1500, f2: 6000 }); arp([2093, 1568, 2637, 2093, 3136], 0.04, { type: 'sine', vol: 0.06, dur: 0.3 }); },
+    gate() { noise({ dur: 1.2, vol: 0.15, f: 300, f2: 80 }); arp([261.6, 329.6, 392, 523.25, 659.25, 783.99], 0.11, { type: 'triangle', vol: 0.08, dur: 0.5 }); },
+    win() { [[523.25, 0], [659.25, 0.15], [783.99, 0.3], [1046.5, 0.45], [783.99, 0.75], [1046.5, 0.9]].forEach(([f, at]) => tone({ f, at, dur: at > 0.8 ? 0.7 : 0.14, vol: 0.07 })); tone({ type: 'triangle', f: 130.8, dur: 1.4, vol: 0.1, at: 0.45 }); },
+    lose() { [[392, 0], [369.99, 0.3], [349.23, 0.6], [329.63, 0.9]].forEach(([f, at]) => tone({ type: 'triangle', f, f2: f * 0.97, at, dur: at > 0.8 ? 1.2 : 0.3, vol: 0.09 })); tone({ type: 'sine', f: 65, dur: 2, vol: 0.12, at: 0.9 }); }
+  };
+  function startDrone() {
+    const g = ac.createGain(); g.gain.value = 0;
+    const fl = ac.createBiquadFilter(); fl.type = 'lowpass'; fl.frequency.value = 220; fl.Q.value = 4;
+    const lfo = ac.createOscillator(), lg = ac.createGain(); lfo.frequency.value = 0.08; lg.gain.value = 90; lfo.connect(lg); lg.connect(fl.frequency); lfo.start();
+    const os = [55, 55.4, 82.4].map((f, i) => { const o = ac.createOscillator(); o.type = i === 2 ? 'triangle' : 'sawtooth'; o.frequency.value = f; o.connect(fl); o.start(); return o; });
+    fl.connect(g); g.connect(musicBus); drone = { g, fl, os };
+  }
+  function setMode(m, force) {
+    if (m === mode && !force) return; mode = m; if (!ac || !drone) return;
+    const t = ac.currentTime, lv = { off: 0, menu: 0.025, explore: 0.04, combat: 0.06, boss: 0.08 }[m] || 0;
+    drone.g.gain.setTargetAtTime(lv, t, 0.6);
+    drone.fl.frequency.setTargetAtTime(m === 'boss' ? 520 : m === 'combat' ? 380 : 220, t, 0.5);
+    drone.os[1].frequency.setTargetAtTime(m === 'boss' ? 58.3 : 55.4, t, 0.5);
+  }
+  function tick() {
+    if (!ac || settings.mute || document.hidden || mode === 'off') return;
+    const t = ac.currentTime;
+    if ((mode === 'explore' || mode === 'menu') && t >= nextBell) {
+      const f = BELLS[Math.floor(Math.random() * BELLS.length)] * (Math.random() < 0.3 ? 2 : 1);
+      tone({ type: 'triangle', f, dur: 1.6, vol: mode === 'menu' ? 0.025 : 0.035, attack: 0.02, bus: musicBus });
+      nextBell = t + 1.6 + Math.random() * 1.8;
+    }
+    const gap = mode === 'boss' ? 0.5 : mode === 'combat' ? 0.78 : lowHp && mode === 'explore' ? 0.9 : 0;
+    if (gap && t >= nextBeat) {
+      tone({ type: 'sine', f: 62, f2: 40, dur: 0.16, vol: 0.16, bus: musicBus });
+      tone({ type: 'sine', f: 58, f2: 38, dur: 0.14, vol: 0.11, at: 0.2, bus: musicBus });
+      nextBeat = t + gap;
+    }
+  }
+  return {
+    init, setMode,
+    play(name) { if (!ac || settings.mute || !P[name]) return; try { P[name](); } catch (_) {} },
+    setLowHp(v) { lowHp = v; },
+    setMute(m) { settings.mute = m; saveSettings(); if (ac) master.gain.setTargetAtTime(m ? 0 : 0.55, ac.currentTime, 0.05); },
+    get ready() { return !!ac; }
+  };
+})();
 const xpForLevel = (n) => 25 * n * (n - 1);
 function levelFor(xp) { let L = 1; while (L < 10 && xp >= xpForLevel(L + 1)) L++; return L; }
 function makeTrait(days, total) {
@@ -469,11 +607,179 @@ for (const [name, rows] of Object.entries(SPRITES)) {
   SPRITE_CANVAS[name] = c;
 }
 const MONSTER_SPRITE = { 1: 'ghost', 2: 'imp', 3: 'ghoul', 4: 'lich', 5: 'phantom' };
-function drawSprite(ctx, name, cx, cy, scale, alpha = 1) {
-  const s = SPRITE_CANVAS[name]; if (!s) return;
+/* Each sprite gets a 1px dark outline and a white silhouette (used for hit flashes and afterimages). */
+function outlineSprite(src, color) {
+  const c = document.createElement('canvas'); c.width = src.width + 2; c.height = src.height + 2;
+  const x = c.getContext('2d'), d = src.getContext('2d').getImageData(0, 0, src.width, src.height).data;
+  x.fillStyle = color;
+  for (let yy = 0; yy < src.height; yy++) for (let xx = 0; xx < src.width; xx++) {
+    if (d[(yy * src.width + xx) * 4 + 3] === 0) continue;
+    x.fillRect(xx, yy + 1, 1, 1); x.fillRect(xx + 2, yy + 1, 1, 1); x.fillRect(xx + 1, yy, 1, 1); x.fillRect(xx + 1, yy + 2, 1, 1);
+  }
+  x.drawImage(src, 1, 1); return c;
+}
+function silhouette(src, color) {
+  const c = document.createElement('canvas'); c.width = src.width; c.height = src.height;
+  const x = c.getContext('2d'); x.drawImage(src, 0, 0); x.globalCompositeOperation = 'source-in'; x.fillStyle = color; x.fillRect(0, 0, c.width, c.height); return c;
+}
+const SPR = {};
+for (const name of Object.keys(SPRITE_CANVAS)) {
+  const base = outlineSprite(SPRITE_CANVAS[name], '#05060a');
+  SPR[name] = { base, white: silhouette(base, '#ffffff'), red: silhouette(base, '#ff4040'), gold: silhouette(base, '#ffd257') };
+}
+// opt: { white, red, gold, flip, sx, sy (squash, anchored at the feet), rot }
+function drawSprite(ctx, name, cx, cy, scale, alpha = 1, opt = {}) {
+  const s = SPR[name]; if (!s) return;
+  const img = opt.white ? s.white : opt.red ? s.red : opt.gold ? s.gold : s.base;
+  const bw = img.width * scale, bh = img.height * scale, w = bw * (opt.sx || 1), h = bh * (opt.sy || 1);
   ctx.save(); ctx.globalAlpha *= alpha; ctx.imageSmoothingEnabled = false;
-  ctx.drawImage(s, Math.round(cx - (s.width * scale) / 2), Math.round(cy - (s.height * scale) / 2), s.width * scale, s.height * scale);
+  ctx.translate(Math.round(cx), Math.round(cy));
+  if (opt.rot) ctx.rotate(opt.rot);
+  if (opt.flip) ctx.scale(-1, 1);
+  ctx.drawImage(img, -w / 2, -h / 2 + (bh - h) / 2, w, h);
   ctx.restore();
+}
+function shadow(ctx, cx, cy, w, a = 0.35) {
+  ctx.save(); ctx.fillStyle = `rgba(0,0,0,${a})`; ctx.beginPath(); ctx.ellipse(cx, cy, w / 2, w / 6, 0, 0, 7); ctx.fill(); ctx.restore();
+}
+
+/* ---------- particles and effects ---------- */
+function makeFx() { return { p: [], txt: [], rings: [], slashes: [], shake: 0 }; }
+function fxBurst(fx, x, y, n, o = {}) {
+  for (let i = 0; i < n; i++) {
+    const a = (o.angle != null ? o.angle : Math.random() * Math.PI * 2) + (o.spread ? (Math.random() - 0.5) * o.spread : 0);
+    const sp = (o.speed || 120) * (0.4 + Math.random() * 0.8);
+    fx.p.push({
+      x: x + (o.jitter ? (Math.random() - 0.5) * o.jitter : 0), y: y + (o.jitter ? (Math.random() - 0.5) * o.jitter : 0),
+      vx: Math.cos(a) * sp, vy: Math.sin(a) * sp - (o.up || 0), life: 0, max: (o.life || 0.6) * (0.6 + Math.random() * 0.6),
+      size: (o.size || 3) * (0.6 + Math.random() * 0.8), color: Array.isArray(o.color) ? o.color[i % o.color.length] : (o.color || '#fff'),
+      grav: o.grav != null ? o.grav : 300, drag: o.drag != null ? o.drag : 2, glow: !!o.glow, shape: o.shape || 'sq', to: o.to || null, amb: !!o.amb
+    });
+  }
+}
+function fxText(fx, x, y, text, o = {}) { fx.txt.push({ x, y, text, color: o.color || '#fff', size: o.size || 10, life: 0, max: o.life || 0.9, vy: o.vy != null ? o.vy : -42 }); }
+function fxRing(fx, x, y, o = {}) { fx.rings.push({ x, y, r: o.r || 4, vr: o.vr || 160, life: 0, max: o.life || 0.4, color: o.color || '#fff', w: o.w || 3 }); }
+function fxSlash(fx, x, y, o = {}) { fx.slashes.push({ x, y, r: o.r || 40, life: 0, max: o.life || 0.22, color: o.color || '#fff', w: o.w || 6, rot: o.rot || 0 }); }
+function fxShake(fx, m) { if (!REDUCED) fx.shake = Math.max(fx.shake, m); }
+function fxUpdate(fx, dt) {
+  for (const p of fx.p) {
+    p.life += dt;
+    if (p.to) {
+      const dx = p.to.x - p.x, dy = p.to.y - p.y;
+      p.vx = p.vx * 0.86 + dx * dt * 30; p.vy = p.vy * 0.86 + dy * dt * 30;
+      if (dx * dx + dy * dy < 30 && p.life > 0.15) p.life = p.max;
+    } else { p.vy += p.grav * dt; const d = Math.exp(-p.drag * dt); p.vx *= d; p.vy *= d; }
+    p.x += p.vx * dt; p.y += p.vy * dt;
+  }
+  fx.p = fx.p.filter((p) => p.life < p.max);
+  for (const t of fx.txt) { t.life += dt; t.y += t.vy * dt; t.vy *= Math.exp(-2.5 * dt); }
+  fx.txt = fx.txt.filter((t) => t.life < t.max);
+  for (const r of fx.rings) { r.life += dt; r.r += r.vr * dt; }
+  fx.rings = fx.rings.filter((r) => r.life < r.max);
+  for (const s of fx.slashes) s.life += dt;
+  fx.slashes = fx.slashes.filter((s) => s.life < s.max);
+  fx.shake *= Math.exp(-9 * dt); if (fx.shake < 0.3) fx.shake = 0;
+}
+function fxShakeOffset(fx) { return fx.shake ? [(Math.random() - 0.5) * 2 * fx.shake, (Math.random() - 0.5) * 2 * fx.shake] : [0, 0]; }
+function fxDraw(fx, ctx) {
+  ctx.save();
+  for (const r of fx.rings) { const k = r.life / r.max; ctx.globalAlpha = 1 - k; ctx.strokeStyle = r.color; ctx.lineWidth = r.w * (1 - k) + 1; ctx.beginPath(); ctx.arc(r.x, r.y, r.r, 0, 7); ctx.stroke(); }
+  ctx.lineCap = 'round';
+  for (const s of fx.slashes) {
+    const k = s.life / s.max; ctx.globalAlpha = 1 - k * k; ctx.strokeStyle = s.color; ctx.lineWidth = s.w * (1 - k * 0.6);
+    ctx.beginPath(); ctx.arc(s.x, s.y, s.r, s.rot - 1.3 + k * 0.5, s.rot - 1.3 + 0.5 + 2.1 * Math.min(1, k * 2.2)); ctx.stroke();
+  }
+  for (const p of fx.p) {
+    const k = p.life / p.max;
+    ctx.globalAlpha = p.amb ? Math.sin(Math.PI * k) * 0.8 : 1 - k * k;
+    ctx.globalCompositeOperation = p.glow ? 'lighter' : 'source-over';
+    const s = p.size * (p.shape === 'soul' ? 1 + k : 1 - k * 0.4);
+    if (p.glow) { const g = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, s * 2.2); g.addColorStop(0, p.color); g.addColorStop(1, 'rgba(0,0,0,0)'); ctx.fillStyle = g; ctx.fillRect(p.x - s * 2.2, p.y - s * 2.2, s * 4.4, s * 4.4); }
+    ctx.fillStyle = p.color; ctx.fillRect(p.x - s / 2, p.y - s / 2, s, s);
+    if (p.shape === 'coin') { ctx.fillStyle = 'rgba(255,255,255,.75)'; ctx.fillRect(p.x - s / 2, p.y - s / 2, s / 2, s / 2); }
+  }
+  ctx.globalCompositeOperation = 'source-over';
+  ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  for (const t of fx.txt) {
+    const k = t.life / t.max, pop = t.life < 0.12 ? 1 + (1 - t.life / 0.12) * 0.9 : 1;
+    ctx.globalAlpha = k > 0.7 ? (1 - k) / 0.3 : 1;
+    ctx.font = `${Math.round(t.size * pop)}px "Press Start 2P", monospace`;
+    ctx.lineWidth = 4; ctx.strokeStyle = 'rgba(0,0,0,.9)'; ctx.strokeText(t.text, t.x, t.y);
+    ctx.fillStyle = t.color; ctx.fillText(t.text, t.x, t.y);
+  }
+  ctx.restore();
+}
+
+/* ---------- tile textures, drifting fog, lantern light ---------- */
+const LEVEL_HI = ['#262d3a', '#1b6b3e', '#1d9a4c', '#52d06c', '#8dffa0'];
+const TEX = new Map();
+function tileTex(level, T, v) {
+  const key = level + ':' + T + ':' + v; let c = TEX.get(key); if (c) return c;
+  const dpr = window.devicePixelRatio || 1;
+  c = document.createElement('canvas'); c.width = Math.round(T * dpr); c.height = Math.round(T * dpr);
+  const x = c.getContext('2d'); x.setTransform(dpr, 0, 0, dpr, 0, 0);
+  const px = Math.max(2, Math.round(T / 12)), r = makeRng(level * 7919 + v * 104729 + T);
+  rrect(x, 0, 0, T, T, 6); x.save(); x.clip();
+  x.fillStyle = LEVEL_COLORS[level]; x.fillRect(0, 0, T, T);
+  for (let yy = 0; yy < T; yy += px) for (let xx = 0; xx < T; xx += px) {
+    const q = r.next();
+    if (q < 0.13) { x.fillStyle = `rgba(255,255,255,${level ? 0.07 : 0.03})`; x.fillRect(xx, yy, px, px); }
+    else if (q < 0.25) { x.fillStyle = 'rgba(0,0,0,.18)'; x.fillRect(xx, yy, px, px); }
+  }
+  if (level === 0) {
+    x.strokeStyle = 'rgba(0,0,0,.45)'; x.lineWidth = 1;
+    for (let i = 0; i < 2; i++) { let cx = r.next() * T, cy = r.next() * T; x.beginPath(); x.moveTo(cx, cy); for (let k = 0; k < 3; k++) { cx += (r.next() - 0.5) * T * 0.4; cy += (r.next() - 0.5) * T * 0.4; x.lineTo(cx, cy); } x.stroke(); }
+  } else {
+    x.fillStyle = LEVEL_HI[level];
+    for (let i = 0; i < 2 + level; i++) { const tx = Math.floor(r.next() * (T - px * 2) / px) * px, ty = Math.floor(r.next() * (T - px * 3) / px) * px + px; x.fillRect(tx, ty, px, px * 2); x.fillRect(tx + px, ty + px, px, px); }
+  }
+  x.fillStyle = 'rgba(255,255,255,.10)'; x.fillRect(0, 0, T, px);
+  x.fillStyle = 'rgba(0,0,0,.30)'; x.fillRect(0, T - px, T, px);
+  x.restore(); TEX.set(key, c); return c;
+}
+let FOGTEX = null;
+function fogTex() {
+  if (FOGTEX) return FOGTEX;
+  const c = document.createElement('canvas'); c.width = 320; c.height = 150;
+  const x = c.getContext('2d'), r = makeRng(77);
+  for (let i = 0; i < 46; i++) {
+    const bx = 30 + r.next() * 260, by = r.next() * 150, br = 18 + r.next() * 40;
+    const g = x.createRadialGradient(bx, by, 0, bx, by, br); g.addColorStop(0, 'rgba(190,200,240,.5)'); g.addColorStop(1, 'rgba(190,200,240,0)');
+    x.fillStyle = g; x.fillRect(bx - br, by - br, br * 2, br * 2);
+  }
+  return (FOGTEX = c);
+}
+function drawFogDrift(ctx, L, now) {
+  if (REDUCED) return;
+  const f = fogTex(), off = (now * 0.012) % L.w;
+  ctx.save(); ctx.globalAlpha = 0.14; ctx.drawImage(f, off, 0, L.w, L.h); ctx.drawImage(f, off - L.w, 0, L.w, L.h); ctx.restore();
+}
+let LIGHT = null;
+function applyLighting(ctx, map, L, o) {
+  const dpr = window.devicePixelRatio || 1;
+  if (!LIGHT || LIGHT.w !== L.w || LIGHT.h !== L.h) {
+    const c = document.createElement('canvas'); c.width = Math.round(L.w * dpr); c.height = Math.round(L.h * dpr);
+    const x = c.getContext('2d'); x.setTransform(dpr, 0, 0, dpr, 0, 0); LIGHT = { c, x, w: L.w, h: L.h };
+  }
+  const x = LIGHT.x, T = L.tile, now = o.now;
+  x.globalCompositeOperation = 'source-over'; x.clearRect(0, 0, L.w, L.h);
+  x.fillStyle = 'rgba(2,3,12,.38)'; x.fillRect(0, 0, L.w, L.h);
+  x.globalCompositeOperation = 'destination-out';
+  const hole = (cx, cy, r, a) => {
+    const g = x.createRadialGradient(cx, cy, 0, cx, cy, r);
+    g.addColorStop(0, `rgba(0,0,0,${a})`); g.addColorStop(0.55, `rgba(0,0,0,${a * 0.6})`); g.addColorStop(1, 'rgba(0,0,0,0)');
+    x.fillStyle = g; x.fillRect(cx - r, cy - r, r * 2, r * 2);
+  };
+  for (const t of map.tiles) {
+    const [tx, ty] = tileXY(L, t.col, t.row), cx = tx + T / 2, cy = ty + T / 2;
+    if (t.boss && !t.resolved) hole(cx, cy, T * 1.4, 0.8);
+    else if (t.kind === 'gate') hole(cx, cy, T * (o.bossDown ? 1.9 : 1), o.bossDown ? 1 : 0.6);
+    else if (t.kind === 'wisp' && !t.resolved && t.seen) hole(cx, cy, T * 0.9, 0.7);
+    else if (t.kind === 'start') hole(cx, cy, T * 0.8, 0.6);
+    else if (t.kind === 'chest' && !t.resolved && t.seen) hole(cx, cy, T * 0.6, 0.5);
+  }
+  if (o.heroPx) { const fl = REDUCED ? 1 : 1 + 0.05 * Math.sin(now / 90) + 0.03 * Math.sin(now / 37); hole(o.heroPx.x, o.heroPx.y, T * 2.7 * fl, 1); }
+  ctx.drawImage(LIGHT.c, 0, 0, L.w, L.h);
 }
 function rrect(ctx, x, y, w, h, r) {
   ctx.beginPath(); ctx.moveTo(x + r, y); ctx.arcTo(x + w, y, x + w, y + h, r); ctx.arcTo(x + w, y + h, x, y + h, r);
@@ -513,49 +819,90 @@ function drawMap(ctx, map, L, o) {
       if (m !== lastMonth && parseDate(t.day.date).getUTCDate() <= 7 || c === 0) { const [x] = tileXY(L, c, 0); ctx.fillText(MONTHS[m], x, 11); lastMonth = m; }
     }
   }
+  const hp0 = o.hero ? o.hero.pos : null;
   for (const t of map.tiles) {
     const [x, y] = tileXY(L, t.col, t.row);
     const p = o.animStart == null ? 1 : clamp((now - o.animStart - t.col * 70 - t.row * 12) / 420, 0, 1);
-    const color = LEVEL_COLORS[t.day.level];
     if (p < 1) {
       const e = easeOutBack(p), size = T * (0.34 + 0.66 * e), off = (T - size) / 2;
-      ctx.fillStyle = color; rrect(ctx, x + off, y + off, size, size, 3 + 3 * p); ctx.fill();
+      ctx.fillStyle = LEVEL_COLORS[t.day.level]; rrect(ctx, x + off, y + off, size, size, 3 + 3 * p); ctx.fill();
+      if (p > 0.55 && p < 0.9 && t.day.level > 0) { ctx.save(); ctx.globalCompositeOperation = 'lighter'; ctx.globalAlpha = (0.9 - p) * 2; ctx.fillStyle = LEVEL_HI[t.day.level]; rrect(ctx, x + off, y + off, size, size, 6); ctx.fill(); ctx.restore(); }
       if (p < 0.65) continue;
     } else {
-      ctx.fillStyle = color; rrect(ctx, x, y, T, T, 6); ctx.fill();
-      if (t.day.level === 0) { ctx.fillStyle = 'rgba(160,170,200,.05)'; ctx.fillRect(x + 4, y + T * 0.55, T - 8, 3); }
-      if (t.visited) { ctx.strokeStyle = 'rgba(255,255,255,.22)'; ctx.lineWidth = 2; rrect(ctx, x + 1, y + 1, T - 2, T - 2, 6); ctx.stroke(); }
+      ctx.drawImage(tileTex(t.day.level, T, fnv1a(t.day.date) % 3), x, y, T, T);
+      if (t.visited) { ctx.strokeStyle = 'rgba(255,236,190,.22)'; ctx.lineWidth = 2; rrect(ctx, x + 1, y + 1, T - 2, T - 2, 6); ctx.stroke(); }
     }
     const a = clamp((p - 0.65) / 0.35, 0, 1);
     const cx = x + T / 2, cy = y + T / 2, bob = REDUCED ? 0 : Math.sin(now / 380 + t.idx) * 1.5;
+    const breathe = REDUCED ? 1 : 1 + 0.05 * Math.sin(now / 260 + t.idx);
     const hidden = o.fog && !t.seen;
-    if (t.kind === 'start') drawSprite(ctx, 'coffin', cx, cy, ss, a);
+    const near = hp0 && Math.abs(hp0.col - t.col) + Math.abs(hp0.row - t.row) === 1;
+    if (t.kind === 'start') { shadow(ctx, cx, cy + T * 0.32, T * 0.5); drawSprite(ctx, 'coffin', cx, cy, ss, a); }
     else if (t.kind === 'gate') {
-      if (t.boss && !t.resolved) { glow(ctx, cx, cy, T * 0.7, 'rgba(157,123,255,A)', 0.5); drawSprite(ctx, 'phantom', cx, cy + bob, ss, a); }
+      if (t.boss && !t.resolved) { glow(ctx, cx, cy, T * 0.7, 'rgba(157,123,255,A)', 0.5); shadow(ctx, cx, cy + T * 0.36, T * 0.6); drawSprite(ctx, 'phantom', cx, cy + bob, ss, a, { sy: breathe }); }
       else drawGate(ctx, cx, cy, T, o.bossDown, now);
     }
     else if (t.kind === 'boss') {
       if (!t.resolved) {
-        glow(ctx, cx, cy, T * 0.75, 'rgba(157,123,255,A)', 0.45 + 0.15 * Math.sin(now / 400)); drawSprite(ctx, 'phantom', cx, cy + bob, ss, a);
-        if (o.warded) { ctx.strokeStyle = `rgba(210,185,255,${0.8 + 0.2 * Math.sin(now / 200)})`; ctx.lineWidth = 3; ctx.setLineDash([5, 4]); ctx.lineDashOffset = -now / 60; ctx.beginPath(); ctx.arc(cx, cy, T * 0.46, 0, 7); ctx.stroke(); ctx.setLineDash([]); }
+        glow(ctx, cx, cy, T * 0.8, 'rgba(157,123,255,A)', 0.45 + 0.15 * Math.sin(now / 400));
+        shadow(ctx, cx, cy + T * 0.36, T * 0.6);
+        drawSprite(ctx, 'phantom', cx, cy + bob, ss, a, { sy: breathe });
+        if (o.warded) {
+          ctx.strokeStyle = `rgba(210,185,255,${0.8 + 0.2 * Math.sin(now / 200)})`; ctx.lineWidth = 3; ctx.setLineDash([5, 4]); ctx.lineDashOffset = -now / 60;
+          ctx.beginPath(); ctx.arc(cx, cy, T * 0.46, 0, 7); ctx.stroke(); ctx.setLineDash([]);
+          for (let i = 0; i < 3; i++) { const an = now / 700 + i * 2.09, rr = T * 0.46; ctx.fillStyle = i < (o.shards || 0) ? 'rgba(120,120,140,.6)' : '#e7d8ff'; ctx.fillRect(cx + Math.cos(an) * rr - 2.5, cy + Math.sin(an) * rr - 2.5, 5, 5); }
+        }
       }
       else drawBones(ctx, cx, cy, T);
     }
     else if (hidden) { /* the fog keeps its secret */ }
-    else if (t.kind === 'monster') { if (!t.resolved) drawSprite(ctx, MONSTER_SPRITE[t.tier], cx, cy + bob, ss, a * (t.tier === 1 ? 0.85 : 1)); else drawBones(ctx, cx, cy, T); }
-    else if (t.kind === 'chest') drawSprite(ctx, 'chest', cx, cy, ss, a * (t.resolved ? 0.3 : 1));
-    else if (t.kind === 'wisp' && !t.resolved) { glow(ctx, cx, cy + bob, T * 0.32, 'rgba(140,255,200,A)', 0.9 * a); ctx.fillStyle = `rgba(230,255,240,${a})`; ctx.beginPath(); ctx.arc(cx, cy + bob, T * 0.08, 0, 7); ctx.fill(); }
-    else if (t.kind === 'fog' && t.deco) drawSprite(ctx, 'grave', cx, cy + 2, ss, 0.75 * a);
-    if (hidden) { ctx.fillStyle = 'rgba(6,8,16,.52)'; rrect(ctx, x, y, T, T, 6); ctx.fill(); }
+    else if (t.kind === 'monster') {
+      if (!t.resolved) {
+        shadow(ctx, cx, cy + T * 0.34, T * 0.5);
+        drawSprite(ctx, MONSTER_SPRITE[t.tier], cx, cy + bob, ss, a * (t.tier === 1 ? 0.85 : 1), { sy: breathe, flip: hp0 && hp0.col > t.col });
+        if (near && o.fog) drawAlert(ctx, cx + T * 0.32, y + 2, now, '#ff6b6b');
+      } else drawBones(ctx, cx, cy, T);
+    }
+    else if (t.kind === 'chest') {
+      if (!t.resolved) { shadow(ctx, cx, cy + T * 0.3, T * 0.55); drawSprite(ctx, 'chest', cx, cy, ss, a); if (!REDUCED && Math.sin(now / 500 + t.idx * 3) > 0.96) { ctx.fillStyle = '#fff'; ctx.fillRect(cx + T * 0.18, cy - T * 0.2, 2, 2); } }
+      else drawSprite(ctx, 'chest', cx, cy, ss, a * 0.3);
+    }
+    else if (t.kind === 'wisp' && !t.resolved) {
+      glow(ctx, cx, cy + bob, T * 0.36, 'rgba(140,255,200,A)', 0.9 * a);
+      ctx.fillStyle = `rgba(230,255,240,${a})`; ctx.beginPath(); ctx.arc(cx, cy + bob, T * 0.08, 0, 7); ctx.fill();
+      ctx.fillStyle = `rgba(160,255,210,${0.6 * a})`; for (let i = 0; i < 3; i++) { const an = now / 300 + i * 2.09; ctx.fillRect(cx + Math.cos(an) * T * 0.2 - 1, cy + bob + Math.sin(an) * T * 0.2 - 1, 2, 2); }
+    }
+    else if (t.kind === 'fog' && t.deco) { shadow(ctx, cx, cy + T * 0.34, T * 0.5, 0.25); drawSprite(ctx, 'grave', cx, cy + 2, ss, 0.8 * a); }
+    if (hidden) { ctx.fillStyle = 'rgba(6,8,16,.55)'; rrect(ctx, x, y, T, T, 6); ctx.fill(); }
   }
+  if (o.fog) drawFogDrift(ctx, L, now);
+  let heroPx = null;
   if (o.hero) {
-    const h = o.hero; let { col, row } = h.pos;
-    if (h.anim) { const k = clamp((now - h.anim.start) / 120, 0, 1); col = h.anim.from.col + (col - h.anim.from.col) * k; row = h.anim.from.row + (row - h.anim.from.row) * k; }
+    const h = o.hero; let { col, row } = h.pos, k = 1;
+    if (h.anim) { k = clamp((now - h.anim.start) / 140, 0, 1); col = h.anim.from.col + (col - h.anim.from.col) * k; row = h.anim.from.row + (row - h.anim.from.row) * k; }
     const [x, y] = tileXY(L, col, row), cx = x + T / 2, cy = y + T / 2;
-    glow(ctx, cx, cy, T * 2.3, 'rgba(255,214,120,A)', 0.16);
+    const hop = REDUCED ? 0 : Math.sin(Math.PI * k) * T * 0.2;
+    const squash = REDUCED || !h.anim || k < 1 ? 1 : 1 - 0.12 * Math.max(0, 1 - (now - h.anim.start - 140) / 120);
+    heroPx = { x: cx, y: cy };
     if (h.aura > 0) glow(ctx, cx, cy, T * (0.55 + 0.08 * h.aura), 'rgba(180,140,255,A)', 0.25 + 0.12 * h.aura + 0.08 * Math.sin(now / 250));
-    drawSprite(ctx, 'hero', cx, cy + (REDUCED ? 0 : Math.sin(now / 300) * 1), ss);
+    shadow(ctx, cx, cy + T * 0.34, T * (0.5 - hop / T * 0.6));
+    drawSprite(ctx, 'hero', cx, cy - hop + (REDUCED ? 0 : Math.sin(now / 300) * 1), ss, 1, { flip: h.face < 0, sy: squash, sx: 2 - squash });
+    for (let i = 0; i < h.aura * 2; i++) {
+      const an = now / 600 + (i * Math.PI * 2) / (h.aura * 2), rr = T * 0.48;
+      ctx.fillStyle = 'rgba(210,180,255,.85)'; ctx.fillRect(cx + Math.cos(an) * rr - 1.5, cy - hop + Math.sin(an) * rr * 0.5 - 1.5, 3, 3);
+    }
   }
+  if (o.fog) {
+    applyLighting(ctx, map, L, { now, heroPx, bossDown: o.bossDown });
+    if (heroPx) { ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, heroPx.x, heroPx.y, T * 1.7, 'rgba(255,160,70,A)', 0.09); ctx.restore(); }
+  }
+  return heroPx;
+}
+function drawAlert(ctx, x, y, now, color) {
+  const s = REDUCED ? 1 : 1 + 0.15 * Math.sin(now / 90);
+  ctx.save(); ctx.translate(x, y + 6); ctx.scale(s, s);
+  ctx.fillStyle = '#05060a'; ctx.fillRect(-4, -9, 8, 15); ctx.fillStyle = color; ctx.fillRect(-2, -7, 4, 7); ctx.fillRect(-2, 2, 4, 3);
+  ctx.restore();
 }
 function drawBones(ctx, cx, cy, T) {
   ctx.strokeStyle = 'rgba(232,230,240,.35)'; ctx.lineWidth = 3; ctx.lineCap = 'round';
@@ -573,6 +920,183 @@ let mapCtx = null, mapLayout = null;
 const SAVE_KEY = 'cq:v1:run';
 function rand() { const r = makeRng(0); r.state = state.rng; const v = r.next(); state.rng = r.state; return v; }
 function tileAt(p) { return state.map.grid[p.col] && state.map.grid[p.col][p.row]; }
+
+/* ---------- juice: map effects ---------- */
+const mapFx = makeFx();
+const easeOutCubic = (x) => 1 - Math.pow(1 - x, 3);
+function tileCenter(col, row) { if (!mapLayout) return null; const [x, y] = tileXY(mapLayout, col, row); return { x: x + mapLayout.tile / 2, y: y + mapLayout.tile / 2 }; }
+function mapBurst(col, row, n, o = {}) { const c = tileCenter(col, row); if (c) fxBurst(mapFx, c.x, c.y + (o.dy || 0), n, o.homing ? { ...o, to: { x: c.x, y: c.y } } : o); }
+function mapText(col, row, text, o = {}) {
+  const c = tileCenter(col, row); if (!c) return;
+  const half = (text.length * (o.size || 9)) / 2 + 6; // Press Start 2P glyphs are about 1em wide
+  fxText(mapFx, clamp(c.x, half, mapLayout.w - half), Math.max(14, c.y - mapLayout.tile * 0.45 + (o.dy || 0)), text, { size: 9, ...o });
+}
+function mapRing(col, row, o = {}) { const c = tileCenter(col, row); if (c) fxRing(mapFx, c.x, c.y, o); }
+function whiteout() { if (REDUCED) return; const w = $('#whiteout'); w.classList.remove('go'); void w.offsetWidth; w.classList.add('go'); }
+function flashFight(kind) { if (REDUCED) return; const f = $('.fight'); f.classList.remove('flash-gold', 'flash-red'); void f.offsetWidth; f.classList.add('flash-' + kind); }
+
+/* ---------- juice: the combat stage ---------- */
+const SW = 440, SH = 190, GROUND = 152, HX = 118, MX = 322;
+let stageCtx = null;
+const stage = { fx: makeFx(), q: [], hero: {}, mon: {}, slowUntil: 0, freezeUntil: 0, last: 0, intro: 0, tier: 1, bg: null };
+const MON_SCALE = (tier) => (tier === 5 ? 7 : tier === 4 ? 6 : 5.5);
+const heroY = () => GROUND - 42;
+const monY = (tier) => GROUND - 7 * MON_SCALE(tier);
+const lunge = (dt, out = 110, back = 220) => (dt < 0 || dt > out + back ? 0 : dt < out ? easeOutCubic(dt / out) : 1 - (dt - out) / back);
+function stageBg(level, boss) {
+  const dpr = window.devicePixelRatio || 1, c = document.createElement('canvas');
+  c.width = Math.round(SW * dpr); c.height = Math.round(SH * dpr);
+  const x = c.getContext('2d'); x.setTransform(dpr, 0, 0, dpr, 0, 0); x.imageSmoothingEnabled = false;
+  const r = makeRng(level * 31 + (boss ? 7 : 0));
+  const sky = x.createLinearGradient(0, 0, 0, GROUND); sky.addColorStop(0, boss ? '#22103d' : '#121831'); sky.addColorStop(1, boss ? '#0c0714' : '#0a0c15');
+  x.fillStyle = sky; x.fillRect(0, 0, SW, SH);
+  for (let i = 0; i < 46; i++) { x.fillStyle = `rgba(255,255,255,${0.2 + r.next() * 0.6})`; x.fillRect(Math.floor(r.next() * SW), Math.floor(r.next() * (GROUND - 40)), r.next() < 0.15 ? 2 : 1, 1); }
+  const [mx, my, mr, mc] = boss ? [220, 54, 36, '#d9c6ff'] : [384, 40, 20, '#f2ecd0'];
+  glow(x, mx, my, mr * 3, boss ? 'rgba(180,140,255,A)' : 'rgba(255,245,200,A)', 0.35);
+  x.fillStyle = mc; x.beginPath(); x.arc(mx, my, mr, 0, 7); x.fill();
+  x.fillStyle = 'rgba(0,0,0,.12)'; [[-0.3, -0.2, 0.25], [0.3, 0.25, 0.18], [0.1, -0.45, 0.12]].forEach(([dx, dy, rr]) => { x.beginPath(); x.arc(mx + dx * mr, my + dy * mr, rr * mr, 0, 7); x.fill(); });
+  x.fillStyle = '#080a12';
+  for (let i = 0; i < 10; i++) { const gx = i * 48 + r.next() * 24, gh = 12 + r.next() * 16, gw = 12 + r.next() * 6; x.fillRect(gx, GROUND - gh, gw, gh); x.beginPath(); x.arc(gx + gw / 2, GROUND - gh, gw / 2, Math.PI, 0); x.fill(); }
+  x.fillStyle = LEVEL_COLORS[level]; x.fillRect(0, GROUND, SW, SH - GROUND);
+  for (let yy = GROUND; yy < SH; yy += 4) for (let xx = 0; xx < SW; xx += 4) { const q = r.next(); if (q < 0.15) { x.fillStyle = 'rgba(255,255,255,.07)'; x.fillRect(xx, yy, 4, 4); } else if (q < 0.3) { x.fillStyle = 'rgba(0,0,0,.2)'; x.fillRect(xx, yy, 4, 4); } }
+  x.fillStyle = LEVEL_HI[level]; x.fillRect(0, GROUND, SW, 3);
+  for (let i = 0; i < 26; i++) { const tx = Math.floor(r.next() * SW / 4) * 4; x.fillRect(tx, GROUND - 4, 4, 4); }
+  const mist = x.createLinearGradient(0, GROUND - 30, 0, GROUND + 10); mist.addColorStop(0, 'rgba(180,190,230,0)'); mist.addColorStop(1, 'rgba(180,190,230,.12)');
+  x.fillStyle = mist; x.fillRect(0, GROUND - 30, SW, 40);
+  return c;
+}
+function stageReset(t, m) {
+  stage.fx = makeFx(); stage.q = [];
+  stage.hero = { atk: -1e9, dodge: -1e9, hurt: -1e9, block: -1e9, dead: null, run: null };
+  stage.mon = { atk: -1e9, hurt: -1e9, die: null, crit: false };
+  stage.intro = performance.now(); stage.tier = m.tier; stage.bg = stageBg(t.day.level, m.tier === 5);
+  stage.slowUntil = stage.freezeUntil = 0;
+}
+function stageAt(ms, fn) { stage.q.push({ at: performance.now() + ms, fn }); stage.q.sort((a, b) => a.at - b.at); }
+function stageHeroStrike(grade, dmg, killed) {
+  stage.hero.atk = performance.now();
+  stageAt(100, () => {
+    const fx = stage.fx, x = MX - 8, y = monY(stage.tier);
+    stage.mon.hurt = performance.now(); stage.mon.crit = grade === 'perfect';
+    if (grade === 'perfect') {
+      if (!REDUCED) stage.freezeUntil = performance.now() + 90;
+      fxSlash(fx, x, y, { r: 48, color: '#ffe27a', w: 10, rot: 0.2 }); fxSlash(fx, x, y, { r: 34, color: '#ffffff', w: 4, rot: 0.9, life: 0.3 });
+      fxBurst(fx, x, y, 30, { color: ['#ffd257', '#fff3b0', '#ff9a3c'], speed: 280, grav: 380, life: 0.65, size: 4, glow: true });
+      fxRing(fx, x, y, { color: '#ffd257', vr: 320, w: 5 });
+      fxText(fx, x, y - 52, 'CRIT ' + dmg, { color: '#ffd257', size: 16 });
+      fxShake(fx, 9); flashFight('gold'); Sfx.play('crit');
+    } else if (grade === 'counter') {
+      fxSlash(fx, x, y, { r: 40, color: '#ffe27a', w: 6, rot: -0.4 });
+      fxBurst(fx, x, y, 14, { color: ['#ffd257', '#fff'], speed: 200, life: 0.45, size: 3, glow: true });
+      fxText(fx, x, y - 48, 'COUNTER ' + dmg, { color: '#ffd257', size: 11 }); fxShake(fx, 5); Sfx.play('hit');
+    } else if (grade === 'good') {
+      fxSlash(fx, x, y, { r: 42, color: '#ffffff', w: 6, rot: 0.3 });
+      fxBurst(fx, x, y, 12, { color: ['#ffffff', '#cfe3ff'], speed: 190, life: 0.45, size: 3 });
+      fxText(fx, x, y - 46, String(dmg), { color: '#ffffff', size: 12 }); fxShake(fx, 4); Sfx.play('hit');
+    } else {
+      fxBurst(fx, x, y + 12, 8, { color: 'rgba(200,200,210,.7)', speed: 70, grav: -30, life: 0.5, size: 4 });
+      fxText(fx, x, y - 40, String(dmg), { color: '#9aa3b2', size: 9 }); Sfx.play('glance');
+    }
+    if (killed) stageAt(150, stageMonDeath);
+  });
+}
+function stageMonStrike(grade, dmg, lethal) {
+  const now = performance.now(); stage.mon.atk = now;
+  if (grade === 'perfect') stage.hero.dodge = now + 40;
+  stageAt(110, () => {
+    const fx = stage.fx, x = HX + 10, y = heroY();
+    if (grade === 'perfect') {
+      if (!REDUCED) stage.slowUntil = performance.now() + 340;
+      fxRing(fx, x, y, { color: '#ffd257', vr: 230, w: 4, life: 0.55 }); fxRing(fx, x, y, { color: '#ffffff', vr: 120, w: 2, life: 0.4 });
+      fxBurst(fx, x, y, 16, { color: ['#ffd257', '#fff'], speed: 160, grav: 0, drag: 3, life: 0.6, size: 3, glow: true });
+      fxText(fx, x, y - 56, 'PERFECT!', { color: '#ffd257', size: 13 }); flashFight('gold'); Sfx.play('dodge');
+    } else if (grade === 'good') {
+      stage.hero.block = performance.now();
+      fxBurst(fx, x + 30, y, 14, { color: ['#9fd8ff', '#ffffff'], speed: 210, angle: 0, spread: 1.8, life: 0.4, size: 3, glow: true });
+      fxText(fx, x, y - 52, '-' + dmg, { color: '#9fd8ff', size: 11 }); fxShake(fx, 3); Sfx.play('block');
+    } else {
+      stage.hero.hurt = performance.now();
+      fxBurst(fx, x, y, 20, { color: ['#ff5050', '#ff9a9a', '#ffffff'], speed: 230, angle: Math.PI, spread: 2.2, life: 0.5, size: 4 });
+      fxText(fx, x, y - 52, '-' + dmg, { color: '#ff6b6b', size: 15 }); fxShake(fx, 10); flashFight('red'); Sfx.play('hurt');
+      if (lethal) stage.hero.dead = performance.now() + 100;
+    }
+  });
+}
+function stageMonDeath() {
+  const fx = stage.fx, x = MX, y = monY(stage.tier), boss = stage.tier === 5;
+  stage.mon.die = performance.now();
+  fxBurst(fx, x, y, boss ? 70 : 32, { color: boss ? ['#b48cff', '#e7d8ff', '#ffffff'] : ['#e8e6f0', '#b48cff', '#8dffa0'], speed: 150, grav: -170, drag: 1.5, life: 1.1, size: 4, glow: true, shape: 'soul', jitter: 34 });
+  fxRing(fx, x, y, { color: '#e7d8ff', vr: 280, w: 5, life: 0.6 });
+  fxShake(fx, boss ? 16 : 6); Sfx.play('death');
+  if (boss) whiteout();
+}
+function drawStage(now) {
+  if (!stageCtx || !stage.bg) return;
+  const dt = Math.min(0.05, (now - (stage.last || now)) / 1000); stage.last = now;
+  while (stage.q.length && stage.q[0].at <= now) stage.q.shift().fn();
+  if (now >= stage.freezeUntil) fxUpdate(stage.fx, dt * (now < stage.slowUntil ? 0.3 : 1));
+  const ctx = stageCtx; ctx.save(); ctx.clearRect(0, 0, SW, SH);
+  const [sx, sy] = fxShakeOffset(stage.fx); ctx.translate(sx, sy);
+  ctx.drawImage(stage.bg, -8, -8, SW + 16, SH + 16);
+  const q = qte && !qte.over ? qte : null, qk = q ? clamp((now - q.start) / q.target, 0, 1) : 0;
+  const tier = stage.tier, ms = MON_SCALE(tier), breathe = REDUCED ? 1 : 1 + 0.04 * Math.sin(now / 280);
+  // monster
+  const introK = REDUCED ? 1 : clamp((now - stage.intro) / 320, 0, 1);
+  let mx = MX - lunge(now - stage.mon.atk) * 150, my = monY(tier) - (1 - easeOutCubic(introK)) * 200;
+  if (q && q.kind === 'defend') mx += 14 * qk;
+  const hurtK = (now - stage.mon.hurt) / 220; if (hurtK >= 0 && hurtK < 1) mx += (1 - hurtK) * (stage.mon.crit ? 26 : 14);
+  const dieK = stage.mon.die == null ? -1 : (now - stage.mon.die) / 600;
+  if (dieK < 1) {
+    const alpha = dieK >= 0 ? 1 - dieK : 1, sy2 = dieK >= 0 ? 1 - dieK * 0.7 : breathe;
+    shadow(ctx, MX, GROUND + 2, 13 * ms * alpha);
+    if (tier === 5) glow(ctx, mx, my, 96, 'rgba(157,123,255,A)', 0.35 + 0.1 * Math.sin(now / 300));
+    if (q && q.kind === 'defend') glow(ctx, mx, my, 76, 'rgba(255,60,60,A)', 0.5 * qk);
+    const white = (hurtK >= 0 && hurtK < 0.35) || (dieK >= 0 && Math.floor(now / 50) % 2 === 0);
+    const red = !white && q && q.kind === 'defend' && qk > 0.8 && Math.floor(now / 60) % 2 === 0;
+    drawSprite(ctx, MONSTER_SPRITE[tier], mx, my, ms, alpha, { flip: true, sy: sy2, white, red });
+  }
+  // hero
+  let hx = HX + lunge(now - stage.hero.atk) * 150, hy = heroY();
+  if (q && q.kind === 'attack') hx -= 16 * qk;
+  const dK = (now - stage.hero.dodge) / 420;
+  if (dK >= 0 && dK < 1) {
+    for (let i = 3; i >= 1; i--) { const s2 = Math.sin(Math.PI * Math.max(0, dK - i * 0.08)); drawSprite(ctx, 'hero', HX - s2 * 62, hy - s2 * 34, 6, 0.16 * i, { gold: true }); }
+    const s = Math.sin(Math.PI * dK); hx -= s * 62; hy -= s * 34;
+  }
+  const hK = (now - stage.hero.hurt) / 260; if (hK >= 0 && hK < 1) hx -= (1 - hK) * 18;
+  const runK = stage.hero.run == null ? -1 : (now - stage.hero.run) / 450; if (runK >= 0) hx -= runK * 320;
+  const deadK = stage.hero.dead == null ? 0 : clamp((now - stage.hero.dead) / 400, 0, 1);
+  shadow(ctx, HX, GROUND + 2, 72);
+  if (state && state.hero.aura) glow(ctx, hx, hy, 62, 'rgba(180,140,255,A)', 0.15 + 0.06 * state.hero.aura);
+  drawSprite(ctx, 'hero', hx, hy + deadK * 30, 6, 1, { white: hK >= 0 && hK < 0.3, rot: -1.4 * deadK, flip: runK >= 0 });
+  const bK = (now - stage.hero.block) / 260;
+  if (bK >= 0 && bK < 1) { ctx.save(); ctx.globalAlpha = 1 - bK; ctx.strokeStyle = '#9fd8ff'; ctx.lineWidth = 5; ctx.beginPath(); ctx.arc(hx + 8, hy, 52, -0.9, 0.9); ctx.stroke(); ctx.restore(); }
+  fxDraw(stage.fx, ctx);
+  if (tier === 5) {
+    const bk = (now - stage.intro) / 1700;
+    if (bk >= 0 && bk < 1) {
+      const slide = REDUCED ? 0 : bk < 0.2 ? 1 - easeOutCubic(bk / 0.2) : bk > 0.8 ? -(bk - 0.8) / 0.2 : 0;
+      ctx.save(); ctx.globalAlpha = bk > 0.8 ? 1 - (bk - 0.8) / 0.2 : 1;
+      ctx.fillStyle = 'rgba(20,8,40,.8)'; ctx.fillRect(-10, SH / 2 - 24, SW + 20, 48);
+      ctx.font = '20px "Press Start 2P", monospace'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.shadowColor = '#b48cff'; ctx.shadowBlur = 18; ctx.fillStyle = '#e7d8ff'; ctx.fillText('BOSS', SW / 2 + slide * SW, SH / 2);
+      ctx.restore();
+    }
+  }
+  const v = ctx.createRadialGradient(SW / 2, SH / 2, SH * 0.35, SW / 2, SH / 2, SW * 0.62);
+  v.addColorStop(0, 'rgba(0,0,0,0)'); v.addColorStop(1, 'rgba(0,0,0,.55)'); ctx.fillStyle = v; ctx.fillRect(-10, -10, SW + 20, SH + 20);
+  ctx.restore();
+}
+function buildBars(m) {
+  const bar = (who) => `<b>${who}</b><br><span class="bar"><i class="ghost"></i><i class="fill"></i></span> <span class="hpnum"></span>`;
+  $('#c-hero-hp').innerHTML = bar('You');
+  $('#c-mon-hp').innerHTML = bar(esc(m.name.length > 22 ? 'The Phantom' : m.name));
+}
+function setBar(el, hp, max) {
+  const pct = clamp((hp / max) * 100, 0, 100) + '%';
+  el.querySelector('.fill').style.width = pct; el.querySelector('.ghost').style.width = pct;
+  el.querySelector('.hpnum').textContent = `${hp}/${max}`;
+}
 
 function newRun(set) {
   const map = generateMap(set), hero = makeHero(set), s0 = map.tiles[0];
@@ -605,37 +1129,70 @@ function tryMove(dc, dr) {
   if (!state || state.status !== 'exploring') return;
   const from = { ...state.pos }, t = tileAt({ col: from.col + dc, row: from.row + dr });
   if (!t || t.kind === 'void') return;
-  if (t.kind === 'gate' && !t.boss && !state.bossDown) { log('The Gate is sealed. Defeat the Phantom of your best day first.'); return; }
-  if (t.boss && !t.resolved && state.shards < state.map.shardsNeeded) { log(`The Phantom is warded. Soul shards: ${state.shards}/${state.map.shardsNeeded}. Banish more Ghouls or Liches.`); return; }
+  const bump = () => { Sfx.play('blocked'); mapRing(t.col, t.row, { color: '#b48cff', vr: 90, w: 3 }); fxShake(mapFx, 3); };
+  if (t.kind === 'gate' && !t.boss && !state.bossDown) { bump(); log('The Gate is sealed. Defeat the Phantom of your best day first.'); return; }
+  if (t.boss && !t.resolved && state.shards < state.map.shardsNeeded) { bump(); log(`The Phantom is warded. Soul shards: ${state.shards}/${state.map.shardsNeeded}. Banish more Ghouls or Liches.`); return; }
+  if (dc) state.hero.face = dc;
   state.prev = from; state.pos = { col: t.col, row: t.row }; state.hero.anim = { from, start: performance.now() };
   state.stats.steps++; t.visited = true; reveal();
+  Sfx.play('step');
+  if (mapLayout) mapBurst(from.col, from.row, 5, { color: 'rgba(190,190,215,.55)', speed: 40, grav: -25, life: 0.45, size: 3, jitter: 12, dy: mapLayout.tile * 0.3 });
   enterTile(t); renderHud(); save();
 }
 function enterTile(t) {
   if (t.resolved) return;
   const h = state.hero;
   switch (t.kind) {
-    case 'wisp': t.resolved = true; state.stats.wisps++; log(`A soul wisp from ${fmtShort(t.day.date)} (${t.day.count} contribution${t.day.count === 1 ? '' : 's'}): +5 XP.`); gainXp(5); break;
+    case 'wisp':
+      t.resolved = true; state.stats.wisps++;
+      log(`A soul wisp from ${fmtShort(t.day.date)} (${t.day.count} contribution${t.day.count === 1 ? '' : 's'}): +5 XP.`);
+      Sfx.play('wisp');
+      mapBurst(t.col, t.row, 12, { color: ['#8dffa0', '#e6fff0'], speed: 160, life: 1.2, size: 3, glow: true, homing: true });
+      mapText(t.col, t.row, '+5 XP', { color: '#8dffa0' });
+      gainXp(5); break;
     case 'chest': {
       t.resolved = true; state.stats.chests++;
       const gold = t.size === 2 ? 12 : 6, heal = Math.ceil(h.maxHp * 0.3), before = h.hp;
       h.hp = Math.min(h.maxHp, h.hp + heal); h.treasure += gold;
-      log(`A chest from ${fmtShort(t.day.date)}: +${gold} treasure, +${h.hp - before} HP, +10 XP.`); gainXp(10); break;
+      log(`A chest from ${fmtShort(t.day.date)}: +${gold} treasure, +${h.hp - before} HP, +10 XP.`);
+      Sfx.play('chest');
+      mapBurst(t.col, t.row, t.size === 2 ? 22 : 14, { color: ['#ffd257', '#ffb13c', '#fff3b0'], speed: 150, up: 140, grav: 520, life: 0.9, size: 4, shape: 'coin' });
+      mapRing(t.col, t.row, { color: '#ffd257', vr: 120 });
+      mapText(t.col, t.row, `+${gold} GOLD`, { color: '#ffd257' });
+      if (h.hp > before) setTimeout(() => mapText(t.col, t.row, `+${h.hp - before} HP`, { color: '#ff8a8a', dy: 12 }), 220);
+      gainXp(10); break;
     }
-    case 'monster': case 'boss': startCombat(t); break;
+    case 'monster': case 'boss': mapRing(t.col, t.row, { color: t.tier === 5 ? '#b48cff' : '#ff6b6b', vr: 140, w: 4 }); startCombat(t); break;
     case 'gate': if (t.boss) startCombat(t); else win(); break;
     default: break;
   }
 }
 function gainXp(x) {
   const h = state.hero; h.xp += x; const L = levelFor(h.xp);
-  if (L > h.level) { h.level = L; applyStats(h); h.hp = h.maxHp; log(`Level up! You are now level ${L}. HP fully restored.`); }
+  if (L > h.level) {
+    h.level = L; applyStats(h); h.hp = h.maxHp; log(`Level up! You are now level ${L}. HP fully restored.`);
+    setTimeout(() => {
+      Sfx.play('levelup');
+      if (!state) return;
+      const p = state.pos;
+      mapRing(p.col, p.row, { color: '#ffd257', vr: 140, w: 4, life: 0.6 });
+      setTimeout(() => mapRing(p.col, p.row, { color: '#fff3b0', vr: 100, w: 3, life: 0.5 }), 150);
+      mapBurst(p.col, p.row, 24, { color: ['#ffd257', '#fff3b0'], speed: 90, grav: -120, drag: 1, life: 1.1, size: 3, glow: true, jitter: 20 });
+      mapText(p.col, p.row, 'LEVEL UP!', { color: '#ffd257', size: 11, dy: -26, life: 1.4 });
+    }, 250);
+  }
 }
 function startCombat(t) {
   state.status = 'combat';
-  state.combat = { col: t.col, row: t.row, m: makeMonster(t, state.hero, state.map), lines: [], phase: 'choose' };
-  if (t.tier === 5) state.combat.lines.push('The air turns cold. Your best day has come back for you.');
+  const m = makeMonster(t, state.hero, state.map), boss = m.tier === 5;
+  state.combat = { col: t.col, row: t.row, m, lines: [], phase: 'choose' };
+  if (boss) state.combat.lines.push('The air turns cold. Your best day has come back for you.');
   $('#qte-grade').textContent = '';
+  stageReset(t, m); buildBars(m);
+  $('.fight').classList.toggle('boss', boss);
+  Sfx.setMode(boss ? 'boss' : 'combat'); Sfx.play(boss ? 'boss' : 'encounter');
+  if (boss) whiteout();
+  stageAt(300, () => { fxBurst(stage.fx, MX, GROUND, 16, { color: 'rgba(200,200,220,.6)', speed: 130, angle: -Math.PI / 2, spread: 3, grav: 260, life: 0.5, size: 4 }); fxShake(stage.fx, boss ? 12 : 5); });
   renderCombat(true);
 }
 function clog(msg) { state.combat.lines.push(msg); state.combat.lines = state.combat.lines.slice(-2); }
@@ -655,6 +1212,7 @@ function startQte(kind, done) {
   else { target = (1150 - 80 * tier) * calm; dur = target + G; }
   qte = { kind, start: performance.now(), dur, target, P, G, zone, done, over: false };
   c.phase = 'qte';
+  Sfx.play(kind === 'attack' ? 'windup' : 'warn');
   renderCombat();
   if (testGrade) { const g = typeof testGrade === 'function' ? testGrade(kind) : testGrade; setTimeout(() => finishQte(g), 0); return; }
   if (settings.assist) { qte.timer = setTimeout(() => finishQte('good'), target); return; }
@@ -692,8 +1250,9 @@ function resolveAttack(grade) {
   m.hp = Math.max(0, m.hp - dmg);
   if (grade === 'perfect') state.stats.crits = (state.stats.crits || 0) + 1;
   clog(`${grade === 'perfect' ? 'Critical! ' : ''}You hit ${m.name} for ${dmg}${bonus ? ' (trait +2)' : ''}.`);
-  c.phase = 'wait'; renderCombat(false, false, true);
-  if (m.hp === 0) return later(() => winFight(t, m), 550);
+  stageHeroStrike(grade, dmg, m.hp === 0);
+  c.phase = 'wait'; renderCombat(false);
+  if (m.hp === 0) return later(() => winFight(t, m), m.tier === 5 ? 1300 : 950);
   later(() => enemyTurn(m.tier === 5 ? 2 : 1), 600);
 }
 function enemyTurn(n) {
@@ -707,28 +1266,54 @@ function resolveDefend(grade, n) {
     state.stats.dodges = (state.stats.dodges || 0) + 1;
     const counter = Math.max(1, Math.round(h.atk * QTE.counter));
     m.hp = Math.max(0, m.hp - counter); clog(`Perfect dodge! You counter for ${counter}.`);
-    c.phase = 'wait'; renderCombat(false, false, true);
-    if (m.hp === 0) return later(() => winFight(t, m), 550);
+    stageMonStrike('perfect', 0);
+    stageAt(330, () => stageHeroStrike('counter', counter, m.hp === 0));
+    c.phase = 'wait'; renderCombat(false);
+    if (m.hp === 0) return later(() => winFight(t, m), m.tier === 5 ? 1600 : 1250);
   } else {
     const md = Math.max(1, Math.round(m.dmg * QTE.defMult[grade] * (0.9 + 0.2 * rand())));
     h.hp = Math.max(0, h.hp - md);
     clog(grade === 'good' ? `You block. ${m.name} still deals ${md}.` : `${m.name} hits you for ${md}.`);
-    c.phase = 'wait'; renderCombat(false, true); renderHud();
-    if (h.hp === 0) return later(() => lose(m), 650);
+    stageMonStrike(grade, md, h.hp === 0);
+    c.phase = 'wait'; renderCombat(false); renderHud();
+    if (h.hp === 0) return later(() => lose(m), 1100);
   }
-  if (n > 1) return later(() => enemyTurn(n - 1), 450);
-  later(() => { c.phase = 'choose'; renderCombat(true); save(); }, 350);
+  if (n > 1) return later(() => enemyTurn(n - 1), grade === 'perfect' ? 750 : 500);
+  later(() => { c.phase = 'choose'; renderCombat(true); save(); }, grade === 'perfect' ? 700 : 400);
 }
 function winFight(t, m) {
   const h = state.hero; t.resolved = true; state.stats.defeated++;
   const gold = m.tier === 5 ? 30 : m.tier * 3; h.treasure += gold;
   state.combat = null; state.status = 'exploring'; $('#combat').hidden = true;
-  log(`${m.name} is banished: +${m.xp} XP, +${gold} treasure.`); gainXp(m.xp);
+  Sfx.setMode('explore');
+  log(`${m.name} is banished: +${m.xp} XP, +${gold} treasure.`);
+  mapBurst(t.col, t.row, 18, { color: ['#e7d8ff', '#b48cff', '#ffffff'], speed: 60, grav: -140, drag: 1.2, life: 1.2, size: 3, glow: true, jitter: 16, shape: 'soul' });
+  mapBurst(t.col, t.row, 8 + m.tier * 2, { color: ['#ffd257', '#ffb13c'], speed: 130, up: 120, grav: 520, life: 0.8, size: 4, shape: 'coin' });
+  mapText(t.col, t.row, `+${m.xp} XP`, { color: '#8fd3ff' });
+  gainXp(m.xp);
   if (m.tier >= 3 && m.tier < 5 && state.shards < state.map.shardsNeeded) {
     state.shards++;
-    log(state.shards === state.map.shardsNeeded ? `Soul shard ${state.shards}/${state.map.shardsNeeded}. The Phantom's ward shatters!` : `Soul shard ${state.shards}/${state.map.shardsNeeded} collected.`);
+    const shattered = state.shards === state.map.shardsNeeded, boss = state.map.tiles[state.map.bossIdx];
+    log(shattered ? `Soul shard ${state.shards}/${state.map.shardsNeeded}. The Phantom's ward shatters!` : `Soul shard ${state.shards}/${state.map.shardsNeeded} collected.`);
+    setTimeout(() => {
+      Sfx.play('shard');
+      mapText(t.col, t.row, `SHARD ${state.shards}/${state.map.shardsNeeded}`, { color: '#d9c6ff', dy: -14, life: 1.3 });
+      mapBurst(t.col, t.row, 14, { color: ['#d9c6ff', '#b48cff'], speed: 170, grav: 0, drag: 2.5, life: 0.8, size: 3, glow: true });
+    }, 300);
+    if (shattered) setTimeout(() => {
+      Sfx.play('ward'); fxShake(mapFx, 6);
+      mapRing(boss.col, boss.row, { color: '#e7d8ff', vr: 260, w: 5, life: 0.7 });
+      mapBurst(boss.col, boss.row, 30, { color: ['#e7d8ff', '#b48cff', '#ffffff'], speed: 220, grav: 200, life: 0.9, size: 3, glow: true });
+      mapText(boss.col, boss.row, 'WARD BROKEN', { color: '#e7d8ff', size: 9, life: 1.6 });
+    }, 750);
   }
-  if (t.boss) { state.bossDown = true; log('The Phantom falls. The Gate is unsealed!'); if (t.kind === 'gate') { save(); return win(); } }
+  if (t.boss) {
+    state.bossDown = true; log('The Phantom falls. The Gate is unsealed!');
+    const g = state.map.tiles[state.map.gateIdx];
+    whiteout(); fxShake(mapFx, 10);
+    setTimeout(() => { Sfx.play('gate'); mapRing(g.col, g.row, { color: '#ffb13c', vr: 200, w: 5, life: 0.9 }); mapBurst(g.col, g.row, 30, { color: ['#ffd257', '#ff9a3c', '#fff3b0'], speed: 120, grav: -80, life: 1.4, size: 3, glow: true, jitter: 20 }); mapText(g.col, g.row, 'THE GATE OPENS', { color: '#ffd257', life: 1.8 }); }, 400);
+    if (t.kind === 'gate') { save(); return win(); }
+  }
   renderHud(); save(); $('#map').focus();
 }
 function flee() {
@@ -741,50 +1326,72 @@ function resolveFlee(grade) {
   const md = grade === 'perfect' ? 0 : Math.max(1, Math.round(m.dmg * QTE.defMult[grade] * (0.9 + 0.2 * rand())));
   h.hp = Math.max(1, h.hp - md); // fleeing never kills
   if (grade === 'perfect') state.stats.dodges = (state.stats.dodges || 0) + 1;
-  c.phase = 'wait'; renderCombat(false, md > 0); renderHud();
+  stageMonStrike(grade, md, false);
+  stageAt(grade === 'perfect' ? 480 : 300, () => { stage.hero.run = performance.now(); Sfx.play('step'); });
+  c.phase = 'wait'; renderCombat(false); renderHud();
   later(() => {
     const from = { ...state.pos }; state.pos = state.prev || state.pos; h.anim = { from, start: performance.now() };
-    state.combat = null; state.status = 'exploring'; $('#combat').hidden = true;
+    if (from.col !== state.pos.col) h.face = state.pos.col < from.col ? -1 : 1;
+    state.combat = null; state.status = 'exploring'; $('#combat').hidden = true; Sfx.setMode('explore');
     log(md ? `You escaped but took ${md} damage. It still haunts that day.` : 'A perfect escape. It still haunts that day.');
     renderHud(); save(); $('#map').focus();
-  }, 500);
+  }, 850);
 }
-function lose(m) { state.status = 'lost'; state.killer = m.name; $('#combat').hidden = true; save(); showEnd(); }
-function win() { state.status = 'won'; save(); showEnd(); }
+function lose(m) {
+  state.status = 'lost'; state.killer = m.name; $('#combat').hidden = true; save();
+  Sfx.setMode('off'); Sfx.play('lose'); bgCelebrate(false); showEnd();
+}
+function win() {
+  state.status = 'won'; save();
+  Sfx.setMode('off'); Sfx.play('win'); whiteout(); bgCelebrate(true); showEnd();
+}
 
 /* ---------- screens ---------- */
-function show(id) { document.querySelectorAll('.screen').forEach((s) => { s.hidden = s.id !== id; }); window.scrollTo(0, 0); }
+function show(id) {
+  document.querySelectorAll('.screen').forEach((s) => { s.hidden = s.id !== id; });
+  window.scrollTo(0, 0);
+  if (id !== 'screen-map') { $('#danger').classList.remove('on'); Sfx.setLowHp(false); }
+  if (id === 'screen-start' || id === 'screen-summary' || id === 'screen-loading') Sfx.setMode('menu');
+  else if (id === 'screen-map') Sfx.setMode(state && state.combat ? (state.combat.m.tier === 5 ? 'boss' : 'combat') : 'explore');
+}
+let hudPrev = null;
 function renderLog() { const el = $('#log'); if (el) el.innerHTML = state.log.map((l) => `<div>${esc(l)}</div>`).join(''); }
 function renderHud() {
   const h = state.hero, boss = state.map.tiles[state.map.bossIdx];
   const next = h.level >= 10 ? null : xpForLevel(h.level + 1), cur = xpForLevel(h.level);
   const xpPct = next ? ((h.xp - cur) / (next - cur)) * 100 : 100;
-  $('#hud').innerHTML = `
+  const hud = $('#hud');
+  hud.innerHTML = `
     <span class="name">${esc(h.name)}</span>
-    <span>Lv <b>${h.level}</b></span>
-    <span>HP <span class="bar"><i style="width:${(h.hp / h.maxHp) * 100}%"></i></span> <b>${h.hp}</b>/${h.maxHp}</span>
-    <span>XP <span class="bar xp"><i style="width:${xpPct}%"></i></span> ${h.xp}${next ? '/' + next : ''}</span>
-    <span>ATK <b>${h.atk}</b></span>
-    <span style="color:var(--orange)">Treasure <b>${h.treasure}</b></span>
-    <span class="boss">Soul shards <b>${state.shards}/${state.map.shardsNeeded}</b></span>
+    <span>Lv <b data-k="lv">${h.level}</b></span>
+    <span>HP <span class="bar"><i style="width:${(h.hp / h.maxHp) * 100}%"></i></span> <b data-k="hp">${h.hp}</b>/${h.maxHp}</span>
+    <span>XP <span class="bar xp"><i style="width:${xpPct}%"></i></span> <span data-k="xp">${h.xp}</span>${next ? '/' + next : ''}</span>
+    <span>ATK <b data-k="atk">${h.atk}</b></span>
+    <span style="color:var(--orange)">Treasure <b data-k="tr">${h.treasure}</b></span>
+    <span class="boss">Soul shards <b data-k="sh">${state.shards}/${state.map.shardsNeeded}</b></span>
     <span class="boss ${state.bossDown ? 'down' : ''}">${state.bossDown ? 'Phantom banished. The Gate is open' : `Phantom ${state.shards < state.map.shardsNeeded ? 'warded' : 'exposed'} on ${fmtShort(boss.day.date)}`}</span>`;
+  const now = { lv: h.level, hp: h.hp, xp: h.xp, atk: h.atk, tr: h.treasure, sh: state.shards };
+  if (hudPrev && !REDUCED) {
+    for (const k of Object.keys(now)) if (now[k] !== hudPrev[k]) { const el = hud.querySelector(`[data-k="${k}"]`); if (el) el.classList.add('bump'); }
+    if (now.lv > hudPrev.lv) { hud.classList.remove('lvl'); void hud.offsetWidth; hud.classList.add('lvl'); }
+  }
+  hudPrev = now;
+  const low = h.hp / h.maxHp < 0.3 && h.hp > 0 && (state.status === 'exploring' || state.status === 'combat');
+  $('#danger').classList.toggle('on', low && !REDUCED);
+  Sfx.setLowHp(low);
 }
-function renderCombat(first, hit, monHit) {
+function renderCombat(first) {
   const c = state.combat, m = c.m, h = state.hero, t = tileAt(c);
   $('#combat').hidden = false;
   $('#choose-row').hidden = c.phase !== 'choose';
   $('#qte-row').hidden = c.phase !== 'qte' || settings.assist;
-  if (monHit && !REDUCED) { const mc = $('#c-mon'); mc.classList.remove('shake'); void mc.offsetWidth; mc.classList.add('shake'); }
   $('#m-name').textContent = m.name;
   $('#m-src').textContent = sourceLabel(t, state.map);
-  const hc = sizeCanvas($('#c-hero'), 96, 96); drawSprite(hc, 'hero', 48, 48, 7);
-  const mc = sizeCanvas($('#c-mon'), 96, 96);
-  if (m.tier === 5) glow(mc, 48, 48, 48, 'rgba(157,123,255,A)', 0.5);
-  drawSprite(mc, MONSTER_SPRITE[m.tier], 48, 48, 7);
-  $('#c-hero-hp').innerHTML = `<b>You</b><br><span class="bar"><i style="width:${(h.hp / h.maxHp) * 100}%"></i></span> ${h.hp}/${h.maxHp}`;
-  $('#c-mon-hp').innerHTML = `<b>${esc(m.name.length > 22 ? 'The Phantom' : m.name)}</b><br><span class="bar"><i style="width:${(m.hp / m.maxHp) * 100}%"></i></span> ${m.hp}/${m.maxHp}`;
+  if (!$('#c-hero-hp .fill')) buildBars(m);
+  // HP bars drop when the hit lands on the stage, not when the timing test resolves
+  const hp = h.hp, mhp = m.hp;
+  setTimeout(() => { if (state && state.combat === c) { setBar($('#c-hero-hp'), hp, h.maxHp); setBar($('#c-mon-hp'), mhp, m.maxHp); } }, c.phase === 'wait' ? 110 : 0);
   $('#clog').innerHTML = c.lines.map(esc).join('<br>') || `Level ${t.day.level} day. It hits for about ${m.dmg}. Attack, then press Space as the marker crosses the gold zone.`;
-  if (hit && !REDUCED) { const f = $('.fight'); f.classList.remove('shake'); void f.offsetWidth; f.classList.add('shake'); }
   if (first && c.phase === 'choose') $('#btn-attack').focus();
   if (c.phase === 'qte' && !settings.assist) $('#btn-qte').focus();
 }
@@ -821,8 +1428,11 @@ function enterMap(animate = true) {
   mapLayout = layout(state.map, tile, 4, true);
   mapCtx = sizeCanvas($('#map'), mapLayout.w, mapLayout.h);
   state.animStart = animate && !REDUCED ? performance.now() : null;
-  renderHud(); renderLog();
-  if (state.status === 'combat' && state.combat) renderCombat(true); else $('#combat').hidden = true;
+  mapFx.p.length = mapFx.txt.length = mapFx.rings.length = 0;
+  hudPrev = null; renderHud(); renderLog();
+  if (state.status === 'combat' && state.combat) { stageReset(tileAt(state.combat), state.combat.m); buildBars(state.combat.m); renderCombat(true); }
+  else $('#combat').hidden = true;
+  if (animate && !REDUCED) Sfx.play('rise');
   $('#map').focus();
 }
 function showEnd() {
@@ -904,16 +1514,74 @@ const teaserMap = generateMap(makeDemoSet());
 const teaserL = layout(teaserMap, 22, 3, false);
 const teaserCtx = sizeCanvas($('#teaser'), teaserL.w, teaserL.h);
 let teaserStart = performance.now();
+
+/* ---------- animated night-sky background ---------- */
+const bg = { ctx: null, w: 0, h: 0, stars: [], motes: [], fx: makeFx() };
+function bgResize() {
+  bg.w = innerWidth; bg.h = innerHeight; bg.ctx = sizeCanvas($('#bg'), bg.w, bg.h);
+  const r = makeRng(9);
+  bg.stars = Array.from({ length: 110 }, () => ({ x: r.next() * bg.w, y: r.next() * bg.h * 0.75, s: r.next() < 0.12 ? 2 : 1, p: r.next() * 6.3 }));
+  bg.motes = Array.from({ length: 28 }, () => ({ x: Math.random() * bg.w, y: Math.random() * bg.h, v: 6 + Math.random() * 16, a: Math.random() * 6.3, c: Math.random() < 0.6 ? '57,211,83' : '180,140,255', s: 1.5 + Math.random() * 2.5 }));
+}
+function drawBat(ctx, x, y, s, flap) {
+  ctx.fillStyle = '#04050a'; ctx.beginPath();
+  ctx.moveTo(x, y); ctx.lineTo(x - 7 * s, y - 4 * s * flap); ctx.lineTo(x - 12 * s, y + 1 * s); ctx.lineTo(x - 6 * s, y + 1 * s); ctx.lineTo(x, y + 3 * s);
+  ctx.lineTo(x + 6 * s, y + 1 * s); ctx.lineTo(x + 12 * s, y + 1 * s); ctx.lineTo(x + 7 * s, y - 4 * s * flap); ctx.closePath(); ctx.fill();
+}
+function drawBg(now, dt) {
+  const { ctx, w, h } = bg; if (!ctx) return;
+  ctx.clearRect(0, 0, w, h);
+  for (const s of bg.stars) { ctx.fillStyle = `rgba(255,255,255,${0.25 + 0.35 * (REDUCED ? 1 : 0.5 + 0.5 * Math.sin(now / 900 + s.p))})`; ctx.fillRect(s.x, s.y, s.s, s.s); }
+  const mx = w * 0.84, my = Math.min(120, h * 0.14);
+  glow(ctx, mx, my, 150, 'rgba(255,240,200,A)', 0.12);
+  ctx.fillStyle = '#efe6c4'; ctx.beginPath(); ctx.arc(mx, my, 34, 0, 7); ctx.fill();
+  ctx.fillStyle = 'rgba(0,0,0,.1)'; ctx.beginPath(); ctx.arc(mx - 10, my - 6, 8, 0, 7); ctx.arc(mx + 12, my + 9, 6, 0, 7); ctx.fill();
+  if (!REDUCED) {
+    for (let i = 0; i < 3; i++) {
+      const bx = ((now * (0.035 + i * 0.01) + i * 520) % (w + 300)) - 150, by = h * 0.12 + i * 46 + Math.sin(now / 650 + i * 2) * 22;
+      drawBat(ctx, bx, by, 1 - i * 0.2, Math.sin(now / (70 + i * 10)) > 0 ? 1 : -0.4);
+    }
+    ctx.save(); ctx.globalCompositeOperation = 'lighter';
+    for (const m of bg.motes) {
+      m.y -= m.v * dt; m.x += Math.sin(now / 1500 + m.a) * 8 * dt; if (m.y < -10) { m.y = h + 10; m.x = Math.random() * w; }
+      const a = 0.25 + 0.2 * Math.sin(now / 700 + m.a);
+      glow(ctx, m.x, m.y, m.s * 4, `rgba(${m.c},A)`, a);
+    }
+    ctx.restore();
+  }
+  const fog = ctx.createLinearGradient(0, h * 0.75, 0, h); fog.addColorStop(0, 'rgba(120,130,170,0)'); fog.addColorStop(1, 'rgba(120,130,170,.10)');
+  ctx.fillStyle = fog; ctx.fillRect(0, h * 0.75, w, h * 0.25);
+  fxUpdate(bg.fx, dt); fxDraw(bg.fx, ctx);
+}
+function bgCelebrate(won) {
+  if (REDUCED || !bg.ctx) return;
+  if (won) for (let i = 0; i < 4; i++) setTimeout(() => fxBurst(bg.fx, bg.w * (0.2 + 0.2 * i), bg.h * 0.85, 40, { color: ['#ffd257', '#39d353', '#b48cff', '#ffffff'], speed: 420, angle: -Math.PI / 2, spread: 1.2, grav: 380, drag: 0.6, life: 2.2, size: 5, glow: true }), i * 220);
+  else fxBurst(bg.fx, bg.w / 2, -20, 70, { color: ['#7a7f8c', '#4a4e58', '#ff6b6b'], speed: 60, angle: Math.PI / 2, spread: 2.5, grav: 40, drag: 0.4, life: 4, size: 3, jitter: bg.w });
+}
+addEventListener('resize', bgResize); bgResize();
+
+let lastFrame = performance.now();
 function frame(now) {
   requestAnimationFrame(frame);
+  const dt = Math.min(0.05, (now - lastFrame) / 1000); lastFrame = now;
+  drawBg(now, dt);
   if (!$('#screen-start').hidden) {
     if (now - teaserStart > 5200) teaserStart = now;
     const animStart = REDUCED ? null : teaserStart + 700;
     drawMap(teaserCtx, teaserMap, teaserL, { now, animStart, fog: false, labels: false, bossDown: false });
   }
   if (state && mapCtx && !$('#screen-map').hidden) {
-    const hero = { pos: state.pos, anim: state.hero.anim, aura: state.hero.aura };
-    drawMap(mapCtx, state.map, mapLayout, { now, animStart: state.animStart, fog: true, labels: true, hero, bossDown: state.bossDown, warded: state.shards < state.map.shardsNeeded });
+    fxUpdate(mapFx, dt);
+    const L = mapLayout;
+    if (!REDUCED && mapFx.p.filter((p) => p.amb).length < 16 && Math.random() < 0.2) {
+      fxBurst(mapFx, Math.random() * L.w, Math.random() * L.h, 1, { color: Math.random() < 0.6 ? 'rgba(141,255,160,.8)' : 'rgba(200,170,255,.8)', speed: 8, grav: -6, drag: 0.1, life: 5, size: 2.2, glow: true, amb: true });
+    }
+    const [sx, sy] = fxShakeOffset(mapFx);
+    mapCtx.save(); mapCtx.clearRect(-20, -20, L.w + 40, L.h + 40); mapCtx.translate(sx, sy);
+    const hero = { pos: state.pos, anim: state.hero.anim, aura: state.hero.aura, face: state.hero.face || 1 };
+    drawMap(mapCtx, state.map, L, { now, animStart: state.animStart, fog: true, labels: true, hero, bossDown: state.bossDown, warded: state.shards < state.map.shardsNeeded, shards: state.shards });
+    fxDraw(mapFx, mapCtx);
+    mapCtx.restore();
   }
 }
 requestAnimationFrame(frame);
@@ -933,7 +1601,10 @@ function drawQte(now) {
     ctx.fillStyle = '#1b2233'; rrect(ctx, x0, y - hgt / 2, w, hgt, 5); ctx.fill();
     ctx.fillStyle = 'rgba(38,166,65,.85)'; ctx.fillRect(cx - gw, y - hgt / 2, gw * 2, hgt);
     ctx.fillStyle = '#ffd257'; ctx.fillRect(cx - pw, y - hgt / 2, pw * 2, hgt);
+    if (!REDUCED) { const sh = ((now / 6) % (pw * 2 + 20)) - 10; ctx.fillStyle = 'rgba(255,255,255,.55)'; ctx.fillRect(clamp(cx - pw + sh, cx - pw, cx + pw - 3), y - hgt / 2, 3, hgt); }
     const px = x0 + w * clamp(t / qte.dur, 0, 1);
+    const trail = ctx.createLinearGradient(px - 40, 0, px, 0); trail.addColorStop(0, 'rgba(255,255,255,0)'); trail.addColorStop(1, 'rgba(255,255,255,.35)');
+    ctx.fillStyle = trail; ctx.fillRect(Math.max(x0, px - 40), y - hgt / 2, Math.min(40, px - x0), hgt);
     ctx.fillStyle = '#fff'; ctx.fillRect(px - 2, y - hgt / 2 - 7, 4, hgt + 14);
     ctx.beginPath(); ctx.moveTo(px - 6, y - hgt / 2 - 9); ctx.lineTo(px + 6, y - hgt / 2 - 9); ctx.lineTo(px, y - hgt / 2 - 2); ctx.fill();
   } else {
@@ -942,13 +1613,29 @@ function drawQte(now) {
     const pr = (R - r0) * (qte.P / qte.target), gr = (R - r0) * (qte.G / qte.target);
     ctx.fillStyle = '#ff9a9a'; ctx.fillText(settings.assist ? 'AUTO-TIMING' : 'DODGE! SPACE ON THE GOLD', QW / 2, 9);
     ctx.fillStyle = 'rgba(38,166,65,.25)'; ctx.beginPath(); ctx.arc(cx, cy, r0 + gr, 0, 7); ctx.fill();
+    if (Math.abs(t - qte.target) <= qte.G) glow(ctx, cx, cy, r0 * 3, 'rgba(255,210,87,A)', 0.35);
     ctx.strokeStyle = '#ffd257'; ctx.lineWidth = Math.max(3, pr * 2); ctx.beginPath(); ctx.arc(cx, cy, r0, 0, 7); ctx.stroke();
     const r = Math.max(2, r0 + (R - r0) * (1 - k));
     ctx.strokeStyle = k > 1 ? 'rgba(255,107,107,.5)' : '#ff6b6b'; ctx.lineWidth = 3;
     ctx.beginPath(); ctx.arc(cx, cy, r, 0, 7); ctx.stroke();
   }
 }
-(function qteLoop(now) { requestAnimationFrame(qteLoop); if (state && state.combat && !$('#combat').hidden) drawQte(now); })(performance.now());
+stageCtx = sizeCanvas($('#c-stage'), SW, SH);
+(function qteLoop(now) {
+  requestAnimationFrame(qteLoop);
+  if (state && !$('#combat').hidden) { if (state.combat) drawQte(now); drawStage(now); }
+})(performance.now());
+
+/* ---------- sound controls ---------- */
+function refreshSoundBtn() { const b = $('#btn-sound'); b.textContent = `Sound: ${settings.mute ? 'off' : 'on'} (M)`; b.setAttribute('aria-pressed', String(!settings.mute)); }
+$('#btn-sound').onclick = () => { Sfx.init(); Sfx.setMute(!settings.mute); refreshSoundBtn(); };
+refreshSoundBtn();
+['pointerdown', 'keydown'].forEach((ev) => addEventListener(ev, () => Sfx.init(), { capture: true }));
+addEventListener('keydown', (e) => {
+  if (e.key.toLowerCase() !== 'm' || e.target.tagName === 'INPUT') return;
+  Sfx.setMute(!settings.mute); refreshSoundBtn();
+});
+document.addEventListener('click', (e) => { if (e.target.closest('button') && e.target.id !== 'btn-qte') Sfx.play('ui'); });
 
 /* ---------- boot ---------- */
 refreshContinue();
