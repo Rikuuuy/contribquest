@@ -1,0 +1,72 @@
+# ContribQuest: The Haunted Graph
+
+Your GitHub graph is haunted. ContribQuest is a retro pixel-art RPG that raises your last 13 weeks of GitHub contributions as a playable map. Every day is a tile laid out exactly like your contribution graph. Busy days spawn monsters and treasure, your best day becomes the boss, and your streak powers your hero.
+
+Built for [Kiroween 2026](https://kiroween.devpost.com/), Frankenstein category.
+
+**Play:** https://winds-tech.github.io/contribquest/ (or [the demo](https://winds-tech.github.io/contribquest/?demo))
+
+![The haunted map](docs/screenshots/03b-warded-boss.png)
+
+## Status
+
+This repository currently holds the **design prototype**, created on 16 Nov 2026, inside the Kiroween submission period (30 Oct – 4 Dec 2026).
+
+- `prototype/index.html` is a single-file, vibe-coded prototype used to test the game design and balance. It is not the final submission code.
+- `docs/PRD.md` is the product requirements document (v1.2).
+- The final build (TypeScript, Vite, Canvas 2D, built from Kiro specs in `/.kiro`) starts in Phase 0 and will replace the prototype at the site root.
+
+## How to play
+
+1. Enter a public GitHub username, or press **Play the demo**.
+2. Move with the arrow keys or WASD (on-screen buttons on touch devices).
+3. Fog hides what each day became. Walk close to reveal it.
+4. Soul wisps and chests are picked up by walking onto them. Chests heal you.
+5. Monsters start a turn-based fight: **A** to attack, **F** to flee.
+6. The boss is the Phantom of your best day. It is warded until you banish 3 elites (Ghouls or Liches).
+7. Defeat the Phantom, then walk into the Gate on your last day to win.
+
+## How your data becomes the game
+
+| Your GitHub data | In the game |
+| --- | --- |
+| Day with no contributions | Graveyard fog path |
+| Lightest green day | Soul wisp (free XP) |
+| Medium green day | Bug Imp or a small chest |
+| Darker green day | Flaky Test Ghoul or a stocked chest |
+| Darkest green day | Merge Conflict Lich (elite) |
+| Your best day | The boss |
+| Contributions in the last 91 days | Starting XP and level |
+| Current streak | Streak Aura: +1 ATK and +5 HP per full week, up to 4 weeks |
+| Your busiest weekday | A trait: +2 ATK when fighting in that weekday's row |
+
+## Data source and privacy
+
+Contribution counts come from the open-source community API [grubersjoe/github-contributions-api](https://github.com/grubersjoe/github-contributions-api), which reads the public contribution calendar on a GitHub profile. This means:
+
+- The username you enter is sent to that third-party service.
+- Private contributions appear only if the user shows them on their profile.
+- Data can lag GitHub by up to about an hour.
+- Avatars load from `github.com/<username>.png`.
+
+There is no ContribQuest server. The game saves your run and a one-hour data cache in your browser's local storage only. Demo mode makes no data requests.
+
+## Run locally
+
+The prototype is a static file with no build step:
+
+```sh
+python3 -m http.server 8000
+# open http://localhost:8000/prototype/
+```
+
+## Credits
+
+- Font: [Press Start 2P](https://fonts.google.com/specimen/Press+Start+2P) (SIL Open Font License).
+- Sprites are drawn in code for this project.
+
+ContribQuest is not affiliated with GitHub.
+
+## License
+
+[MIT](LICENSE)

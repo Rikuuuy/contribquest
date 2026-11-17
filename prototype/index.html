@@ -1,0 +1,810 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ContribQuest: The Haunted Graph (preview)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0b0e14; --panel: #121722; --line: #263042; --text: #e6edf3; --muted: #8b98ab;
+    --g1: #0e4429; --g2: #006d32; --g3: #26a641; --g4: #39d353;
+    --orange: #ff9a3c; --purple: #b48cff; --red: #ff6b6b;
+    --pixel: "Press Start 2P", ui-monospace, monospace;
+    --sans: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  }
+  * { box-sizing: border-box; }
+  [hidden] { display: none !important; }
+  html, body { margin: 0; min-height: 100%; }
+  body {
+    background: radial-gradient(1200px 600px at 50% -10%, #241a3a 0%, var(--bg) 60%) fixed, var(--bg);
+    color: var(--text); font-family: var(--sans); font-size: 16px; line-height: 1.5;
+  }
+  main { max-width: 980px; margin: 0 auto; padding: 24px 16px 48px; }
+  .screen[hidden] { display: none !important; }
+  h1, h2, h3, .pixel { font-family: var(--pixel); font-weight: 400; letter-spacing: .5px; }
+  h1.title { font-size: clamp(26px, 5vw, 44px); margin: 12px 0 6px; text-align: center; color: var(--g4);
+    text-shadow: 0 0 18px rgba(57,211,83,.45), 4px 4px 0 #0e4429; }
+  h1.title span { color: var(--orange); text-shadow: 0 0 18px rgba(255,154,60,.4), 4px 4px 0 #6b3510; }
+  .tag { text-align: center; font-family: var(--pixel); font-size: 12px; color: var(--purple); margin: 0 0 18px; }
+  .card { background: rgba(18,23,34,.88); border: 2px solid var(--line); border-radius: 10px; padding: 18px; }
+  .center { text-align: center; }
+  #teaser { display: block; margin: 0 auto 18px; max-width: 100%; }
+  form.row, .row { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; }
+  input[type=text] {
+    font: inherit; font-size: 17px; padding: 12px 14px; min-width: 240px; border-radius: 8px;
+    border: 2px solid var(--line); background: #0d1117; color: var(--text);
+  }
+  input[type=text]:focus { outline: 3px solid var(--purple); outline-offset: 1px; }
+  button {
+    font-family: var(--pixel); font-size: 11px; padding: 13px 16px; border-radius: 8px; cursor: pointer;
+    border: 2px solid #1b6b33; background: var(--g3); color: #04120a; box-shadow: 0 4px 0 #0e4429;
+  }
+  button:active { transform: translateY(2px); box-shadow: 0 2px 0 #0e4429; }
+  button:focus-visible { outline: 3px solid var(--purple); outline-offset: 2px; }
+  button.alt { background: var(--orange); border-color: #9a4e12; color: #1d0c00; box-shadow: 0 4px 0 #6b3510; }
+  button.ghost { background: transparent; color: var(--purple); border-color: #5d3fb0; box-shadow: 0 4px 0 #2d1e5a; }
+  .how { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; margin: 18px 0 0; padding: 0; list-style: none; }
+  .how li { background: #0d1117; border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; color: var(--muted); font-size: 14px; }
+  .how b { color: var(--text); }
+  .fine { color: var(--muted); font-size: 12.5px; text-align: center; margin-top: 16px; }
+  .error { color: var(--red); text-align: center; font-weight: 600; }
+  .loading { text-align: center; padding: 80px 0; }
+  .loading .pixel { font-size: 14px; color: var(--purple); animation: pulse 1.2s infinite; }
+  @keyframes pulse { 50% { opacity: .35; } }
+
+  /* hero summary */
+  .summary { display: grid; grid-template-columns: 220px 1fr; gap: 20px; align-items: start; }
+  @media (max-width: 680px) { .summary { grid-template-columns: 1fr; } }
+  .portrait { display: flex; flex-direction: column; align-items: center; gap: 10px; }
+  .avatar { width: 72px; height: 72px; image-rendering: pixelated; border-radius: 6px; border: 2px solid var(--line); }
+  .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px; }
+  .stat { background: #0d1117; border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; }
+  .stat .k { color: var(--muted); font-size: 12.5px; }
+  .stat .v { font-size: 20px; font-weight: 700; }
+  .stat .v small { font-size: 13px; color: var(--muted); font-weight: 500; }
+  .trait { margin-top: 12px; border-color: #5d3fb0; }
+  .xp-table { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 12px; font-size: 12px; color: var(--muted); }
+  .xp-table span { border: 1px solid var(--line); border-radius: 4px; padding: 2px 6px; }
+  .xp-table span.on { border-color: var(--g4); color: var(--g4); }
+  .quiet { color: var(--purple); font-size: 14px; }
+
+  /* map screen */
+  .hud { display: flex; flex-wrap: wrap; gap: 8px 16px; align-items: center; padding: 10px 14px; margin-bottom: 10px; font-size: 14px; }
+  .hud .name { font-family: var(--pixel); font-size: 11px; color: var(--g4); }
+  .bar { display: inline-block; width: 110px; height: 12px; border: 1px solid #000; background: #2a1520; border-radius: 3px; vertical-align: middle; overflow: hidden; }
+  .bar i { display: block; height: 100%; background: linear-gradient(#ff7a7a, #d33f3f); }
+  .bar.xp { background: #10233a; } .bar.xp i { background: linear-gradient(#7fd0ff, #3b8fd9); }
+  .hud .boss { color: var(--purple); }
+  .hud .boss.down { color: var(--g4); }
+  .board { position: relative; display: flex; justify-content: center; width: fit-content; max-width: 100%; margin: 0 auto; }
+  #map { display: block; max-width: 100%; border-radius: 10px; outline: none; box-shadow: 0 0 0 2px var(--line); }
+  #map:focus-visible { box-shadow: 0 0 0 2px #5d3fb0, 0 0 24px rgba(157,123,255,.25); }
+  #log { margin-top: 10px; min-height: 76px; font-size: 14px; color: var(--muted); padding: 10px 14px; }
+  #log div:last-child { color: var(--text); }
+  .legend { display: flex; flex-wrap: wrap; gap: 6px 14px; justify-content: center; color: var(--muted); font-size: 12.5px; margin-top: 8px; }
+  .dpad { display: none; margin: 12px auto 0; width: 168px; grid-template-columns: repeat(3, 52px); gap: 6px; }
+  .dpad button { padding: 14px 0; font-size: 14px; }
+  @media (pointer: coarse) { .dpad { display: grid; } }
+
+  /* combat */
+  #combat { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; background: rgba(5,6,12,.72); border-radius: 10px; }
+  #combat[hidden] { display: none; }
+  .fight { width: min(560px, 96%); background: #0f1320; border: 2px solid #5d3fb0; border-radius: 12px; padding: 16px; box-shadow: 0 0 40px rgba(157,123,255,.25); }
+  .fight h3 { margin: 0 0 4px; font-size: 13px; color: var(--purple); text-align: center; }
+  .fight .src { text-align: center; color: var(--g4); font-size: 13.5px; margin-bottom: 10px; }
+  .versus { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 8px; }
+  .fighter { text-align: center; font-size: 13px; }
+  .fighter canvas { display: block; margin: 0 auto 6px; }
+  .vs { font-family: var(--pixel); color: var(--orange); font-size: 12px; }
+  .clog { font-size: 13.5px; color: var(--muted); min-height: 44px; margin: 10px 0; text-align: center; }
+  .shake { animation: shake .25s; }
+  @keyframes shake { 25% { transform: translateX(-4px); } 75% { transform: translateX(4px); } }
+
+  /* results */
+  .end h2 { text-align: center; font-size: 18px; margin: 6px 0 4px; }
+  .end h2.win { color: var(--g4); } .end h2.lose { color: var(--red); }
+  .compare { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin: 16px 0; }
+  @media (max-width: 600px) { .compare { grid-template-columns: 1fr; } }
+  .compare h3 { font-size: 11px; margin: 0 0 8px; color: var(--muted); }
+  .compare dl { display: grid; grid-template-columns: 1fr auto; gap: 6px 10px; margin: 0; }
+  .compare dt { color: var(--muted); } .compare dd { margin: 0; font-weight: 700; text-align: right; }
+  .today { text-align: center; color: var(--orange); margin: 6px 0 16px; }
+  footer { text-align: center; color: var(--muted); font-size: 12px; margin-top: 28px; }
+  @media (prefers-reduced-motion: reduce) { * { animation: none !important; } }
+</style>
+</head>
+<body>
+<main>
+  <!-- START -->
+  <section id="screen-start" class="screen">
+    <h1 class="title">Contrib<span>Quest</span></h1>
+    <p class="tag">Your GitHub graph is haunted.</p>
+    <canvas id="teaser" aria-label="A contribution graph rising into a haunted map"></canvas>
+    <div class="card">
+      <form id="form" class="row" autocomplete="off">
+        <label for="username" class="sr" hidden>GitHub username</label>
+        <input id="username" type="text" placeholder="GitHub username" maxlength="39" spellcheck="false" aria-label="GitHub username">
+        <button type="submit">Raise my graph</button>
+        <button type="button" id="btn-demo" class="ghost">Play the demo</button>
+      </form>
+      <p id="start-error" class="error" hidden></p>
+      <div class="row" id="continue-row" hidden style="margin-top:12px"><button type="button" id="btn-continue" class="alt">Continue run</button></div>
+      <ul class="how">
+        <li><b>Every day is a tile.</b> Your last 13 weeks, laid out exactly like your graph.</li>
+        <li><b>Busy days fight back.</b> Monsters rise from them, labeled with the real date and count.</li>
+        <li><b>Your best day is the boss.</b> Beat it to unseal the Gate. Your streak is your armor.</li>
+      </ul>
+      <p class="fine">Move with arrow keys or WASD. In a fight press A to attack, F to flee.<br>
+      Your username is sent to a public community API that reads your contribution calendar. Nothing else leaves your browser.</p>
+    </div>
+  </section>
+
+  <!-- LOADING -->
+  <section id="screen-loading" class="screen loading" hidden>
+    <p class="pixel" id="loading-text">Summoning…</p>
+  </section>
+
+  <!-- SUMMARY -->
+  <section id="screen-summary" class="screen" hidden>
+    <h1 class="title" style="font-size:22px">The graph of <span id="sum-name"></span></h1>
+    <p class="tag" id="sum-range"></p>
+    <div class="card summary">
+      <div class="portrait">
+        <canvas id="hero-portrait" aria-hidden="true"></canvas>
+        <img id="sum-avatar" class="avatar" alt="" hidden>
+        <div class="pixel" style="font-size:10px;color:var(--purple)" id="sum-aura"></div>
+      </div>
+      <div>
+        <div class="stats" id="sum-stats"></div>
+        <div class="stat trait"><div class="k">Trait from your weekday pattern</div><div class="v" id="sum-trait" style="font-size:16px"></div><div id="sum-trait-text" class="k"></div></div>
+        <p class="quiet" id="sum-quiet" hidden>A quiet graph. Few spirits stir here, so some lost ghosts have risen from your empty days.</p>
+        <div class="xp-table" id="sum-xp"></div>
+        <div class="row" style="justify-content:flex-start;margin-top:16px">
+          <button id="btn-enter">Enter the graph</button>
+          <button id="btn-back" class="ghost">Different username</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- MAP -->
+  <section id="screen-map" class="screen" hidden>
+    <div class="card hud" id="hud"></div>
+    <div class="board">
+      <canvas id="map" tabindex="0" aria-label="Game map"></canvas>
+      <div id="combat" hidden>
+        <div class="fight" role="dialog" aria-labelledby="m-name">
+          <h3 id="m-name"></h3>
+          <div class="src" id="m-src"></div>
+          <div class="versus">
+            <div class="fighter"><canvas id="c-hero"></canvas><div id="c-hero-hp"></div></div>
+            <div class="vs">VS</div>
+            <div class="fighter"><canvas id="c-mon"></canvas><div id="c-mon-hp"></div></div>
+          </div>
+          <div class="clog" id="clog" aria-live="polite"></div>
+          <div class="row">
+            <button id="btn-attack">Attack (A)</button>
+            <button id="btn-flee" class="ghost">Flee (F)</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="legend">
+      <span>Brighter green = busier day</span><span>Fog hides what each day became</span><span>Purple skull = the boss</span><span>Arch = the Gate</span>
+    </div>
+    <div class="dpad" aria-label="Direction buttons">
+      <span></span><button data-dir="up" aria-label="Up">▲</button><span></span>
+      <button data-dir="left" aria-label="Left">◀</button><span></span><button data-dir="right" aria-label="Right">▶</button>
+      <span></span><button data-dir="down" aria-label="Down">▼</button><span></span>
+    </div>
+    <div class="card" id="log" aria-live="polite"></div>
+  </section>
+
+  <!-- END -->
+  <section id="screen-end" class="screen end" hidden>
+    <div class="card">
+      <h2 id="end-title"></h2>
+      <p class="center" id="end-sub" style="color:var(--muted)"></p>
+      <div class="compare">
+        <div class="card"><h3>IN THE GRAPH</h3><dl id="end-game"></dl></div>
+        <div class="card"><h3>ON GITHUB</h3><dl id="end-gh"></dl></div>
+      </div>
+      <p class="today" id="end-today"></p>
+      <div class="row">
+        <button id="btn-again">Play this graph again</button>
+        <button id="btn-new" class="ghost">New username</button>
+        <button id="btn-share" class="alt">Copy challenge link</button>
+      </div>
+      <p class="fine" id="share-note"></p>
+    </div>
+  </section>
+
+  <footer>ContribQuest preview for Kiroween 2026. Not affiliated with GitHub.</footer>
+</main>
+
+<script>
+'use strict';
+/* =========================================================
+   ContribQuest preview: a single-file prototype of PRD v1.2
+   ========================================================= */
+const $ = (s) => document.querySelector(s);
+const WEEKDAYS = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+const LEVEL_COLORS = ['#161b22','#0e4429','#006d32','#26a641','#39d353'];
+const REDUCED = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+/* ---------- utilities ---------- */
+function fnv1a(str) { let h = 0x811c9dc5; for (let i = 0; i < str.length; i++) { h ^= str.charCodeAt(i); h = Math.imul(h, 0x01000193); } return h >>> 0; }
+function makeRng(seed) {
+  let s = seed >>> 0;
+  return {
+    get state() { return s; }, set state(v) { s = v >>> 0; },
+    next() { s = (s + 0x6D2B79F5) >>> 0; let t = s; t = Math.imul(t ^ (t >>> 15), t | 1); t ^= t + Math.imul(t ^ (t >>> 7), t | 61); return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }
+  };
+}
+const parseDate = (d) => new Date(d + 'T00:00:00Z');
+const isoDate = (dt) => dt.toISOString().slice(0, 10);
+const addDays = (d, n) => { const dt = parseDate(d); dt.setUTCDate(dt.getUTCDate() + n); return isoDate(dt); };
+const weekday = (d) => parseDate(d).getUTCDay();
+const fmtDate = (d) => { const dt = parseDate(d); return `${WEEKDAYS[dt.getUTCDay()].slice(0,3)} ${dt.getUTCDate()} ${MONTHS[dt.getUTCMonth()]} ${dt.getUTCFullYear()}`; };
+const fmtShort = (d) => { const dt = parseDate(d); return `${dt.getUTCDate()} ${MONTHS[dt.getUTCMonth()]}`; };
+const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+const easeOutBack = (x) => { const c1 = 1.70158, c3 = c1 + 1; return 1 + c3 * Math.pow(x - 1, 3) + c1 * Math.pow(x - 1, 2); };
+const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
+
+/* ---------- data ---------- */
+const USERNAME_RE = /^[a-z\d](?:[a-z\d]|-(?=[a-z\d])){0,38}$/i;
+const WINDOW = 91;
+class CQError extends Error { constructor(code, msg) { super(msg); this.code = code; } }
+
+function validateDays(list) {
+  if (!Array.isArray(list)) throw new CQError('bad', 'The data source returned something unexpected.');
+  const out = list.map((c) => {
+    if (!c || typeof c.date !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(c.date) || !Number.isInteger(c.count) || c.count < 0 || ![0,1,2,3,4].includes(c.level))
+      throw new CQError('bad', 'The data source returned a day we could not read.');
+    return { date: c.date, count: c.count, level: c.level };
+  });
+  out.sort((a, b) => (a.date < b.date ? -1 : a.date > b.date ? 1 : 0));
+  if (out.length < WINDOW) throw new CQError('bad', 'Not enough calendar data to raise a map.');
+  return out;
+}
+function computeStreak(all) {
+  let i = all.length - 1;
+  if (i >= 0 && all[i].count === 0) i--; // today may not be over yet
+  let s = 0; while (i >= 0 && all[i].count > 0) { s++; i--; }
+  return s;
+}
+function buildSet(username, source, all, yearTotal) {
+  return {
+    username, source, fetchedAt: new Date().toISOString(),
+    yearTotal: Number.isInteger(yearTotal) ? yearTotal : all.reduce((a, d) => a + d.count, 0),
+    streak: computeStreak(all), days: all.slice(-WINDOW)
+  };
+}
+const CACHE_TTL = 3600e3;
+async function fetchLive(username) {
+  const key = 'cq:v1:cache:' + username.toLowerCase();
+  let cached = null; try { cached = JSON.parse(localStorage.getItem(key)); } catch (_) {}
+  if (cached && Date.now() - cached.at < CACHE_TTL) return buildSet(username, 'cache', cached.days, cached.total);
+  const ctrl = new AbortController(); const timer = setTimeout(() => ctrl.abort(), 8000);
+  try {
+    const res = await fetch(`https://github-contributions-api.jogruber.de/v4/${encodeURIComponent(username)}?y=last`, { signal: ctrl.signal });
+    if (res.status === 404) throw new CQError('notfound', `No GitHub user called "${username}" was found.`);
+    if (res.status === 429) throw new CQError('ratelimit', 'Too many summonings at once. Wait a few seconds and try again.');
+    if (!res.ok) throw new CQError('unavailable', 'The contribution source is not answering right now.');
+    const json = await res.json();
+    const days = validateDays(json && json.contributions);
+    const total = json.total && Number.isInteger(json.total.lastYear) ? json.total.lastYear : undefined;
+    try { localStorage.setItem(key, JSON.stringify({ at: Date.now(), days, total })); } catch (_) {}
+    return buildSet(username, 'live', days, total);
+  } catch (e) {
+    const transient = !(e instanceof CQError) || e.code === 'unavailable' || e.code === 'ratelimit';
+    if (cached && transient) return buildSet(username, 'cache', cached.days, cached.total);
+    if (e instanceof CQError) throw e;
+    throw new CQError('unavailable', 'The contribution source is not answering right now.');
+  } finally { clearTimeout(timer); }
+}
+function makeDemoSet() {
+  const r = makeRng(fnv1a('demo-necromancer'));
+  const end = '2026-11-16'; const ranges = [null, [1,3], [4,6], [7,10], [11,18]];
+  const days = [];
+  for (let idx = 0; idx < WINDOW; idx++) {
+    const date = addDays(end, idx - (WINDOW - 1));
+    let level;
+    if (idx >= 12 && idx <= 18) level = 0;            // the empty "graveyard" week
+    else if (idx === 75) level = 0;                    // the day before the streak
+    else if (idx >= 76) level = 1 + Math.floor(r.next() * 4); // 15-day streak to the end
+    else { const x = r.next(); level = x < .38 ? 0 : x < .63 ? 1 : x < .83 ? 2 : x < .94 ? 3 : 4; }
+    let count = 0; if (level > 0) { const [a, b] = ranges[level]; count = a + Math.floor(r.next() * (b - a + 1)); }
+    days.push({ date, count, level });
+  }
+  days[77] = { date: days[77].date, count: 31, level: 4 }; // the best day, two weeks before the end
+  return buildSet('demo-necromancer', 'demo', days, 1287);
+}
+
+/* ---------- map generation ---------- */
+const TIER_NAMES = { 1: 'Lost Ghost', 2: 'Bug Imp', 3: 'Flaky Test Ghoul', 4: 'Merge Conflict Lich' };
+function buildGrid(cols, tiles) {
+  const grid = [];
+  for (let c = 0; c < cols; c++) { grid.push([]); for (let r = 0; r < 7; r++) grid[c].push({ col: c, row: r, kind: 'void' }); }
+  for (const t of tiles) grid[t.col][t.row] = t;
+  return grid;
+}
+function generateMap(set) {
+  const days = set.days, n = days.length;
+  const seed = fnv1a(set.username.toLowerCase() + '|' + days[n - 1].date);
+  const r = makeRng(seed ^ 0x9e3779b9);
+  const w0 = weekday(days[0].date), cols = Math.ceil((w0 + n) / 7);
+  const tiles = days.map((d, i) => { const p = w0 + i; return { col: Math.floor(p / 7), row: p % 7, day: d, idx: i, kind: 'fog', tier: 0, resolved: false, visited: false, seen: false }; });
+  let best = -1;
+  days.forEach((d, i) => { if (i > 0 && (best < 0 || d.count >= days[best].count)) best = i; }); // latest wins ties, never the start
+  let emptyQuarter = false;
+  if (days[best].count === 0) { best = Math.floor(n / 2); emptyQuarter = true; }
+  for (const t of tiles) {
+    const h = fnv1a(t.day.date);
+    if (t.idx === 0) t.kind = 'start';
+    else if (t.idx === best) { t.kind = t.idx === n - 1 ? 'gate' : 'boss'; t.tier = 5; t.boss = true; }
+    else if (t.idx === n - 1) t.kind = 'gate';
+    else switch (t.day.level) {
+      case 0: t.kind = 'fog'; t.deco = h % 6 === 0; break;
+      case 1: t.kind = 'wisp'; break;
+      case 2: if (h % 3 === 0) { t.kind = 'chest'; t.size = 1; } else { t.kind = 'monster'; t.tier = 2; } break;
+      case 3: if (h % 3 === 0) { t.kind = 'chest'; t.size = 2; } else { t.kind = 'monster'; t.tier = 3; } break;
+      case 4: t.kind = 'monster'; t.tier = 4; break;
+    }
+  }
+  const fights = () => tiles.filter((t) => t.kind === 'monster').length;
+  let quiet = false;
+  if (fights() < 6) {
+    quiet = true;
+    const pool = tiles.filter((t) => t.kind === 'fog');
+    for (let i = pool.length - 1; i > 0; i--) { const j = Math.floor(r.next() * (i + 1)); [pool[i], pool[j]] = [pool[j], pool[i]]; }
+    while (fights() < 6 && pool.length) { const t = pool.pop(); t.kind = 'monster'; t.tier = 1; t.risen = true; t.deco = false; }
+  }
+  const shardsNeeded = Math.min(3, tiles.filter((t) => t.kind === 'monster' && t.tier >= 3).length);
+  const map = { cols, rows: 7, tiles, grid: buildGrid(cols, tiles), seed, bossIdx: best, gateIdx: n - 1, emptyQuarter, quiet, shardsNeeded };
+  validateMap(map);
+  return map;
+}
+function neighbors(map, t) {
+  return [[1,0],[-1,0],[0,1],[0,-1]].map(([dc, dr]) => map.grid[t.col + dc] && map.grid[t.col + dc][t.row + dr]).filter((x) => x && x.kind !== 'void');
+}
+function reachable(map, a, b) {
+  const seen = new Set([a]); const q = [a];
+  while (q.length) { const t = q.shift(); if (t === b) return true; for (const nb of neighbors(map, t)) if (!seen.has(nb)) { seen.add(nb); q.push(nb); } }
+  return false;
+}
+function validateMap(map) {
+  const s = map.tiles[0], g = map.tiles[map.gateIdx], b = map.tiles[map.bossIdx];
+  if (!s || !g || !b) throw new CQError('map', 'The map could not be raised.');
+  if (!reachable(map, s, b) || !reachable(map, b, g)) throw new CQError('map', 'The map has no route.');
+  if (new Set(map.tiles.map((t) => t.day.date)).size !== map.tiles.length) throw new CQError('map', 'Duplicate days in the map.');
+}
+
+/* ---------- hero and balance ---------- */
+const xpForLevel = (n) => 25 * n * (n - 1);
+function levelFor(xp) { let L = 1; while (L < 10 && xp >= xpForLevel(L + 1)) L++; return L; }
+function makeTrait(days, total) {
+  if (total === 0) return { name: 'Blank Slate', text: '+5 max HP. Every quest starts somewhere.', rows: [], hp: 5 };
+  const per = [0,0,0,0,0,0,0]; days.forEach((d) => { per[weekday(d.date)] += d.count; });
+  if ((per[0] + per[6]) / total >= 0.4) return { name: 'Weekend Warrior', text: '+2 ATK when fighting in the Saturday and Sunday rows.', rows: [0, 6], hp: 0 };
+  let w = 0; for (let i = 1; i < 7; i++) if (per[i] > per[w]) w = i;
+  return { name: `${WEEKDAYS[w]} Slayer`, text: `${WEEKDAYS[w]} is your busiest day: +2 ATK when fighting in the ${WEEKDAYS[w]} row.`, rows: [w], hp: 0 };
+}
+function applyStats(h) { h.maxHp = 30 + 6 * (h.level - 1) + 5 * h.aura + h.trait.hp; h.atk = 5 + 2 * (h.level - 1) + h.aura; }
+function makeHero(set) {
+  const total91 = set.days.reduce((a, d) => a + d.count, 0);
+  const xp = Math.round(15 * Math.sqrt(total91));
+  const level = levelFor(xp);
+  const h = { name: set.username, xp, level, startLevel: level, aura: Math.min(Math.floor(set.streak / 7), 4), trait: makeTrait(set.days, total91), treasure: 0, total91 };
+  applyStats(h); h.hp = h.maxHp; return h;
+}
+function makeMonster(t, hero, map) {
+  const f = 1 + 0.12 * (hero.startLevel - 1), tier = t.tier;
+  const hp = Math.round((5 + 7 * tier) * f * (tier === 5 ? 1.4 : 1)), dmg = Math.round((1 + tier) * f);
+  const name = tier === 5 ? (map.emptyQuarter ? 'The Phantom of the Empty Quarter' : `The Phantom of ${fmtDate(t.day.date)}`) : TIER_NAMES[tier];
+  return { name, tier, hp, maxHp: hp, dmg, xp: tier === 5 ? 100 : 15 * tier };
+}
+function sourceLabel(t, map) {
+  if (t.tier === 5 && map.emptyQuarter) return 'Born from 91 days of silence';
+  if (t.risen) return `Risen from an empty day: ${fmtDate(t.day.date)}`;
+  return `Risen from ${fmtDate(t.day.date)}: ${t.day.count} contribution${t.day.count === 1 ? '' : 's'}`;
+}
+
+/* ---------- sprites ---------- */
+const COLORS = {
+  k:'#0b0b10', w:'#e8e6f0', p:'#7b4bc9', P:'#4b2a85', f:'#f2c79b', y:'#ffd257', o:'#c8641e', d:'#7a3f12',
+  r:'#e2483d', a:'#8c2620', g:'#86b86f', G:'#4e7d3f', c:'#5b4a3a', s:'#8b93a3', S:'#545a69', v:'#a58bff', V:'#5d3fb0', e:'#ff7b29', b:'#2a1d14'
+};
+const SPRITES = {
+  hero:   ['....PPPP....','...PppppP...','..PppppppP..','..PpffffpP..','..PfkffkfP..','..PpffffpP..','...PppppP.y.','..PppppppPyy','.fPppppppPy.','..PppppppP..','...pp..pp...','...kk..kk...'],
+  ghost:  ['....wwww....','..wwwwwwww..','.wwwwwwwwww.','.wwkkwwkkww.','.wwkkwwkkww.','.wwwwwwwwww.','.wwwwkkwwww.','.wwwwwwwwww.','.wwwwwwwwww.','.wwwwwwwwww.','.ww.www.www.','.w...w...w..'],
+  imp:    ['..a......a..','...a....a...','....rrrr....','...rrrrrr...','..rryrryrr..','..rrrrrrrr..','a.rrkrrkrr.a','.arrrrrrrra.','..rrkrrkrr..','a.rrrrrrrr.a','...rrrrrr...','..a......a..'],
+  ghoul:  ['...GGGGGG...','..GggggggG..','..GkkggkkG..','..GkeggkeG..','..GggggggG..','..GgkwkwgG..','...GggggG...','..cccccccc..','.gccccccccg.','.g.cccccc.g.','...cc..cc...','...GG..GG...'],
+  lich:   ['..y.y..y.y..','..yyyyyyyy..','...wwwwww...','..wkkwwkkw..','..wkewwekw..','..wwwkkwww..','...wkwkww...','..PppppppP..','.PppwwwwppP.','.PpP.pp.PpP.','PppP.pp.PppP','PP..PPPP..PP'],
+  phantom:['...VVVVVV...','..VvvvvvvV..','.VvwwwwwwvV.','.VwkkwwkkwV.','.VwkewwekwV.','.VwwwkkwwwV.','.VvwkwkwkvV.','..VvvvvvvV..','.VvvvvvvvvV.','VvvV.vv.VvvV','Vv..VvvV..vV','V....VV....V'],
+  chest:  ['............','..dddddddd..','.dooooooood.','.dooooooood.','.dddddddddd.','.doooyyoood.','.doooyyoood.','.dooooooood.','.dddddddddd.','............'],
+  grave:  ['....SSSS....','...SssssS...','..SssssssS..','..SsskkssS..','..SskkkksS..','..SsskkssS..','..SsskkssS..','..SssssssS..','..SSSSSSSS..','.GGGGGGGGGG.'],
+  coffin: ['....bbbb....','...bddddb...','..bddddddb..','..bddyyddb..','..bdyyyydb..','..bddyyddb..','..bddyyddb..','...bddddb...','...bddddb...','....bbbb....']
+};
+const SPRITE_CANVAS = {};
+for (const [name, rows] of Object.entries(SPRITES)) {
+  const c = document.createElement('canvas'); c.width = 12; c.height = rows.length;
+  const x = c.getContext('2d');
+  rows.forEach((row, y) => [...row].forEach((ch, i) => { if (ch !== '.') { x.fillStyle = COLORS[ch]; x.fillRect(i, y, 1, 1); } }));
+  SPRITE_CANVAS[name] = c;
+}
+const MONSTER_SPRITE = { 1: 'ghost', 2: 'imp', 3: 'ghoul', 4: 'lich', 5: 'phantom' };
+function drawSprite(ctx, name, cx, cy, scale, alpha = 1) {
+  const s = SPRITE_CANVAS[name]; if (!s) return;
+  ctx.save(); ctx.globalAlpha *= alpha; ctx.imageSmoothingEnabled = false;
+  ctx.drawImage(s, Math.round(cx - (s.width * scale) / 2), Math.round(cy - (s.height * scale) / 2), s.width * scale, s.height * scale);
+  ctx.restore();
+}
+function rrect(ctx, x, y, w, h, r) {
+  ctx.beginPath(); ctx.moveTo(x + r, y); ctx.arcTo(x + w, y, x + w, y + h, r); ctx.arcTo(x + w, y + h, x, y + h, r);
+  ctx.arcTo(x, y + h, x, y, r); ctx.arcTo(x, y, x + w, y, r); ctx.closePath();
+}
+function glow(ctx, x, y, r, color, a) {
+  const g = ctx.createRadialGradient(x, y, 0, x, y, r);
+  g.addColorStop(0, color.replace('A', a)); g.addColorStop(1, color.replace('A', 0));
+  ctx.fillStyle = g; ctx.fillRect(x - r, y - r, r * 2, r * 2);
+}
+function drawGate(ctx, cx, cy, size, open, now) {
+  const w = size * 0.62, h = size * 0.7, x = cx - w / 2, y = cy - h / 2 + 2;
+  if (open) glow(ctx, cx, cy, size * 0.6, 'rgba(255,154,60,A)', 0.55 + 0.15 * Math.sin(now / 300));
+  ctx.fillStyle = '#545a69'; ctx.fillRect(x, y + h * 0.25, w * 0.18, h * 0.75); ctx.fillRect(x + w * 0.82, y + h * 0.25, w * 0.18, h * 0.75);
+  ctx.beginPath(); ctx.arc(cx, y + h * 0.3, w / 2, Math.PI, 0); ctx.lineWidth = Math.max(3, size * 0.1); ctx.strokeStyle = '#8b93a3'; ctx.stroke();
+  if (!open) { ctx.fillStyle = '#7b4bc9'; for (let i = 1; i < 4; i++) ctx.fillRect(x + (w * i) / 4 - 1.5, y + h * 0.15, 3, h * 0.85); }
+  else { ctx.fillStyle = 'rgba(255,210,87,.85)'; ctx.fillRect(x + w * 0.2, y + h * 0.32, w * 0.6, h * 0.68); }
+}
+
+/* ---------- map rendering ---------- */
+function layout(map, tile, gap, labels) {
+  const ox = labels ? 34 : 4, oy = labels ? 22 : 4;
+  return { tile, gap, ox, oy, w: ox + map.cols * (tile + gap) + 4, h: oy + 7 * (tile + gap) + 4 };
+}
+function tileXY(L, c, r) { return [L.ox + c * (L.tile + L.gap), L.oy + r * (L.tile + L.gap)]; }
+function drawMap(ctx, map, L, o) {
+  const now = o.now, T = L.tile, ss = Math.max(1, Math.floor(T / 14));
+  ctx.clearRect(0, 0, L.w, L.h);
+  ctx.fillStyle = '#0d1117'; rrect(ctx, 0, 0, L.w, L.h, 10); ctx.fill();
+  if (o.labels) {
+    ctx.fillStyle = '#8b98ab'; ctx.font = '11px system-ui, sans-serif'; ctx.textBaseline = 'middle';
+    [[1,'Mon'],[3,'Wed'],[5,'Fri']].forEach(([r, s]) => { const [, y] = tileXY(L, 0, r); ctx.fillText(s, 4, y + T / 2); });
+    let lastMonth = -1;
+    for (let c = 0; c < map.cols; c++) {
+      const t = map.grid[c].find((x) => x.kind !== 'void'); if (!t) continue;
+      const m = parseDate(t.day.date).getUTCMonth();
+      if (m !== lastMonth && parseDate(t.day.date).getUTCDate() <= 7 || c === 0) { const [x] = tileXY(L, c, 0); ctx.fillText(MONTHS[m], x, 11); lastMonth = m; }
+    }
+  }
+  for (const t of map.tiles) {
+    const [x, y] = tileXY(L, t.col, t.row);
+    const p = o.animStart == null ? 1 : clamp((now - o.animStart - t.col * 70 - t.row * 12) / 420, 0, 1);
+    const color = LEVEL_COLORS[t.day.level];
+    if (p < 1) {
+      const e = easeOutBack(p), size = T * (0.34 + 0.66 * e), off = (T - size) / 2;
+      ctx.fillStyle = color; rrect(ctx, x + off, y + off, size, size, 3 + 3 * p); ctx.fill();
+      if (p < 0.65) continue;
+    } else {
+      ctx.fillStyle = color; rrect(ctx, x, y, T, T, 6); ctx.fill();
+      if (t.day.level === 0) { ctx.fillStyle = 'rgba(160,170,200,.05)'; ctx.fillRect(x + 4, y + T * 0.55, T - 8, 3); }
+      if (t.visited) { ctx.strokeStyle = 'rgba(255,255,255,.22)'; ctx.lineWidth = 2; rrect(ctx, x + 1, y + 1, T - 2, T - 2, 6); ctx.stroke(); }
+    }
+    const a = clamp((p - 0.65) / 0.35, 0, 1);
+    const cx = x + T / 2, cy = y + T / 2, bob = REDUCED ? 0 : Math.sin(now / 380 + t.idx) * 1.5;
+    const hidden = o.fog && !t.seen;
+    if (t.kind === 'start') drawSprite(ctx, 'coffin', cx, cy, ss, a);
+    else if (t.kind === 'gate') {
+      if (t.boss && !t.resolved) { glow(ctx, cx, cy, T * 0.7, 'rgba(157,123,255,A)', 0.5); drawSprite(ctx, 'phantom', cx, cy + bob, ss, a); }
+      else drawGate(ctx, cx, cy, T, o.bossDown, now);
+    }
+    else if (t.kind === 'boss') {
+      if (!t.resolved) {
+        glow(ctx, cx, cy, T * 0.75, 'rgba(157,123,255,A)', 0.45 + 0.15 * Math.sin(now / 400)); drawSprite(ctx, 'phantom', cx, cy + bob, ss, a);
+        if (o.warded) { ctx.strokeStyle = `rgba(210,185,255,${0.8 + 0.2 * Math.sin(now / 200)})`; ctx.lineWidth = 3; ctx.setLineDash([5, 4]); ctx.lineDashOffset = -now / 60; ctx.beginPath(); ctx.arc(cx, cy, T * 0.46, 0, 7); ctx.stroke(); ctx.setLineDash([]); }
+      }
+      else drawBones(ctx, cx, cy, T);
+    }
+    else if (hidden) { /* the fog keeps its secret */ }
+    else if (t.kind === 'monster') { if (!t.resolved) drawSprite(ctx, MONSTER_SPRITE[t.tier], cx, cy + bob, ss, a * (t.tier === 1 ? 0.85 : 1)); else drawBones(ctx, cx, cy, T); }
+    else if (t.kind === 'chest') drawSprite(ctx, 'chest', cx, cy, ss, a * (t.resolved ? 0.3 : 1));
+    else if (t.kind === 'wisp' && !t.resolved) { glow(ctx, cx, cy + bob, T * 0.32, 'rgba(140,255,200,A)', 0.9 * a); ctx.fillStyle = `rgba(230,255,240,${a})`; ctx.beginPath(); ctx.arc(cx, cy + bob, T * 0.08, 0, 7); ctx.fill(); }
+    else if (t.kind === 'fog' && t.deco) drawSprite(ctx, 'grave', cx, cy + 2, ss, 0.75 * a);
+    if (hidden) { ctx.fillStyle = 'rgba(6,8,16,.52)'; rrect(ctx, x, y, T, T, 6); ctx.fill(); }
+  }
+  if (o.hero) {
+    const h = o.hero; let { col, row } = h.pos;
+    if (h.anim) { const k = clamp((now - h.anim.start) / 120, 0, 1); col = h.anim.from.col + (col - h.anim.from.col) * k; row = h.anim.from.row + (row - h.anim.from.row) * k; }
+    const [x, y] = tileXY(L, col, row), cx = x + T / 2, cy = y + T / 2;
+    glow(ctx, cx, cy, T * 2.3, 'rgba(255,214,120,A)', 0.16);
+    if (h.aura > 0) glow(ctx, cx, cy, T * (0.55 + 0.08 * h.aura), 'rgba(180,140,255,A)', 0.25 + 0.12 * h.aura + 0.08 * Math.sin(now / 250));
+    drawSprite(ctx, 'hero', cx, cy + (REDUCED ? 0 : Math.sin(now / 300) * 1), ss);
+  }
+}
+function drawBones(ctx, cx, cy, T) {
+  ctx.strokeStyle = 'rgba(232,230,240,.35)'; ctx.lineWidth = 3; ctx.lineCap = 'round';
+  const d = T * 0.16; ctx.beginPath(); ctx.moveTo(cx - d, cy - d); ctx.lineTo(cx + d, cy + d); ctx.moveTo(cx + d, cy - d); ctx.lineTo(cx - d, cy + d); ctx.stroke();
+}
+function sizeCanvas(cv, w, h) {
+  const dpr = window.devicePixelRatio || 1;
+  cv.width = Math.round(w * dpr); cv.height = Math.round(h * dpr); cv.style.width = w + 'px'; cv.style.height = h + 'px';
+  const ctx = cv.getContext('2d'); ctx.setTransform(dpr, 0, 0, dpr, 0, 0); ctx.imageSmoothingEnabled = false; return ctx;
+}
+
+/* ---------- game state ---------- */
+let state = null;
+let mapCtx = null, mapLayout = null;
+const SAVE_KEY = 'cq:v1:run';
+function rand() { const r = makeRng(0); r.state = state.rng; const v = r.next(); state.rng = r.state; return v; }
+function tileAt(p) { return state.map.grid[p.col] && state.map.grid[p.col][p.row]; }
+
+function newRun(set) {
+  const map = generateMap(set), hero = makeHero(set), s0 = map.tiles[0];
+  state = { version: 1, set, map, hero, pos: { col: s0.col, row: s0.row }, prev: null, rng: map.seed, combat: null,
+            stats: { steps: 0, defeated: 0, chests: 0, wisps: 0 }, status: 'exploring', bossDown: false, shards: 0, log: [] };
+  s0.visited = true; reveal();
+  log(`You wake in a crypt on ${fmtDate(s0.day.date)}. Somewhere ahead waits the Phantom of your best day.`);
+  if (map.shardsNeeded) log(`Its ward is fed by your other big days. Banish ${map.shardsNeeded} elite${map.shardsNeeded > 1 ? 's' : ''} (Ghouls or Liches) to collect soul shards and break it.`);
+}
+function save() {
+  if (!state) return;
+  try { const { map, ...rest } = state; localStorage.setItem(SAVE_KEY, JSON.stringify({ ...rest, hero: { ...state.hero, anim: undefined }, map: { ...map, grid: undefined } })); } catch (_) {}
+}
+function loadSave() {
+  try {
+    const s = JSON.parse(localStorage.getItem(SAVE_KEY));
+    if (!s || s.version !== 1 || !s.map || !Array.isArray(s.map.tiles)) return null;
+    s.map.grid = buildGrid(s.map.cols, s.map.tiles);
+    if (!Number.isInteger(s.shards)) s.shards = 0;
+    if (!Number.isInteger(s.map.shardsNeeded)) s.map.shardsNeeded = 0;
+    return s;
+  } catch (_) { return null; }
+}
+function log(msg) { state.log.push(msg); state.log = state.log.slice(-4); renderLog(); }
+function reveal() {
+  for (const t of state.map.tiles) { const dc = t.col - state.pos.col, dr = t.row - state.pos.row; if (dc * dc + dr * dr <= 5) t.seen = true; }
+}
+function tryMove(dc, dr) {
+  if (!state || state.status !== 'exploring') return;
+  const from = { ...state.pos }, t = tileAt({ col: from.col + dc, row: from.row + dr });
+  if (!t || t.kind === 'void') return;
+  if (t.kind === 'gate' && !t.boss && !state.bossDown) { log('The Gate is sealed. Defeat the Phantom of your best day first.'); return; }
+  if (t.boss && !t.resolved && state.shards < state.map.shardsNeeded) { log(`The Phantom is warded. Soul shards: ${state.shards}/${state.map.shardsNeeded}. Banish more Ghouls or Liches.`); return; }
+  state.prev = from; state.pos = { col: t.col, row: t.row }; state.hero.anim = { from, start: performance.now() };
+  state.stats.steps++; t.visited = true; reveal();
+  enterTile(t); renderHud(); save();
+}
+function enterTile(t) {
+  if (t.resolved) return;
+  const h = state.hero;
+  switch (t.kind) {
+    case 'wisp': t.resolved = true; state.stats.wisps++; log(`A soul wisp from ${fmtShort(t.day.date)} (${t.day.count} contribution${t.day.count === 1 ? '' : 's'}): +5 XP.`); gainXp(5); break;
+    case 'chest': {
+      t.resolved = true; state.stats.chests++;
+      const gold = t.size === 2 ? 12 : 6, heal = Math.ceil(h.maxHp * 0.3), before = h.hp;
+      h.hp = Math.min(h.maxHp, h.hp + heal); h.treasure += gold;
+      log(`A chest from ${fmtShort(t.day.date)}: +${gold} treasure, +${h.hp - before} HP, +10 XP.`); gainXp(10); break;
+    }
+    case 'monster': case 'boss': startCombat(t); break;
+    case 'gate': if (t.boss) startCombat(t); else win(); break;
+    default: break;
+  }
+}
+function gainXp(x) {
+  const h = state.hero; h.xp += x; const L = levelFor(h.xp);
+  if (L > h.level) { h.level = L; applyStats(h); h.hp = h.maxHp; log(`Level up! You are now level ${L}. HP fully restored.`); }
+}
+function startCombat(t) {
+  state.status = 'combat';
+  state.combat = { col: t.col, row: t.row, m: makeMonster(t, state.hero, state.map), lines: [] };
+  if (t.tier === 5) state.combat.lines.push('The air turns cold. Your best day has come back for you.');
+  renderCombat(true);
+}
+function clog(msg) { state.combat.lines.push(msg); state.combat.lines = state.combat.lines.slice(-2); }
+function attack() {
+  if (!state || state.status !== 'combat') return;
+  const c = state.combat, t = tileAt(c), h = state.hero, m = c.m;
+  const bonus = h.trait.rows.includes(t.row) ? 2 : 0;
+  const dmg = Math.max(1, Math.round((h.atk + bonus) * (0.8 + 0.4 * rand())));
+  m.hp = Math.max(0, m.hp - dmg);
+  clog(`You hit ${m.name} for ${dmg}${bonus ? ' (trait +2)' : ''}.`);
+  if (m.hp === 0) return winFight(t, m);
+  const md = Math.max(1, Math.round(m.dmg * (0.8 + 0.4 * rand())));
+  h.hp = Math.max(0, h.hp - md); clog(`${m.name} strikes back for ${md}.`);
+  if (h.hp === 0) return lose(m);
+  renderCombat(false, true); renderHud(); save();
+}
+function winFight(t, m) {
+  const h = state.hero; t.resolved = true; state.stats.defeated++;
+  const gold = m.tier === 5 ? 30 : m.tier * 3; h.treasure += gold;
+  state.combat = null; state.status = 'exploring'; $('#combat').hidden = true;
+  log(`${m.name} is banished: +${m.xp} XP, +${gold} treasure.`); gainXp(m.xp);
+  if (m.tier >= 3 && m.tier < 5 && state.shards < state.map.shardsNeeded) {
+    state.shards++;
+    log(state.shards === state.map.shardsNeeded ? `Soul shard ${state.shards}/${state.map.shardsNeeded}. The Phantom's ward shatters!` : `Soul shard ${state.shards}/${state.map.shardsNeeded} collected.`);
+  }
+  if (t.boss) { state.bossDown = true; log('The Phantom falls. The Gate is unsealed!'); if (t.kind === 'gate') { save(); return win(); } }
+  renderHud(); save(); $('#map').focus();
+}
+function flee() {
+  if (!state || state.status !== 'combat') return;
+  const h = state.hero, cost = Math.ceil(h.maxHp * 0.1);
+  h.hp = Math.max(1, h.hp - cost);
+  const from = { ...state.pos }; state.pos = state.prev || state.pos; h.anim = { from, start: performance.now() };
+  state.combat = null; state.status = 'exploring'; $('#combat').hidden = true;
+  log(`You fled and lost ${cost} HP. It still haunts that day.`); renderHud(); save(); $('#map').focus();
+}
+function lose(m) { state.status = 'lost'; state.killer = m.name; $('#combat').hidden = true; save(); showEnd(); }
+function win() { state.status = 'won'; save(); showEnd(); }
+
+/* ---------- screens ---------- */
+function show(id) { document.querySelectorAll('.screen').forEach((s) => { s.hidden = s.id !== id; }); window.scrollTo(0, 0); }
+function renderLog() { const el = $('#log'); if (el) el.innerHTML = state.log.map((l) => `<div>${esc(l)}</div>`).join(''); }
+function renderHud() {
+  const h = state.hero, boss = state.map.tiles[state.map.bossIdx];
+  const next = h.level >= 10 ? null : xpForLevel(h.level + 1), cur = xpForLevel(h.level);
+  const xpPct = next ? ((h.xp - cur) / (next - cur)) * 100 : 100;
+  $('#hud').innerHTML = `
+    <span class="name">${esc(h.name)}</span>
+    <span>Lv <b>${h.level}</b></span>
+    <span>HP <span class="bar"><i style="width:${(h.hp / h.maxHp) * 100}%"></i></span> <b>${h.hp}</b>/${h.maxHp}</span>
+    <span>XP <span class="bar xp"><i style="width:${xpPct}%"></i></span> ${h.xp}${next ? '/' + next : ''}</span>
+    <span>ATK <b>${h.atk}</b></span>
+    <span style="color:var(--orange)">Treasure <b>${h.treasure}</b></span>
+    <span class="boss">Soul shards <b>${state.shards}/${state.map.shardsNeeded}</b></span>
+    <span class="boss ${state.bossDown ? 'down' : ''}">${state.bossDown ? 'Phantom banished. The Gate is open' : `Phantom ${state.shards < state.map.shardsNeeded ? 'warded' : 'exposed'} on ${fmtShort(boss.day.date)}`}</span>`;
+}
+function renderCombat(first, hit) {
+  const c = state.combat, m = c.m, h = state.hero, t = tileAt(c);
+  $('#combat').hidden = false;
+  $('#m-name').textContent = m.name;
+  $('#m-src').textContent = sourceLabel(t, state.map);
+  const hc = sizeCanvas($('#c-hero'), 96, 96); drawSprite(hc, 'hero', 48, 48, 7);
+  const mc = sizeCanvas($('#c-mon'), 96, 96);
+  if (m.tier === 5) glow(mc, 48, 48, 48, 'rgba(157,123,255,A)', 0.5);
+  drawSprite(mc, MONSTER_SPRITE[m.tier], 48, 48, 7);
+  $('#c-hero-hp').innerHTML = `<b>You</b><br><span class="bar"><i style="width:${(h.hp / h.maxHp) * 100}%"></i></span> ${h.hp}/${h.maxHp}`;
+  $('#c-mon-hp').innerHTML = `<b>${esc(m.name.length > 22 ? 'The Phantom' : m.name)}</b><br><span class="bar"><i style="width:${(m.hp / m.maxHp) * 100}%"></i></span> ${m.hp}/${m.maxHp}`;
+  $('#clog').innerHTML = c.lines.map(esc).join('<br>') || `Level ${t.day.level} day. It hits for about ${m.dmg}.`;
+  if (hit && !REDUCED) { const f = $('.fight'); f.classList.remove('shake'); void f.offsetWidth; f.classList.add('shake'); }
+  if (first) $('#btn-attack').focus();
+}
+function showSummary() {
+  const s = state.set, h = state.hero, d = s.days;
+  $('#sum-name').textContent = s.username;
+  $('#sum-range').textContent = `${fmtDate(d[0].date)} to ${fmtDate(d[d.length - 1].date)} · ${s.source === 'demo' ? 'demo data' : s.source === 'cache' ? 'cached data' : 'live data'}`;
+  const pc = sizeCanvas($('#hero-portrait'), 160, 160);
+  if (h.aura) glow(pc, 80, 80, 80, 'rgba(180,140,255,A)', 0.2 + 0.12 * h.aura);
+  drawSprite(pc, 'hero', 80, 80, 11);
+  const av = $('#sum-avatar');
+  if (s.source !== 'demo') { av.src = `https://github.com/${encodeURIComponent(s.username)}.png?size=24`; av.hidden = false; av.onerror = () => { av.hidden = true; }; } else av.hidden = true;
+  $('#sum-aura').textContent = h.aura ? `STREAK AURA · TIER ${h.aura}` : 'NO AURA YET';
+  const best = d.reduce((b, x) => (x.count >= b.count ? x : b), d[0]);
+  const stat = (k, v, sub = '') => `<div class="stat"><div class="k">${k}</div><div class="v">${v} <small>${sub}</small></div></div>`;
+  $('#sum-stats').innerHTML = [
+    stat('Contributions, last 91 days', h.total91, `gives ${Math.round(15 * Math.sqrt(h.total91))} starting XP`),
+    stat('Starting level', h.level, `of 10`),
+    stat('Current streak', `${s.streak} day${s.streak === 1 ? '' : 's'}`, h.aura ? `aura: +${h.aura} ATK, +${5 * h.aura} HP` : 'reach 7 days for an aura'),
+    stat('Hero', `${h.maxHp} HP`, `${h.atk} ATK`),
+    stat('Your best day (the boss)', best.count, fmtDate(best.date)),
+    stat('Year total', s.yearTotal, 'contributions')
+  ].join('');
+  $('#sum-trait').textContent = h.trait.name;
+  $('#sum-trait-text').textContent = h.trait.text;
+  $('#sum-quiet').hidden = !state.map.quiet;
+  $('#sum-xp').innerHTML = 'XP per level: ' + Array.from({ length: 10 }, (_, i) => `<span class="${i + 1 === h.level ? 'on' : ''}">L${i + 1} ${xpForLevel(i + 1)}</span>`).join('');
+  show('screen-summary'); $('#btn-enter').focus();
+}
+function enterMap(animate = true) {
+  show('screen-map');
+  const avail = Math.min(940, document.querySelector('main').clientWidth - 8);
+  const tile = clamp(Math.floor((avail - 40) / state.map.cols) - 4, 26, 52);
+  mapLayout = layout(state.map, tile, 4, true);
+  mapCtx = sizeCanvas($('#map'), mapLayout.w, mapLayout.h);
+  state.animStart = animate && !REDUCED ? performance.now() : null;
+  renderHud(); renderLog();
+  if (state.status === 'combat' && state.combat) renderCombat(true); else $('#combat').hidden = true;
+  $('#map').focus();
+}
+function showEnd() {
+  const s = state.set, h = state.hero, d = s.days, won = state.status === 'won';
+  const best = d.reduce((b, x) => (x.count >= b.count ? x : b), d[0]);
+  $('#end-title').textContent = won ? 'The Gate opens. Your graph is exorcised.' : 'You became part of the graph.';
+  $('#end-title').className = won ? 'win' : 'lose';
+  $('#end-sub').textContent = won ? `${s.username} survived 91 haunted days.` : `Slain by ${state.killer}. The same map is waiting for a rematch.`;
+  const row = (k, v) => `<dt>${k}</dt><dd>${v}</dd>`;
+  $('#end-game').innerHTML = row('Final level', h.level) + row('XP', h.xp) + row('Monsters banished', state.stats.defeated) + row('Chests opened', state.stats.chests) + row('Treasure', h.treasure) + row('Steps', state.stats.steps);
+  $('#end-gh').innerHTML = row('Contributions (91 days)', h.total91) + row('Active days', `${d.filter((x) => x.count > 0).length} of 91`) + row('Current streak', `${s.streak} days`) + row('Best day', `${best.count} on ${fmtShort(best.date)}`) + row('Year total', s.yearTotal);
+  const today = d[d.length - 1];
+  $('#end-today').textContent = today.count > 0 ? `Today's tile is already glowing (${today.count} contribution${today.count === 1 ? '' : 's'}). Tomorrow your graph grows by one more day.` : "Today's tile is still dark. Commit something and come back tomorrow: your map will be different.";
+  $('#share-note').textContent = '';
+  show('screen-end');
+}
+
+/* ---------- flow ---------- */
+async function startUser(raw) {
+  const name = raw.trim().replace(/^@/, '');
+  const err = $('#start-error');
+  if (!USERNAME_RE.test(name)) { err.textContent = 'That is not a valid GitHub username.'; err.hidden = false; return; }
+  err.hidden = true; $('#loading-text').textContent = `Summoning ${name}'s graph…`; show('screen-loading');
+  try { const set = await fetchLive(name); newRun(set); save(); showSummary(); }
+  catch (e) { show('screen-start'); err.innerHTML = `${esc(e.message || 'Something went wrong.')} You can still <a href="#" id="err-demo" style="color:var(--purple)">play the demo</a>.`; err.hidden = false;
+    $('#err-demo').onclick = (ev) => { ev.preventDefault(); startDemo(); }; }
+}
+function startDemo() { newRun(makeDemoSet()); save(); showSummary(); }
+
+$('#form').addEventListener('submit', (e) => { e.preventDefault(); startUser($('#username').value); });
+$('#btn-demo').onclick = startDemo;
+$('#btn-enter').onclick = () => enterMap(true);
+$('#btn-back').onclick = () => { localStorage.removeItem(SAVE_KEY); show('screen-start'); };
+$('#btn-attack').onclick = attack;
+$('#btn-flee').onclick = flee;
+$('#btn-again').onclick = () => { newRun(state.set); save(); enterMap(true); };
+$('#btn-new').onclick = () => { localStorage.removeItem(SAVE_KEY); state = null; refreshContinue(); show('screen-start'); $('#username').focus(); };
+$('#btn-share').onclick = async () => {
+  const u = new URL(location.href); u.search = state.set.source === 'demo' ? '?demo' : '?u=' + encodeURIComponent(state.set.username);
+  const text = `${u.toString()}  ${state.status === 'won' ? 'I exorcised my GitHub graph' : 'My GitHub graph defeated me'} at level ${state.hero.level}. Can you survive yours?`;
+  try { await navigator.clipboard.writeText(text); $('#share-note').textContent = 'Copied. Send it to a friend and haunt them.'; }
+  catch (_) { $('#share-note').textContent = text; }
+};
+$('#btn-continue').onclick = () => { const s = loadSave(); if (!s) return refreshContinue(); state = s; if (s.status === 'won' || s.status === 'lost') showEnd(); else enterMap(false); };
+document.querySelectorAll('.dpad button').forEach((b) => b.addEventListener('click', () => {
+  const d = { up: [0,-1], down: [0,1], left: [-1,0], right: [1,0] }[b.dataset.dir]; tryMove(d[0], d[1]);
+}));
+document.addEventListener('keydown', (e) => {
+  if (!state || $('#screen-map').hidden) return;
+  const k = e.key.toLowerCase();
+  if (state.status === 'combat') {
+    if (k === 'a' || k === 'enter' || k === ' ') { e.preventDefault(); attack(); }
+    else if (k === 'f' || k === 'escape') { e.preventDefault(); flee(); }
+    return;
+  }
+  const dirs = { arrowup: [0,-1], w: [0,-1], arrowdown: [0,1], s: [0,1], arrowleft: [-1,0], a: [-1,0], arrowright: [1,0], d: [1,0] };
+  if (dirs[k]) { e.preventDefault(); tryMove(...dirs[k]); }
+});
+function refreshContinue() {
+  const s = loadSave();
+  $('#continue-row').hidden = !s;
+  if (s) $('#btn-continue').textContent = `Continue ${s.set.username}'s run`;
+}
+
+/* ---------- teaser + frame loop ---------- */
+const teaserMap = generateMap(makeDemoSet());
+const teaserL = layout(teaserMap, 22, 3, false);
+const teaserCtx = sizeCanvas($('#teaser'), teaserL.w, teaserL.h);
+let teaserStart = performance.now();
+function frame(now) {
+  requestAnimationFrame(frame);
+  if (!$('#screen-start').hidden) {
+    if (now - teaserStart > 5200) teaserStart = now;
+    const animStart = REDUCED ? null : teaserStart + 700;
+    drawMap(teaserCtx, teaserMap, teaserL, { now, animStart, fog: false, labels: false, bossDown: false });
+  }
+  if (state && mapCtx && !$('#screen-map').hidden) {
+    const hero = { pos: state.pos, anim: state.hero.anim, aura: state.hero.aura };
+    drawMap(mapCtx, state.map, mapLayout, { now, animStart: state.animStart, fog: true, labels: true, hero, bossDown: state.bossDown, warded: state.shards < state.map.shardsNeeded });
+  }
+}
+requestAnimationFrame(frame);
+
+/* ---------- boot ---------- */
+refreshContinue();
+const params = new URLSearchParams(location.search);
+if (params.has('demo')) startDemo();
+else if (params.get('u')) { $('#username').value = params.get('u'); startUser(params.get('u')); }
+
+/* test hooks for the preview's screenshots and smoke tests */
+window.__cq = {
+  get state() { return state; },
+  teleport(col, row) { state.prev = { ...state.pos }; state.pos = { col, row }; const t = tileAt(state.pos); t.visited = true; reveal(); enterTile(t); renderHud(); },
+  find(pred) { return state.map.tiles.filter(pred).map((t) => ({ col: t.col, row: t.row, kind: t.kind, tier: t.tier, date: t.day.date, count: t.day.count })); },
+  stopIntro() { if (state) state.animStart = null; }
+};
+</script>
+</body>
+</html>
