@@ -4,7 +4,7 @@
 | --- | --- |
 | Product | ContribQuest: The Haunted Graph |
 | Document type | Product Requirements Document (PRD) |
-| Version | 1.3 — adds timing tests (QTE) to every combat action; v1.2 added fog of war, soul shards, weekday traits, and challenge links |
+| Version | 1.4 — adds monster attack patterns, boss phase 2, and relics; v1.3 added timing tests (QTE) to every combat action; v1.2 added fog of war, soul shards, weekday traits, and challenge links |
 | Status | Ready to start the build on Tue 17 Nov 2026 |
 | Preview | `prototype/index.html`: a single-file vibe-coded prototype used to test the design (not the submission code) |
 | Competition | Kiroween 2026, hosted on Devpost (https://kiroween.devpost.com/) |
@@ -16,6 +16,40 @@
 | Eligibility | Built from scratch between 30 Oct and 4 Dec 2026. Frameworks, libraries, and asset packs are allowed; any other pre-existing code must be declared |
 | Team | Solo build (decided 16 Nov 2026) |
 | Platform | Static web application, no backend |
+
+## What changed in v1.4
+
+Two additions that make each fight and each run play differently, both tied to the developer-horror theme.
+
+**Monster attack patterns.** Each monster's dodge test now matches its name. All patterns still use one button, so they work on keyboard and touch.
+
+| Monster | Pattern | Rule |
+| --- | --- | --- |
+| Lost Ghost | Normal | One ring, as in v1.3 |
+| Bug Imp | Double strike | A normal strike, then a fast one (640 ms to impact). Each hit deals ×0.6 damage |
+| Flaky Test Ghoul | Flaky (65% of its strikes) | The ring freezes for 320–540 ms at 40–65% of its path, then finishes. Pressing at the original pace is too early |
+| Merge Conflict Lich | Conflict (65% of its strikes) | A dashed decoy ring lands 300–420 ms before or after the solid ring. Only the solid ring is graded |
+| The Phantom, phase 1 | Normal, then flaky | Two strikes per turn |
+| The Phantom, phase 2 (below 50% HP) | Conflict, flaky, quick | Three strikes per turn, 15% faster, each hit ×0.75 damage. Red stage tint, faster heartbeat, "PHASE 2" banner |
+
+**Relics.** Every chest offers three relics drawn with the run's seeded RNG; the player keeps one. Each relic can be owned once, they are shown in the HUD and on the results screen, and they are saved with the run.
+
+| Relic | Effect |
+| --- | --- |
+| Rubber Duck | The first Miss in each fight counts as Good |
+| Hotfix | Every perfect dodge heals 6% of max HP |
+| Force Push | Critical ×2.0 instead of ×1.6 |
+| Linter | Perfect window +25 ms |
+| Stack Overflow | +3 ATK |
+| Cold Brew | +10 max HP and heal 10 |
+| Git Blame | Counter-attack 100% ATK instead of 50% |
+| Pair Programmer | Glancing blow ×0.8 instead of ×0.5 |
+| Code Review | Lantern reveal radius √8 instead of √5, and a wider light |
+| CI Cache | Fleeing with a Good press takes no damage |
+
+Balance check in the preview (17 Nov 2026, demo run, bot auto-picks the first relic offered): All Perfect, All Good, and Mixed still win; All Miss still loses to a Merge Conflict Lich. Real keyboard input was graded as designed: pressing a flaky ring at its original pace gave "TOO EARLY · HIT!", waiting out the pause gave "PERFECT DODGE!", pressing on the decoy gave a miss, and pressing on the solid ring gave "PERFECT DODGE!".
+
+New property tests to add in the build: the flaky target always equals base time plus pause; the decoy never lies within the Good window of the real target; a relic offer never contains an owned relic or a duplicate; owning any relic never lowers a damage-dealt or raises a damage-taken value.
 
 ## What changed in v1.3
 

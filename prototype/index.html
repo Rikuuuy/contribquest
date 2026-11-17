@@ -148,6 +148,19 @@
   #whiteout.go { animation: flashOut .9s ease-out; }
   .grade.miss.pop { animation: pop .35s ease-out, shake .25s .1s; }
 
+  /* relics */
+  #relic { position: fixed; inset: 0; z-index: 4; display: flex; align-items: center; justify-content: center; background: rgba(4,5,10,.78); padding: 12px; overflow: auto; }
+  .relic-box { width: min(660px, 100%); background: #0f1320; border: 2px solid #ffb13c; border-radius: 12px; padding: 16px; box-shadow: 0 0 50px rgba(255,177,60,.25); animation: fightIn .3s cubic-bezier(.2,1.4,.4,1); margin: auto; }
+  .relic-box h3 { font-size: 12px; color: #ffd257; text-align: center; margin: 0 0 14px; }
+  #relic-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 10px; }
+  .relic-card { display: flex; flex-direction: column; align-items: center; gap: 6px; text-align: center; background: #151b2b; color: var(--text); border: 2px solid var(--line); box-shadow: 0 4px 0 #0a0d16; padding: 12px 10px; font-family: var(--sans); font-size: 13px; animation: cardIn .4s backwards; }
+  .relic-card:nth-child(2) { animation-delay: .08s; } .relic-card:nth-child(3) { animation-delay: .16s; }
+  @keyframes cardIn { from { transform: translateY(18px) rotate(-3deg); opacity: 0; } }
+  .relic-card:hover, .relic-card:focus-visible { border-color: #ffd257; transform: translateY(-3px); box-shadow: 0 7px 0 #0a0d16, 0 0 20px rgba(255,210,87,.25); }
+  .relic-card .rn { font-family: var(--pixel); font-size: 10px; color: #ffd257; line-height: 1.5; }
+  .relic-card .rt { color: var(--muted); line-height: 1.35; }
+  .hud .relics img { width: 22px; height: 22px; image-rendering: pixelated; vertical-align: middle; margin-right: 2px; }
+
   /* results */
   .end h2 { text-align: center; font-size: 18px; margin: 6px 0 4px; }
   .end h2.win { color: var(--g4); } .end h2.lose { color: var(--red); }
@@ -245,6 +258,13 @@
             <button id="btn-qte" class="alt">Now! (Space)</button>
           </div>
         </div>
+      </div>
+    </div>
+    <div id="relic" hidden>
+      <div class="relic-box" role="dialog" aria-labelledby="relic-title">
+        <h3 id="relic-title">The chest holds a relic. Choose one.</h3>
+        <div id="relic-cards"></div>
+        <p class="fine">Press 1, 2, or 3, or tap a relic.</p>
       </div>
     </div>
     <div class="legend">
@@ -488,6 +508,12 @@ const Sfx = (() => {
   const arp = (notes, gap, o = {}) => notes.forEach((f, i) => tone({ f, at: i * gap, dur: o.dur || 0.14, vol: o.vol || 0.06, type: o.type || 'square' }));
   const P = {
     ui() { tone({ f: 880, dur: 0.04, vol: 0.04 }); },
+    stutter() { [0, 0.07, 0.14].forEach((at) => tone({ f: 300, dur: 0.03, vol: 0.05, at })); },
+    relic() { arp([783.99, 987.77, 1174.66, 1567.98, 1975.53], 0.06, { type: 'sine', vol: 0.07, dur: 0.5 }); noise({ dur: 0.5, vol: 0.05, type: 'highpass', f: 5000 }); },
+    phase() {
+      tone({ type: 'sawtooth', f: 90, f2: 30, dur: 1.6, vol: 0.18 }); tone({ type: 'sawtooth', f: 135, f2: 45, dur: 1.4, vol: 0.12 });
+      noise({ dur: 1.5, vol: 0.25, f: 700, f2: 70 }); arp([523.25, 466.16, 392, 311.13], 0.12, { type: 'square', vol: 0.06, dur: 0.25 });
+    },
     rise() { noise({ dur: 1.3, vol: 0.09, type: 'bandpass', f: 200, f2: 3200, q: 2 }); arp([130.81, 164.81, 196, 261.63, 329.63, 392], 0.15, { type: 'triangle', vol: 0.06, dur: 0.5 }); },
     step() { tone({ type: 'triangle', f: 150 + Math.random() * 40, f2: 80, dur: 0.06, vol: 0.07 }); noise({ dur: 0.04, vol: 0.03, type: 'highpass', f: 2500 }); },
     blocked() { tone({ f: 110, f2: 80, dur: 0.12, vol: 0.1 }); noise({ dur: 0.08, vol: 0.06, f: 600 }); },
@@ -526,10 +552,10 @@ const Sfx = (() => {
   }
   function setMode(m, force) {
     if (m === mode && !force) return; mode = m; if (!ac || !drone) return;
-    const t = ac.currentTime, lv = { off: 0, menu: 0.025, explore: 0.04, combat: 0.06, boss: 0.08 }[m] || 0;
+    const t = ac.currentTime, lv = { off: 0, menu: 0.025, explore: 0.04, combat: 0.06, boss: 0.08, boss2: 0.1 }[m] || 0;
     drone.g.gain.setTargetAtTime(lv, t, 0.6);
-    drone.fl.frequency.setTargetAtTime(m === 'boss' ? 520 : m === 'combat' ? 380 : 220, t, 0.5);
-    drone.os[1].frequency.setTargetAtTime(m === 'boss' ? 58.3 : 55.4, t, 0.5);
+    drone.fl.frequency.setTargetAtTime(m === 'boss2' ? 820 : m === 'boss' ? 520 : m === 'combat' ? 380 : 220, t, 0.5);
+    drone.os[1].frequency.setTargetAtTime(m === 'boss2' ? 61.7 : m === 'boss' ? 58.3 : 55.4, t, 0.5);
   }
   function tick() {
     if (!ac || settings.mute || document.hidden || mode === 'off') return;
@@ -539,7 +565,7 @@ const Sfx = (() => {
       tone({ type: 'triangle', f, dur: 1.6, vol: mode === 'menu' ? 0.025 : 0.035, attack: 0.02, bus: musicBus });
       nextBell = t + 1.6 + Math.random() * 1.8;
     }
-    const gap = mode === 'boss' ? 0.5 : mode === 'combat' ? 0.78 : lowHp && mode === 'explore' ? 0.9 : 0;
+    const gap = mode === 'boss2' ? 0.38 : mode === 'boss' ? 0.5 : mode === 'combat' ? 0.78 : lowHp && mode === 'explore' ? 0.9 : 0;
     if (gap && t >= nextBeat) {
       tone({ type: 'sine', f: 62, f2: 40, dur: 0.16, vol: 0.16, bus: musicBus });
       tone({ type: 'sine', f: 58, f2: 38, dur: 0.14, vol: 0.11, at: 0.2, bus: musicBus });
@@ -563,12 +589,31 @@ function makeTrait(days, total) {
   let w = 0; for (let i = 1; i < 7; i++) if (per[i] > per[w]) w = i;
   return { name: `${WEEKDAYS[w]} Slayer`, text: `${WEEKDAYS[w]} is your busiest day: +2 ATK when fighting in the ${WEEKDAYS[w]} row.`, rows: [w], hp: 0 };
 }
-function applyStats(h) { h.maxHp = 30 + 6 * (h.level - 1) + 5 * h.aura + h.trait.hp; h.atk = 5 + 2 * (h.level - 1) + h.aura; }
+function applyStats(h) {
+  const R = h.relics || [];
+  h.maxHp = 30 + 6 * (h.level - 1) + 5 * h.aura + h.trait.hp + (R.includes('coffee') ? 10 : 0);
+  h.atk = 5 + 2 * (h.level - 1) + h.aura + (R.includes('stack') ? 3 : 0);
+}
+/* Relics: one is offered from three each time a chest is opened. Each can be owned once. */
+const RELICS = [
+  { id: 'duck', name: 'Rubber Duck', text: 'The first missed timing in each fight counts as Good.' },
+  { id: 'hotfix', name: 'Hotfix', text: 'Every perfect dodge heals 6% of max HP.' },
+  { id: 'force', name: 'Force Push', text: 'Critical hits deal x2.0 instead of x1.6.' },
+  { id: 'linter', name: 'Linter', text: 'The Perfect timing window is 25 ms wider.' },
+  { id: 'stack', name: 'Stack Overflow', text: '+3 ATK.' },
+  { id: 'coffee', name: 'Cold Brew', text: '+10 max HP, and heal 10 now.' },
+  { id: 'blame', name: 'Git Blame', text: 'Counter-attacks deal full ATK instead of half.' },
+  { id: 'pair', name: 'Pair Programmer', text: 'Glancing blows deal x0.8 instead of x0.5.' },
+  { id: 'review', name: 'Code Review', text: 'Your lantern reveals and lights a wider area.' },
+  { id: 'cache', name: 'CI Cache', text: 'Fleeing with a Good press takes no damage.' }
+];
+const relicById = (id) => RELICS.find((r) => r.id === id);
+const hasRelic = (id) => !!(state && state.hero.relics && state.hero.relics.includes(id));
 function makeHero(set) {
   const total91 = set.days.reduce((a, d) => a + d.count, 0);
   const xp = Math.round(15 * Math.sqrt(total91));
   const level = levelFor(xp);
-  const h = { name: set.username, xp, level, startLevel: level, aura: Math.min(Math.floor(set.streak / 7), 4), trait: makeTrait(set.days, total91), treasure: 0, total91 };
+  const h = { name: set.username, xp, level, startLevel: level, aura: Math.min(Math.floor(set.streak / 7), 4), trait: makeTrait(set.days, total91), treasure: 0, total91, relics: [] };
   applyStats(h); h.hp = h.maxHp; return h;
 }
 function makeMonster(t, hero, map) {
@@ -588,6 +633,7 @@ const COLORS = {
   k:'#0b0b10', w:'#e8e6f0', p:'#7b4bc9', P:'#4b2a85', f:'#f2c79b', y:'#ffd257', o:'#c8641e', d:'#7a3f12',
   r:'#e2483d', a:'#8c2620', g:'#86b86f', G:'#4e7d3f', c:'#5b4a3a', s:'#8b93a3', S:'#545a69', v:'#a58bff', V:'#5d3fb0', e:'#ff7b29', b:'#2a1d14'
 };
+Object.assign(COLORS, { u: '#5fb4ff', n: '#39d353' });
 const SPRITES = {
   hero:   ['....PPPP....','...PppppP...','..PppppppP..','..PpffffpP..','..PfkffkfP..','..PpffffpP..','...PppppP.y.','..PppppppPyy','.fPppppppPy.','..PppppppP..','...pp..pp...','...kk..kk...'],
   ghost:  ['....wwww....','..wwwwwwww..','.wwwwwwwwww.','.wwkkwwkkww.','.wwkkwwkkww.','.wwwwwwwwww.','.wwwwkkwwww.','.wwwwwwwwww.','.wwwwwwwwww.','.wwwwwwwwww.','.ww.www.www.','.w...w...w..'],
@@ -597,7 +643,17 @@ const SPRITES = {
   phantom:['...VVVVVV...','..VvvvvvvV..','.VvwwwwwwvV.','.VwkkwwkkwV.','.VwkewwekwV.','.VwwwkkwwwV.','.VvwkwkwkvV.','..VvvvvvvV..','.VvvvvvvvvV.','VvvV.vv.VvvV','Vv..VvvV..vV','V....VV....V'],
   chest:  ['............','..dddddddd..','.dooooooood.','.dooooooood.','.dddddddddd.','.doooyyoood.','.doooyyoood.','.dooooooood.','.dddddddddd.','............'],
   grave:  ['....SSSS....','...SssssS...','..SssssssS..','..SsskkssS..','..SskkkksS..','..SsskkssS..','..SsskkssS..','..SssssssS..','..SSSSSSSS..','.GGGGGGGGGG.'],
-  coffin: ['....bbbb....','...bddddb...','..bddddddb..','..bddyyddb..','..bdyyyydb..','..bddyyddb..','..bddyyddb..','...bddddb...','...bddddb...','....bbbb....']
+  coffin: ['....bbbb....','...bddddb...','..bddddddb..','..bddyyddb..','..bdyyyydb..','..bddyyddb..','..bddyyddb..','...bddddb...','...bddddb...','....bbbb....'],
+  r_duck: ['............','.....yyyy...','....yyyyyy..','....ykyyyyoo','....yyyyyyoo','.y..yyyyy...','.yyyyyyyyyy.','.yyyyyyyyyy.','..yyyyyyyy..','...yyyyyy...'],
+  r_hotfix: ['............','..rrr..rrr..','.rrrrrrrrrr.','.rrrrwwrrrr.','.rrrrwwrrrr.','.rrwwwwwwrr.','..rrrwwrrr..','...rrwwrr...','....rrrr....','.....rr.....'],
+  r_force: ['............','......ee....','......eee...','eeeeeeeeee..','eeeeeeeeeee.','eeeeeeeeeee.','eeeeeeeeee..','......eee...','......ee....','............'],
+  r_linter: ['............','...ssss.....','..s....s....','.s.uu...s...','.s.u....s...','.s......s...','..s....s....','...ssssSS...','.......SSS..','........SS..'],
+  r_stack: ['............','..oooooooo..','..dddddddd..','............','..oooooooo..','..dddddddd..','............','..eeeeeeee..','..oooooooo..','.ssssssssss.'],
+  r_coffee: ['...w..w.....','....w..w....','...w..w.....','.ddddddd....','.dbbbbbddd..','.dbbbbbd.d..','.dbbbbbddd..','.dbbbbbd....','.ddddddd....','..ddddd.....'],
+  r_blame: ['............','............','...PPPPPP...','..PvvvvvvP..','.PvwwkkwwvP.','.PvwkkkkwvP.','.PvwwkkwwvP.','..PvvvvvvP..','...PPPPPP...','............'],
+  r_pair: ['............','..ff....ff..','.ffff..ffff.','.fkfk..fkfk.','.ffff..ffff.','..ff....ff..','.pppp..uuuu.','pppppp.uuuuu','pppppp.uuuuu','pppppp.uuuuu'],
+  r_review: ['.....ss.....','....s..s....','...SSSSSS...','...SyyyyS...','...SyeeyS...','...SyeeyS...','...SyyyyS...','...SSSSSS...','....SSSS....','............'],
+  r_cache: ['............','.GGGGGGGGGG.','.G........G.','.G......n.G.','.G.....nn.G.','.G.n..nn..G.','.G.nnnn...G.','.G..nn....G.','.GGGGGGGGGG.','............']
 };
 const SPRITE_CANVAS = {};
 for (const [name, rows] of Object.entries(SPRITES)) {
@@ -778,7 +834,7 @@ function applyLighting(ctx, map, L, o) {
     else if (t.kind === 'start') hole(cx, cy, T * 0.8, 0.6);
     else if (t.kind === 'chest' && !t.resolved && t.seen) hole(cx, cy, T * 0.6, 0.5);
   }
-  if (o.heroPx) { const fl = REDUCED ? 1 : 1 + 0.05 * Math.sin(now / 90) + 0.03 * Math.sin(now / 37); hole(o.heroPx.x, o.heroPx.y, T * 2.7 * fl, 1); }
+  if (o.heroPx) { const fl = REDUCED ? 1 : 1 + 0.05 * Math.sin(now / 90) + 0.03 * Math.sin(now / 37); hole(o.heroPx.x, o.heroPx.y, T * (o.lantern || 2.7) * fl, 1); }
   ctx.drawImage(LIGHT.c, 0, 0, L.w, L.h);
 }
 function rrect(ctx, x, y, w, h, r) {
@@ -893,7 +949,7 @@ function drawMap(ctx, map, L, o) {
     }
   }
   if (o.fog) {
-    applyLighting(ctx, map, L, { now, heroPx, bossDown: o.bossDown });
+    applyLighting(ctx, map, L, { now, heroPx, bossDown: o.bossDown, lantern: o.lantern });
     if (heroPx) { ctx.save(); ctx.globalCompositeOperation = 'lighter'; glow(ctx, heroPx.x, heroPx.y, T * 1.7, 'rgba(255,160,70,A)', 0.09); ctx.restore(); }
   }
   return heroPx;
@@ -970,7 +1026,7 @@ function stageReset(t, m) {
   stage.hero = { atk: -1e9, dodge: -1e9, hurt: -1e9, block: -1e9, dead: null, run: null };
   stage.mon = { atk: -1e9, hurt: -1e9, die: null, crit: false };
   stage.intro = performance.now(); stage.tier = m.tier; stage.bg = stageBg(t.day.level, m.tier === 5);
-  stage.slowUntil = stage.freezeUntil = 0;
+  stage.slowUntil = stage.freezeUntil = 0; stage.phase2 = m.phase2 ? 1 : null;
 }
 function stageAt(ms, fn) { stage.q.push({ at: performance.now() + ms, fn }); stage.q.sort((a, b) => a.at - b.at); }
 function stageHeroStrike(grade, dmg, killed) {
@@ -1038,6 +1094,7 @@ function drawStage(now) {
   const ctx = stageCtx; ctx.save(); ctx.clearRect(0, 0, SW, SH);
   const [sx, sy] = fxShakeOffset(stage.fx); ctx.translate(sx, sy);
   ctx.drawImage(stage.bg, -8, -8, SW + 16, SH + 16);
+  if (stage.phase2 != null && now >= stage.phase2) { ctx.fillStyle = `rgba(255,30,70,${0.13 + (REDUCED ? 0 : 0.06 * Math.sin(now / 180))})`; ctx.fillRect(-10, -10, SW + 20, SH + 20); }
   const q = qte && !qte.over ? qte : null, qk = q ? clamp((now - q.start) / q.target, 0, 1) : 0;
   const tier = stage.tier, ms = MON_SCALE(tier), breathe = REDUCED ? 1 : 1 + 0.04 * Math.sin(now / 280);
   // monster
@@ -1049,7 +1106,7 @@ function drawStage(now) {
   if (dieK < 1) {
     const alpha = dieK >= 0 ? 1 - dieK : 1, sy2 = dieK >= 0 ? 1 - dieK * 0.7 : breathe;
     shadow(ctx, MX, GROUND + 2, 13 * ms * alpha);
-    if (tier === 5) glow(ctx, mx, my, 96, 'rgba(157,123,255,A)', 0.35 + 0.1 * Math.sin(now / 300));
+    if (tier === 5) glow(ctx, mx, my, 96, stage.phase2 != null && now >= stage.phase2 ? 'rgba(255,60,100,A)' : 'rgba(157,123,255,A)', 0.35 + 0.1 * Math.sin(now / 300));
     if (q && q.kind === 'defend') glow(ctx, mx, my, 76, 'rgba(255,60,60,A)', 0.5 * qk);
     const white = (hurtK >= 0 && hurtK < 0.35) || (dieK >= 0 && Math.floor(now / 50) % 2 === 0);
     const red = !white && q && q.kind === 'defend' && qk > 0.8 && Math.floor(now / 60) % 2 === 0;
@@ -1117,13 +1174,14 @@ function loadSave() {
     s.map.grid = buildGrid(s.map.cols, s.map.tiles);
     if (!Number.isInteger(s.shards)) s.shards = 0;
     if (!Number.isInteger(s.map.shardsNeeded)) s.map.shardsNeeded = 0;
+    if (!Array.isArray(s.hero.relics)) s.hero.relics = [];
     if (s.combat) s.combat.phase = 'choose'; // a timing test in progress is not resumed
     return s;
   } catch (_) { return null; }
 }
 function log(msg) { state.log.push(msg); state.log = state.log.slice(-4); renderLog(); }
 function reveal() {
-  for (const t of state.map.tiles) { const dc = t.col - state.pos.col, dr = t.row - state.pos.row; if (dc * dc + dr * dr <= 5) t.seen = true; }
+  for (const t of state.map.tiles) { const dc = t.col - state.pos.col, dr = t.row - state.pos.row; if (dc * dc + dr * dr <= (hasRelic('review') ? 8 : 5)) t.seen = true; }
 }
 function tryMove(dc, dr) {
   if (!state || state.status !== 'exploring') return;
@@ -1154,13 +1212,13 @@ function enterTile(t) {
       t.resolved = true; state.stats.chests++;
       const gold = t.size === 2 ? 12 : 6, heal = Math.ceil(h.maxHp * 0.3), before = h.hp;
       h.hp = Math.min(h.maxHp, h.hp + heal); h.treasure += gold;
-      log(`A chest from ${fmtShort(t.day.date)}: +${gold} treasure, +${h.hp - before} HP, +10 XP.`);
+      log(`A chest from ${fmtShort(t.day.date)}: +${gold} treasure${h.hp > before ? `, +${h.hp - before} HP` : ''}, +10 XP.`);
       Sfx.play('chest');
       mapBurst(t.col, t.row, t.size === 2 ? 22 : 14, { color: ['#ffd257', '#ffb13c', '#fff3b0'], speed: 150, up: 140, grav: 520, life: 0.9, size: 4, shape: 'coin' });
       mapRing(t.col, t.row, { color: '#ffd257', vr: 120 });
       mapText(t.col, t.row, `+${gold} GOLD`, { color: '#ffd257' });
       if (h.hp > before) setTimeout(() => mapText(t.col, t.row, `+${h.hp - before} HP`, { color: '#ff8a8a', dy: 12 }), 220);
-      gainXp(10); break;
+      gainXp(10); offerRelic(); break;
     }
     case 'monster': case 'boss': mapRing(t.col, t.row, { color: t.tier === 5 ? '#b48cff' : '#ff6b6b', vr: 140, w: 4 }); startCombat(t); break;
     case 'gate': if (t.boss) startCombat(t); else win(); break;
@@ -1197,6 +1255,45 @@ function startCombat(t) {
 }
 function clog(msg) { state.combat.lines.push(msg); state.combat.lines = state.combat.lines.slice(-2); }
 
+/* ---------- relics ---------- */
+const RELIC_ICON = {};
+function relicIcon(id) { return RELIC_ICON[id] || (RELIC_ICON[id] = SPR['r_' + id].base.toDataURL()); }
+function offerRelic() {
+  const owned = state.hero.relics, pool = RELICS.filter((r) => !owned.includes(r.id));
+  if (!pool.length) return;
+  for (let i = pool.length - 1; i > 0; i--) { const j = Math.floor(rand() * (i + 1)); [pool[i], pool[j]] = [pool[j], pool[i]]; }
+  state.relicOffer = pool.slice(0, 3).map((r) => r.id); state.status = 'relic';
+  if (testGrade) { setTimeout(() => pickRelic(0), 0); return; }
+  setTimeout(showRelicOffer, 380);
+}
+function showRelicOffer() {
+  if (!state || state.status !== 'relic' || !state.relicOffer) return;
+  const box = $('#relic-cards'); box.innerHTML = '';
+  state.relicOffer.forEach((id, i) => {
+    const r = relicById(id), b = document.createElement('button');
+    b.type = 'button'; b.className = 'relic-card';
+    b.innerHTML = `<canvas aria-hidden="true"></canvas><span class="rn">${i + 1}. ${esc(r.name)}</span><span class="rt">${esc(r.text)}</span>`;
+    const ctx = sizeCanvas(b.querySelector('canvas'), 64, 52); glow(ctx, 32, 26, 30, 'rgba(255,210,87,A)', 0.25); drawSprite(ctx, 'r_' + id, 32, 26, 4);
+    b.onclick = () => pickRelic(i); box.appendChild(b);
+  });
+  $('#relic').hidden = false; Sfx.play('chest');
+  box.firstChild.focus();
+}
+function pickRelic(i) {
+  if (!state || state.status !== 'relic' || !state.relicOffer) return;
+  const id = state.relicOffer[i]; if (!id) return;
+  const h = state.hero, r = relicById(id);
+  h.relics.push(id); state.relicOffer = null; state.status = 'exploring';
+  applyStats(h); if (id === 'coffee') h.hp = Math.min(h.maxHp, h.hp + 10); h.hp = Math.min(h.hp, h.maxHp);
+  if (id === 'review') reveal();
+  $('#relic').hidden = true; Sfx.play('relic');
+  const p = state.pos;
+  mapRing(p.col, p.row, { color: '#ffd257', vr: 160, w: 4, life: 0.6 });
+  mapBurst(p.col, p.row, 22, { color: ['#ffd257', '#fff3b0', '#b48cff'], speed: 120, grav: -60, drag: 1.5, life: 1, size: 3, glow: true });
+  mapText(p.col, p.row, r.name.toUpperCase(), { color: '#ffd257', dy: -26, life: 1.5 });
+  log(`Relic: ${r.name}. ${r.text}`); renderHud(); save(); $('#map').focus();
+}
+
 /* ---------- timing (QTE) ---------- */
 let qte = null;        // the active timing test; never saved
 let testGrade = null;  // test hook: a fixed grade or a function returning one
@@ -1204,15 +1301,27 @@ function later(fn, ms) {
   const c = state.combat;
   setTimeout(() => { if (state && state.combat === c) fn(); }, testGrade ? 0 : ms);
 }
-function startQte(kind, done) {
+/* Dodge patterns:
+   normal   - one ring shrinks onto the gold circle
+   quick    - a fast follow-up strike (Bug Imp)
+   flaky    - the ring freezes part-way, then finishes; pressing at the old pace is too early (Flaky Test Ghoul)
+   conflict - a dashed decoy ring lands 300-420 ms before or after the solid ring; only the solid one counts (Merge Conflict Lich) */
+function startQte(kind, done, pat = {}) {
   const c = state.combat, tier = c.m.tier, calm = settings.calm ? QTE.calm : 1;
-  const P = (QTE.perfect + QTE.auraPerfect * state.hero.aura) * calm, G = QTE.good * calm;
-  let dur, target, zone = 0;
+  const P = (QTE.perfect + QTE.auraPerfect * state.hero.aura + (hasRelic('linter') ? 25 : 0)) * calm, G = QTE.good * calm;
+  let dur, target, zone = 0, extra = {}, type = pat.type || 'normal';
   if (kind === 'attack') { dur = (1200 - 40 * tier) * calm; zone = 0.5 + 0.3 * rand(); target = zone * dur; }
-  else { target = (1150 - 80 * tier) * calm; dur = target + G; }
-  qte = { kind, start: performance.now(), dur, target, P, G, zone, done, over: false };
+  else {
+    const base = (type === 'quick' ? 640 : 1150 - 80 * tier) * calm * (pat.speed || 1);
+    target = base;
+    if (type === 'flaky') { const pause = (320 + 220 * rand()) * calm; extra = { pauseAt: base * (0.4 + 0.25 * rand()), pause }; target = base + pause; }
+    if (type === 'conflict') extra = { decoy: base + (300 + 120 * rand()) * calm * (rand() < 0.5 ? -1 : 1) };
+    dur = target + G;
+  }
+  qte = { kind, type, start: performance.now(), dur, target, P, G, zone, done, over: false, ...extra };
   c.phase = 'qte';
-  Sfx.play(kind === 'attack' ? 'windup' : 'warn');
+  Sfx.play(kind === 'attack' ? 'windup' : type === 'quick' ? 'windup' : 'warn');
+  if (type === 'flaky' && !testGrade) { const q = qte; setTimeout(() => { if (qte === q) Sfx.play('stutter'); }, extra.pauseAt); }
   renderCombat();
   if (testGrade) { const g = typeof testGrade === 'function' ? testGrade(kind) : testGrade; setTimeout(() => finishQte(g), 0); return; }
   if (settings.assist) { qte.timer = setTimeout(() => finishQte('good'), target); return; }
@@ -1231,6 +1340,7 @@ function finishQte(grade, why) {
   if (!qte || qte.over) return;
   qte.over = true; clearTimeout(qte.timer);
   const q = qte; qte = null;
+  if (grade === 'miss' && hasRelic('duck') && state.combat && !state.combat.duck) { state.combat.duck = true; grade = 'good'; why = 'rubber duck'; Sfx.play('relic'); }
   const labels = q.kind === 'attack'
     ? { perfect: 'CRITICAL!', good: 'GOOD HIT', miss: 'GLANCING BLOW' }
     : { perfect: 'PERFECT DODGE!', good: 'BLOCKED', miss: 'HIT!' };
@@ -1246,40 +1356,80 @@ function attack() {
 function resolveAttack(grade) {
   const c = state.combat, t = tileAt(c), h = state.hero, m = c.m;
   const bonus = h.trait.rows.includes(t.row) ? 2 : 0;
-  const dmg = Math.max(1, Math.round((h.atk + bonus) * QTE.atkMult[grade] * (0.9 + 0.2 * rand())));
+  const mult = grade === 'perfect' && hasRelic('force') ? 2 : grade === 'miss' && hasRelic('pair') ? 0.8 : QTE.atkMult[grade];
+  const dmg = Math.max(1, Math.round((h.atk + bonus) * mult * (0.9 + 0.2 * rand())));
   m.hp = Math.max(0, m.hp - dmg);
+  if (m.hp > 0) checkPhase(m);
   if (grade === 'perfect') state.stats.crits = (state.stats.crits || 0) + 1;
   clog(`${grade === 'perfect' ? 'Critical! ' : ''}You hit ${m.name} for ${dmg}${bonus ? ' (trait +2)' : ''}.`);
   stageHeroStrike(grade, dmg, m.hp === 0);
   c.phase = 'wait'; renderCombat(false);
   if (m.hp === 0) return later(() => winFight(t, m), m.tier === 5 ? 1300 : 950);
-  later(() => enemyTurn(m.tier === 5 ? 2 : 1), 600);
+  later(() => enemyTurn(0), m.phase2Fresh ? 1500 : 600);
+  m.phase2Fresh = false;
 }
-function enemyTurn(n) {
-  const m = state.combat.m;
-  clog(m.tier === 5 && n === 1 ? `${m.name} strikes again!` : `${m.name} lunges at you!`);
-  startQte('defend', (g) => resolveDefend(g, n));
+let forcedPlan = null; // test hook
+function strikePlan(m) {
+  if (forcedPlan) return forcedPlan.slice();
+  if (m.tier === 2) return ['normal', 'quick'];
+  if (m.tier === 3) return [rand() < 0.65 ? 'flaky' : 'normal'];
+  if (m.tier === 4) return [rand() < 0.65 ? 'conflict' : 'normal'];
+  if (m.tier === 5) return m.phase2 ? ['conflict', 'flaky', 'quick'] : ['normal', 'flaky'];
+  return ['normal'];
 }
-function resolveDefend(grade, n) {
+const STRIKE_LINE = {
+  normal: (m) => `${m.name} lunges at you!`,
+  quick: (m) => `${m.name} strikes again, fast!`,
+  flaky: (m) => `${m.name} flickers. Is it attacking or not?`,
+  conflict: (m) => `${m.name} splits into two timelines! Dodge the solid one.`
+};
+function enemyTurn(i) {
+  const c = state.combat, m = c.m;
+  if (i === 0) c.plan = strikePlan(m);
+  const type = c.plan[i];
+  clog(STRIKE_LINE[type](m));
+  startQte('defend', (g) => resolveDefend(g, i), { type, speed: m.phase2 ? 0.85 : 1 });
+}
+function checkPhase(m) {
+  if (m.tier !== 5 || m.phase2 || m.hp > m.maxHp / 2) return;
+  m.phase2 = true; m.phase2Fresh = true;
+  clog('The Phantom remembers every day you skipped. PHASE 2!');
+  stage.phase2 = performance.now() + 250;
+  stageAt(250, () => {
+    whiteout(); fxShake(stage.fx, 14);
+    fxRing(stage.fx, MX, monY(5), { color: '#ff5a7a', vr: 320, w: 6, life: 0.7 });
+    fxBurst(stage.fx, MX, monY(5), 40, { color: ['#ff5a7a', '#ffb3c4', '#b48cff'], speed: 260, grav: 0, drag: 2, life: 0.9, size: 4, glow: true });
+    fxText(stage.fx, SW / 2, 44, 'PHASE 2', { color: '#ff7a9a', size: 20, life: 1.6, vy: 0 });
+    Sfx.play('phase'); Sfx.setMode('boss2');
+  });
+}
+function resolveDefend(grade, i) {
   const c = state.combat, h = state.hero, m = c.m, t = tileAt(c);
+  const dmgMult = m.tier === 2 ? 0.6 : m.tier === 5 && m.phase2 ? 0.75 : 1;
   if (grade === 'perfect') {
     state.stats.dodges = (state.stats.dodges || 0) + 1;
-    const counter = Math.max(1, Math.round(h.atk * QTE.counter));
+    const counter = Math.max(1, Math.round(h.atk * (hasRelic('blame') ? 1 : QTE.counter)));
     m.hp = Math.max(0, m.hp - counter); clog(`Perfect dodge! You counter for ${counter}.`);
+    if (m.hp > 0) checkPhase(m);
+    if (hasRelic('hotfix') && h.hp < h.maxHp) {
+      const heal = Math.min(h.maxHp - h.hp, Math.ceil(h.maxHp * 0.06)); h.hp += heal; renderHud();
+      stageAt(200, () => fxText(stage.fx, HX, heroY() - 70, '+' + heal + ' HP', { color: '#8dffa0', size: 10 }));
+    }
     stageMonStrike('perfect', 0);
     stageAt(330, () => stageHeroStrike('counter', counter, m.hp === 0));
     c.phase = 'wait'; renderCombat(false);
     if (m.hp === 0) return later(() => winFight(t, m), m.tier === 5 ? 1600 : 1250);
   } else {
-    const md = Math.max(1, Math.round(m.dmg * QTE.defMult[grade] * (0.9 + 0.2 * rand())));
+    const md = Math.max(1, Math.round(m.dmg * dmgMult * QTE.defMult[grade] * (0.9 + 0.2 * rand())));
     h.hp = Math.max(0, h.hp - md);
     clog(grade === 'good' ? `You block. ${m.name} still deals ${md}.` : `${m.name} hits you for ${md}.`);
     stageMonStrike(grade, md, h.hp === 0);
     c.phase = 'wait'; renderCombat(false); renderHud();
     if (h.hp === 0) return later(() => lose(m), 1100);
   }
-  if (n > 1) return later(() => enemyTurn(n - 1), grade === 'perfect' ? 750 : 500);
-  later(() => { c.phase = 'choose'; renderCombat(true); save(); }, grade === 'perfect' ? 700 : 400);
+  if (i + 1 < c.plan.length) return later(() => enemyTurn(i + 1), grade === 'perfect' ? 750 : 500);
+  later(() => { c.phase = 'choose'; renderCombat(true); save(); }, m.phase2Fresh ? 1500 : grade === 'perfect' ? 700 : 400);
+  m.phase2Fresh = false;
 }
 function winFight(t, m) {
   const h = state.hero; t.resolved = true; state.stats.defeated++;
@@ -1323,7 +1473,8 @@ function flee() {
 }
 function resolveFlee(grade) {
   const c = state.combat, h = state.hero, m = c.m;
-  const md = grade === 'perfect' ? 0 : Math.max(1, Math.round(m.dmg * QTE.defMult[grade] * (0.9 + 0.2 * rand())));
+  const safe = grade === 'perfect' || (grade === 'good' && hasRelic('cache'));
+  const md = safe ? 0 : Math.max(1, Math.round(m.dmg * QTE.defMult[grade] * (0.9 + 0.2 * rand())));
   h.hp = Math.max(1, h.hp - md); // fleeing never kills
   if (grade === 'perfect') state.stats.dodges = (state.stats.dodges || 0) + 1;
   stageMonStrike(grade, md, false);
@@ -1368,6 +1519,7 @@ function renderHud() {
     <span>XP <span class="bar xp"><i style="width:${xpPct}%"></i></span> <span data-k="xp">${h.xp}</span>${next ? '/' + next : ''}</span>
     <span>ATK <b data-k="atk">${h.atk}</b></span>
     <span style="color:var(--orange)">Treasure <b data-k="tr">${h.treasure}</b></span>
+    ${h.relics && h.relics.length ? `<span class="relics">${h.relics.map((id) => { const r = relicById(id); return `<img src="${relicIcon(id)}" alt="${esc(r.name)}" title="${esc(r.name)}: ${esc(r.text)}">`; }).join('')}</span>` : ''}
     <span class="boss">Soul shards <b data-k="sh">${state.shards}/${state.map.shardsNeeded}</b></span>
     <span class="boss ${state.bossDown ? 'down' : ''}">${state.bossDown ? 'Phantom banished. The Gate is open' : `Phantom ${state.shards < state.map.shardsNeeded ? 'warded' : 'exposed'} on ${fmtShort(boss.day.date)}`}</span>`;
   const now = { lv: h.level, hp: h.hp, xp: h.xp, atk: h.atk, tr: h.treasure, sh: state.shards };
@@ -1432,6 +1584,8 @@ function enterMap(animate = true) {
   hudPrev = null; renderHud(); renderLog();
   if (state.status === 'combat' && state.combat) { stageReset(tileAt(state.combat), state.combat.m); buildBars(state.combat.m); renderCombat(true); }
   else $('#combat').hidden = true;
+  $('#relic').hidden = true;
+  if (state.status === 'relic') showRelicOffer();
   if (animate && !REDUCED) Sfx.play('rise');
   $('#map').focus();
 }
@@ -1442,7 +1596,7 @@ function showEnd() {
   $('#end-title').className = won ? 'win' : 'lose';
   $('#end-sub').textContent = won ? `${s.username} survived 91 haunted days.` : `Slain by ${state.killer}. The same map is waiting for a rematch.`;
   const row = (k, v) => `<dt>${k}</dt><dd>${v}</dd>`;
-  $('#end-game').innerHTML = row('Final level', h.level) + row('XP', h.xp) + row('Monsters banished', state.stats.defeated) + row('Critical hits', state.stats.crits || 0) + row('Perfect dodges', state.stats.dodges || 0) + row('Chests opened', state.stats.chests) + row('Treasure', h.treasure) + row('Steps', state.stats.steps);
+  $('#end-game').innerHTML = row('Final level', h.level) + row('XP', h.xp) + row('Monsters banished', state.stats.defeated) + row('Critical hits', state.stats.crits || 0) + row('Perfect dodges', state.stats.dodges || 0) + row('Chests opened', state.stats.chests) + row('Relics', (h.relics || []).map((id) => relicById(id).name).join(', ') || 'None') + row('Treasure', h.treasure) + row('Steps', state.stats.steps);
   $('#end-gh').innerHTML = row('Contributions (91 days)', h.total91) + row('Active days', `${d.filter((x) => x.count > 0).length} of 91`) + row('Current streak', `${s.streak} days`) + row('Best day', `${best.count} on ${fmtShort(best.date)}`) + row('Year total', s.yearTotal);
   const today = d[d.length - 1];
   $('#end-today').textContent = today.count > 0 ? `Today's tile is already glowing (${today.count} contribution${today.count === 1 ? '' : 's'}). Tomorrow your graph grows by one more day.` : "Today's tile is still dark. Commit something and come back tomorrow: your map will be different.";
@@ -1490,6 +1644,7 @@ document.querySelectorAll('.dpad button').forEach((b) => b.addEventListener('cli
 document.addEventListener('keydown', (e) => {
   if (!state || $('#screen-map').hidden) return;
   const k = e.key.toLowerCase();
+  if (state.status === 'relic') { if ('123'.includes(k) && k) { e.preventDefault(); pickRelic(Number(k) - 1); } return; }
   if (state.status === 'combat') {
     const hitKey = k === ' ' || k === 'enter' || k === 'a' || k === 'j' || k === 'k';
     if (!hitKey && k !== 'f' && k !== 'escape') return;
@@ -1579,7 +1734,7 @@ function frame(now) {
     const [sx, sy] = fxShakeOffset(mapFx);
     mapCtx.save(); mapCtx.clearRect(-20, -20, L.w + 40, L.h + 40); mapCtx.translate(sx, sy);
     const hero = { pos: state.pos, anim: state.hero.anim, aura: state.hero.aura, face: state.hero.face || 1 };
-    drawMap(mapCtx, state.map, L, { now, animStart: state.animStart, fog: true, labels: true, hero, bossDown: state.bossDown, warded: state.shards < state.map.shardsNeeded, shards: state.shards });
+    drawMap(mapCtx, state.map, L, { now, animStart: state.animStart, fog: true, labels: true, hero, bossDown: state.bossDown, warded: state.shards < state.map.shardsNeeded, shards: state.shards, lantern: hasRelic('review') ? 3.4 : 2.7 });
     fxDraw(mapFx, mapCtx);
     mapCtx.restore();
   }
@@ -1609,14 +1764,25 @@ function drawQte(now) {
     ctx.beginPath(); ctx.moveTo(px - 6, y - hgt / 2 - 9); ctx.lineTo(px + 6, y - hgt / 2 - 9); ctx.lineTo(px, y - hgt / 2 - 2); ctx.fill();
   } else {
     const cx = QW / 2, cy = 64, r0 = 12, R = 44;
-    const k = t / qte.target;
-    const pr = (R - r0) * (qte.P / qte.target), gr = (R - r0) * (qte.G / qte.target);
-    ctx.fillStyle = '#ff9a9a'; ctx.fillText(settings.assist ? 'AUTO-TIMING' : 'DODGE! SPACE ON THE GOLD', QW / 2, 9);
+    const flaky = qte.type === 'flaky', base = flaky ? qte.target - qte.pause : qte.target;
+    const paused = flaky && t >= qte.pauseAt && t < qte.pauseAt + qte.pause;
+    const eff = !flaky || t < qte.pauseAt ? t : paused ? qte.pauseAt : t - qte.pause;
+    const k = eff / base;
+    const pr = (R - r0) * (qte.P / base), gr = (R - r0) * (qte.G / base);
+    const HEAD = { normal: 'DODGE! SPACE ON THE GOLD', quick: 'AGAIN! FAST!', flaky: "FLAKY! DON'T TRUST THE PAUSE", conflict: 'CONFLICT! DODGE THE SOLID RING' };
+    ctx.fillStyle = qte.type === 'conflict' ? '#d9c6ff' : qte.type === 'flaky' ? '#9fe3b0' : '#ff9a9a';
+    ctx.fillText(settings.assist ? 'AUTO-TIMING' : HEAD[qte.type] || HEAD.normal, QW / 2, 9);
+    if (qte.decoy && t < qte.decoy + 90) {
+      const kd = t / qte.decoy, rd = Math.max(2, r0 + (R - r0) * (1 - kd));
+      ctx.save(); ctx.setLineDash([4, 4]); ctx.lineDashOffset = now / 30; ctx.strokeStyle = kd > 1 ? 'rgba(180,140,255,.3)' : 'rgba(200,170,255,.95)'; ctx.lineWidth = 3;
+      ctx.beginPath(); ctx.arc(cx, cy, rd, 0, 7); ctx.stroke(); ctx.restore();
+    }
     ctx.fillStyle = 'rgba(38,166,65,.25)'; ctx.beginPath(); ctx.arc(cx, cy, r0 + gr, 0, 7); ctx.fill();
     if (Math.abs(t - qte.target) <= qte.G) glow(ctx, cx, cy, r0 * 3, 'rgba(255,210,87,A)', 0.35);
     ctx.strokeStyle = '#ffd257'; ctx.lineWidth = Math.max(3, pr * 2); ctx.beginPath(); ctx.arc(cx, cy, r0, 0, 7); ctx.stroke();
-    const r = Math.max(2, r0 + (R - r0) * (1 - k));
-    ctx.strokeStyle = k > 1 ? 'rgba(255,107,107,.5)' : '#ff6b6b'; ctx.lineWidth = 3;
+    const jit = paused && !REDUCED ? (Math.random() - 0.5) * 3 : 0;
+    const r = Math.max(2, r0 + (R - r0) * (1 - k) + jit);
+    ctx.strokeStyle = k > 1 ? 'rgba(255,107,107,.5)' : paused && Math.floor(now / 70) % 2 ? '#9fe3b0' : '#ff6b6b'; ctx.lineWidth = qte.type === 'quick' ? 4 : 3;
     ctx.beginPath(); ctx.arc(cx, cy, r, 0, 7); ctx.stroke();
   }
 }
@@ -1649,7 +1815,9 @@ window.__cq = {
   teleport(col, row) { state.prev = { ...state.pos }; state.pos = { col, row }; const t = tileAt(state.pos); t.visited = true; reveal(); enterTile(t); renderHud(); },
   find(pred) { return state.map.tiles.filter(pred).map((t) => ({ col: t.col, row: t.row, kind: t.kind, tier: t.tier, date: t.day.date, count: t.day.count })); },
   stopIntro() { if (state) state.animStart = null; },
-  get qte() { return qte && { kind: qte.kind, start: qte.start, target: qte.target, P: qte.P, G: qte.G }; },
+  forcePlan(p) { forcedPlan = p; },
+  pickRelic(i) { pickRelic(i); },
+  get qte() { return qte && { kind: qte.kind, type: qte.type, start: qte.start, target: qte.target, P: qte.P, G: qte.G, pauseAt: qte.pauseAt, pause: qte.pause, decoy: qte.decoy }; },
   // Balance bots: 'perfect' | 'good' | 'miss' | 'mixed' (25% perfect, 50% good, 25% miss, seeded) | null for real input
   setGrade(policy) {
     if (policy === 'mixed') { const r = makeRng(1234); testGrade = () => { const x = r.next(); return x < 0.25 ? 'perfect' : x < 0.75 ? 'good' : 'miss'; }; }
