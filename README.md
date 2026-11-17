@@ -13,7 +13,7 @@ Built for [Kiroween 2026](https://kiroween.devpost.com/), Frankenstein category.
 This repository currently holds the **design prototype**, created on 16 Nov 2026, inside the Kiroween submission period (30 Oct – 4 Dec 2026).
 
 - `prototype/index.html` is a single-file, vibe-coded prototype used to test the game design and balance. It is not the final submission code.
-- `docs/PRD.md` is the product requirements document (v1.3).
+- `docs/PRD.md` is the product requirements document (v1.4).
 - The final build (TypeScript, Vite, Canvas 2D, built from Kiro specs in `/.kiro`) starts in Phase 0 and will replace the prototype at the site root.
 
 ## How to play
@@ -26,8 +26,27 @@ This repository currently holds the **design prototype**, created on 16 Nov 2026
    - **Strike:** press while the marker is in the gold zone for a critical hit.
    - **Dodge:** when a monster attacks, press as the red ring meets the gold circle. Only a perfect press dodges completely and lets you counter. A good press blocks most of the hit.
    - Turn on **Calm mode** (slower, wider windows) or **Auto-timing** on the hero screen if you prefer.
-6. The boss is the Phantom of your best day. It is warded until you banish 3 elites (Ghouls or Liches).
-7. Defeat the Phantom, then walk into the Gate on your last day to win.
+   - Each monster attacks its own way:
+     - **Bug Imp** hits twice; the second hit is fast.
+     - **Flaky Test Ghoul** freezes its ring part-way, then finishes. Pressing at the old pace is too early.
+     - **Merge Conflict Lich** sends a dashed decoy ring with the real one. Only the solid ring counts.
+     - **The Phantom** strikes twice. Below half HP it enters **Phase 2**: three faster strikes mixing every pattern.
+6. Every chest offers a choice of **3 relics**. Keep one per chest, each at most once:
+
+   | Relic | Effect |
+   | --- | --- |
+   | Rubber Duck | The first missed timing in each fight counts as Good |
+   | Hotfix | Every perfect dodge heals 6% of max HP |
+   | Force Push | Critical hits deal ×2.0 instead of ×1.6 |
+   | Linter | The Perfect window is 25 ms wider |
+   | Stack Overflow | +3 ATK |
+   | Cold Brew | +10 max HP, and heal 10 now |
+   | Git Blame | Counter-attacks deal full ATK instead of half |
+   | Pair Programmer | Glancing blows deal ×0.8 instead of ×0.5 |
+   | Code Review | Your lantern reveals and lights a wider area |
+   | CI Cache | Fleeing with a Good press takes no damage |
+7. The boss is the Phantom of your best day. It is warded until you banish 3 elites (Ghouls or Liches).
+8. Defeat the Phantom, then walk into the Gate on your last day to win.
 
 ## How your data becomes the game
 
