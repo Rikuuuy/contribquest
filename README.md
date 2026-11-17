@@ -13,7 +13,7 @@ Built for [Kiroween 2026](https://kiroween.devpost.com/), Frankenstein category.
 This repository currently holds the **design prototype**, created on 16 Nov 2026, inside the Kiroween submission period (30 Oct – 4 Dec 2026).
 
 - `prototype/index.html` is a single-file, vibe-coded prototype used to test the game design and balance. It is not the final submission code.
-- `docs/PRD.md` is the product requirements document (v1.2).
+- `docs/PRD.md` is the product requirements document (v1.3).
 - The final build (TypeScript, Vite, Canvas 2D, built from Kiro specs in `/.kiro`) starts in Phase 0 and will replace the prototype at the site root.
 
 ## How to play
@@ -22,7 +22,10 @@ This repository currently holds the **design prototype**, created on 16 Nov 2026
 2. Move with the arrow keys or WASD (on-screen buttons on touch devices).
 3. Fog hides what each day became. Walk close to reveal it.
 4. Soul wisps and chests are picked up by walking onto them. Chests heal you.
-5. Monsters start a turn-based fight: **A** to attack, **F** to flee.
+5. Monsters start a turn-based fight: **A** to attack, **F** to flee. Every action is a timing test, pressed with **Space**:
+   - **Strike:** press while the marker is in the gold zone for a critical hit.
+   - **Dodge:** when a monster attacks, press as the red ring meets the gold circle. Only a perfect press dodges completely and lets you counter. A good press blocks most of the hit.
+   - Turn on **Calm mode** (slower, wider windows) or **Auto-timing** on the hero screen if you prefer.
 6. The boss is the Phantom of your best day. It is warded until you banish 3 elites (Ghouls or Liches).
 7. Defeat the Phantom, then walk into the Gate on your last day to win.
 
@@ -37,7 +40,7 @@ This repository currently holds the **design prototype**, created on 16 Nov 2026
 | Darkest green day | Merge Conflict Lich (elite) |
 | Your best day | The boss |
 | Contributions in the last 91 days | Starting XP and level |
-| Current streak | Streak Aura: +1 ATK and +5 HP per full week, up to 4 weeks |
+| Current streak | Streak Aura: +1 ATK, +5 HP, and a wider perfect-timing window per full week, up to 4 weeks |
 | Your busiest weekday | A trait: +2 ATK when fighting in that weekday's row |
 
 ## Data source and privacy

@@ -4,9 +4,9 @@
 | --- | --- |
 | Product | ContribQuest: The Haunted Graph |
 | Document type | Product Requirements Document (PRD) |
-| Version | 1.2 — adds fog of war, soul shards, weekday traits, and challenge links; validated with a playable preview |
+| Version | 1.3 — adds timing tests (QTE) to every combat action; v1.2 added fog of war, soul shards, weekday traits, and challenge links |
 | Status | Ready to start the build on Tue 17 Nov 2026 |
-| Preview | `contribquest-preview/index.html`: a single-file vibe-coded prototype used to test the design (not the submission code) |
+| Preview | `prototype/index.html`: a single-file vibe-coded prototype used to test the design (not the submission code) |
 | Competition | Kiroween 2026, hosted on Devpost (https://kiroween.devpost.com/) |
 | Category | Frankenstein (one category per submission) |
 | Submission deadline | Fri 4 Dec 2026, 14:00 Pacific Time = **Sat 5 Dec 2026, 05:00 WIB**. No extensions, no edits after the deadline |
@@ -16,6 +16,18 @@
 | Eligibility | Built from scratch between 30 Oct and 4 Dec 2026. Frameworks, libraries, and asset packs are allowed; any other pre-existing code must be declared |
 | Team | Solo build (decided 16 Nov 2026) |
 | Platform | Static web application, no backend |
+
+## What changed in v1.3
+
+Every combat action is now a timing test (QTE), chosen over real-time action combat because it keeps the turn-based engine, its bot, and its property tests, and costs about one day instead of three to seven.
+
+- **Strike:** press in the gold zone for a critical (×1.6); a miss is a glancing blow (×0.5).
+- **Dodge:** every monster strike, including the boss's two-strike combo and the parting strike when fleeing, is a shrinking ring. Only a Perfect press avoids all damage and triggers a counter-attack. Good blocks most of it.
+- **Data tie-in:** the Streak Aura widens the Perfect window by 10 ms per tier, and higher-tier days strike faster.
+- **Accessibility:** Calm mode (×1.6 slower and wider) and Auto-timing (every test counts as Good) on the hero summary screen.
+- **Results:** critical hits and perfect dodges are counted on the results screen and in the challenge link text.
+
+Full rules are in "Timing tests (QTE)" under Combat design.
 
 ## What changed in v1.2
 
@@ -317,17 +329,38 @@ Examples: 10 contributions in 91 days gives 47 XP (level 1). 100 gives 150 XP (l
 ## Combat design
 
 - Turn-based. The hero acts first and chooses Attack (`A` / Enter) or Flee (`F`).
-- After the hero attacks, a surviving monster strikes back.
-- Flee always succeeds, costs 10% of max HP (never below 1 HP), and leaves the monster in place.
+- Every action is a timing test (QTE). The player presses Space (or Enter, A, J, K, or the on-screen "Now!" button) at the right moment. See "Timing tests (QTE)" below.
+- After the hero attacks, a surviving monster strikes back. The boss strikes twice per turn, and each strike is its own dodge test.
+- Flee always succeeds. The monster gets one parting strike, defended with a dodge test. Fleeing never drops HP below 1 and leaves the monster in place.
 - If the fight happens in the row of the hero's weekday trait, the hero's attacks get +2 ATK.
 - Banishing a Ghoul or Lich drops a soul shard until the boss's ward is broken (see v1.2 changes).
 - At 0 HP the run ends on the game-over screen. Retry restarts the same map from memory with no new fetch.
 - The combat panel shows both sprites, both HP bars, the monster name, and the source label "Risen from {weekday date} — {count} contributions".
-- Each fight should last 2–6 turns, about 10 seconds, so a 3-minute video fits several.
+- Each fight should last 2–6 turns, about 10–15 seconds including timing tests, so a 3-minute video fits several.
+
+### Timing tests (QTE)
+
+| Test | What the player sees | Perfect | Good | Miss (too early, too late, or no press) |
+| --- | --- | --- | --- | --- |
+| Strike (on Attack) | A marker sweeps once across a bar with a green zone and a narrow gold centre. The zone's position is seeded per strike | Critical: ×1.6 damage | ×1.0 damage | Glancing blow: ×0.5 damage |
+| Dodge (each monster strike, and the parting strike on Flee) | A red ring shrinks onto a gold circle around the target | No damage, plus a counter-attack for 50% ATK | Block: ×0.4 damage | Full damage |
+
+Only a Perfect press avoids a hit completely. Pressing early ends the test as a miss, so mashing does not work. A press within the first 120 ms of a test is ignored so the key that chose Attack does not count.
+
+| Timing rule | Value |
+| --- | --- |
+| Perfect window | ±70 ms around the target, +10 ms per Streak Aura tier (a 4-week streak gives ±110 ms) |
+| Good window | ±170 ms |
+| Strike bar sweep time | `1200 − 40 × tier` ms; the target sits 50–80% along the bar |
+| Dodge ring time to impact | `1150 − 80 × tier` ms (Lost Ghost 1,070 ms, boss 750 ms) |
+| Calm mode | All times and windows × 1.6 |
+| Auto-timing (assist) | Every test resolves as Good at the target moment |
+
+The streak now rewards skill as well as stats: consistent contributors get a wider Perfect window. Harder days strike faster.
 
 | Monster | Tier t | HP | Damage | XP |
 | --- | --- | --- | --- | --- |
-| Lost Ghost (shortfall filler) | 1 | `round((5 + 7t) × f)` | `round((1 + t) × f)` | `15 × t` |
+| Lost Ghost (shortfall filler) | 1 | `round((5 + 7t) × f)` | `round((1 + t) × f × 1.25)` | `15 × t` |
 | Bug Imp (level 2 day) | 2 | same formula | same formula | same formula |
 | Flaky Test Ghoul (level 3 day) | 3 | same formula | same formula | same formula |
 | Merge Conflict Lich (level 4 day) | 4 | same formula | same formula | same formula |
@@ -335,13 +368,20 @@ Examples: 10 contributions in 91 days gives 47 XP (level 1). 100 gives 150 XP (l
 
 `f = 1 + 0.12 × (startLevel − 1)` scales monsters partly to the profile, so a busy profile feels stronger without making every fight trivial. Wisps give 5 XP and chests give 10 XP.
 
-Worked example for a start-level-3 hero (ATK 9, HP 42, f = 1.24): a Bug Imp has 24 HP and hits for 4, so it takes 3 hits and costs about 8 HP. A Lich has 41 HP and hits for 6, costing about 24 HP. The boss has 69 HP and hits for 7. By the time the shards are collected the hero is usually level 4–5, so the boss costs roughly 20–35 HP.
+Worked example for a start-level-3 hero (ATK 9, HP 42, f = 1.24): a Bug Imp has 24 HP and hits for 5 (2 on a block). A Lich has 41 HP and hits for 8 (3 on a block). The boss has 69 HP and hits twice per turn for 9 each (4 on a block). By the time the shards are collected the hero is usually level 4–5, so the boss costs roughly 20–35 HP.
 
-**Balance targets**, checked by `scripts/simulate-balance.ts` on every fixture:
+Base damage is ×1.25 because blocking is now the normal outcome. A player who always gets Good takes about half the damage of the v1.2 design; one who always misses takes 25% more.
 
-- A typical hero (start level 3) beats tier 1–2 monsters losing under 20% of max HP, and tier 4 losing 40–60%.
-- The boss costs 60–90% of a typical hero's starting max HP, so a hero who fought on the way needs a heal or a level-up first.
-- A simple bot (shortest route to the boss then the Gate, fight everything on the way, detour to adjacent chests when below 50% HP) wins on every fixture profile.
+**Balance targets**, checked by `scripts/simulate-balance.ts` on every fixture. The simulator replaces the player's timing with a grade policy:
+
+| Policy | Target | Demo result in the preview (17 Nov 2026) |
+| --- | --- | --- |
+| All Perfect | Wins easily | Won, level 6, 70/70 HP, 18 criticals, 10 perfect dodges |
+| All Good | Wins if it heals before the boss | Won, level 6, entered the boss at 44/64 HP |
+| Mixed (25% Perfect, 50% Good, 25% Miss) | Wins | Won, level 6, entered the boss at 47/64 HP |
+| All Miss | Loses | Lost to a Merge Conflict Lich after 2 fights |
+
+The bot follows the v1.2 route rule: collect shards, heal at chests below 45% HP (75% before the boss), then the boss and the Gate. A first try at 1.4× damage and 0.5× block lost the All Good run at the boss, which was too punishing for an average player.
 
 ## Functional requirements — MVP (must have)
 
@@ -378,13 +418,16 @@ Worked example for a start-level-3 hero (ATK 9, HP 42, f = 1.24): a Bug Imp has 
 - **FR-COM-2.** Monster stats follow the tier of the source tile and the balance formulas.
 - **FR-COM-3.** The combat view shows both HP values, the monster name, and the source date and count.
 - **FR-COM-4.** At 0 HP the game-over screen offers a retry of the same map with no new fetch.
+- **FR-COM-5.** Every Attack starts a strike test and every monster strike (including the Flee parting strike) starts a dodge test, graded Perfect, Good, or Miss using the windows in "Timing tests (QTE)". The grade appears on screen at once, for example "PERFECT DODGE!" or "TOO EARLY · HIT!".
+- **FR-COM-6.** Timing tests accept Space, Enter, A, J, K, or a tap or click on the "Now!" button or the test itself. Grading uses the input event's timestamp, not the time it is processed.
+- **FR-COM-7.** Calm mode and Auto-timing are on the hero summary screen and are saved in local storage. A timing test in progress when the page reloads is cancelled and the fight resumes at the Attack/Flee choice.
 
 ### Progression and run completion
 
 - **FR-PRO-1.** XP comes from fights, chests, and wisps.
 - **FR-PRO-2.** Hero level follows the displayed XP table; level-ups heal fully and show a short effect.
 - **FR-PRO-3.** Defeating the boss unseals the Gate; entering the unsealed Gate shows the victory screen.
-- **FR-PRO-4.** The results screen shows outcome, final level, XP, monsters defeated, treasure, steps taken, and the GitHub statistics the run came from, plus a "today's tile" line: if today has contributions, "Today's tile is already glowing"; if not, "Today's tile is still dark. Commit something and come back tomorrow."
+- **FR-PRO-4.** The results screen shows outcome, final level, XP, monsters defeated, critical hits, perfect dodges, treasure, steps taken, and the GitHub statistics the run came from, plus a "today's tile" line: if today has contributions, "Today's tile is already glowing"; if not, "Today's tile is still dark. Commit something and come back tomorrow."
 
 ### Persistence
 
@@ -415,7 +458,7 @@ Nothing below starts until every Must is checked against the hosted app. Each it
 
 - **Performance.** Map generation under 50 ms for 91 days. The game runs at 60 fps on a mid-range laptop. No animation blocks input for more than 300 ms.
 - **Responsiveness.** Playable from 360 px wide. The map scales by integer factors and scrolls on narrow screens; the HUD and D-pad stay visible.
-- **Accessibility.** Every action works by keyboard alone. Tile types differ by shape and icon, not only color. Numbers use a legible font. `prefers-reduced-motion` disables screen shake, flashes, and the intro animation. Text meets 4.5:1 contrast.
+- **Accessibility.** Every action works by keyboard alone. Tile types differ by shape and icon, not only color. Numbers use a legible font. `prefers-reduced-motion` disables screen shake, flashes, and the intro animation; the timing-test animations stay because they are the game input. Timing tests are never the only way through: Calm mode slows them and Auto-timing removes the timing requirement for players who cannot use fast inputs. Text meets 4.5:1 contrast.
 - **Reliability.** Every fetch or parse failure leads to a readable error with demo mode. All data is validated against a schema at the trust boundary before it reaches the generator.
 - **Privacy.** No credentials, no analytics, no cookies. Only game state and a 1-hour data cache stay in the player's browser.
 - **Browser support.** Current Chrome, Firefox, Safari, and Edge on desktop; Chrome and Safari on mobile.
@@ -584,6 +627,8 @@ Kiro usage is a pass/fail gate and 20% of the score, so the evidence is produced
 | P9 | Live fixtures and demo data both pass the schema; random malformed payloads are rejected, never thrown past the boundary | FR-DEM-3, reliability |
 | P10 | Shards needed never exceed the number of level-3/4 monsters, so the ward can always be broken | FR-MOV-7 |
 | P11 | Every profile gets exactly one trait, and its rows are valid weekday rows | Weekday trait |
+| P12 | For any press time, the grade is Perfect inside the Perfect window, Good inside the Good window, and Miss outside it; windows never shrink as the aura tier grows or with Calm mode on | FR-COM-5 |
+| P13 | For any fight state, damage taken is ordered Perfect (0) ≤ Good ≤ Miss, and damage dealt is ordered Miss ≤ Good ≤ Perfect | FR-COM-5 |
 
 **Fixture profiles:** demo, all-empty, single active day, very dense, best day on the first day, best day on the last day, a last day with 0 contributions, and the last date on a Saturday and on a Sunday (column-count edge cases).
 
@@ -643,8 +688,8 @@ Recorded on Wed 2 Dec with the author's own username on the same day, plus a bac
 | 0:00–0:15 | The problem: "I check my contribution graph, see a number, and close the tab." | Potential Impact |
 | 0:15–0:35 | Type a username. The flat calendar rises into the haunted map. "Every day of the last 13 weeks is now a tile." | Innovation, Presentation |
 | 0:35–0:55 | Hero summary: total → starting level, 15-day streak → aura tier 2 (+2 ATK, +10 HP) | Story 4 |
-| 0:55–1:30 | Explore: a wisp, a chest, a Bug Imp "risen from Tue 3 Nov — 6 contributions" | Story 2 |
-| 1:30–2:05 | The boss: "The Phantom of your best day — 31 contributions." Win, the Gate opens | Design, Presentation |
+| 0:55–1:30 | Explore: a wisp, a chest, a Bug Imp "risen from Wed 9 Sep — 6 contributions". Land a CRITICAL! strike | Story 2 |
+| 1:30–2:05 | The boss: "The Phantom of your best day — 31 contributions." Two-strike combo, one PERFECT DODGE! with counter, win, the Gate opens | Design, Presentation |
 | 2:05–2:25 | Results next to the GitHub numbers; "Today's tile is still dark…" | Potential Impact |
 | 2:25–2:55 | How Kiro built it: a spec requirement → its property test → the hook catching a failure → steering keeping the rules consistent; `/.kiro` in the repo | Technological Implementation |
 

@@ -100,6 +100,16 @@
   .fighter canvas { display: block; margin: 0 auto 6px; }
   .vs { font-family: var(--pixel); color: var(--orange); font-size: 12px; }
   .clog { font-size: 13.5px; color: var(--muted); min-height: 44px; margin: 10px 0; text-align: center; }
+  .grade { font-family: var(--pixel); font-size: 14px; text-align: center; min-height: 22px; margin-top: 4px; }
+  .grade.perfect { color: #ffd257; text-shadow: 0 0 14px rgba(255,210,87,.7); }
+  .grade.good { color: var(--g4); }
+  .grade.miss { color: var(--red); }
+  .pop { animation: pop .35s ease-out; }
+  @keyframes pop { 0% { transform: scale(1.7); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+  #qte { display: block; margin: 4px auto 6px; max-width: 100%; }
+  #btn-qte { font-size: 13px; padding: 14px 28px; }
+  .settings { display: flex; flex-wrap: wrap; gap: 6px 18px; margin-top: 14px; font-size: 13.5px; color: var(--muted); }
+  .settings input { accent-color: var(--purple); margin-right: 6px; }
   .shake { animation: shake .25s; }
   @keyframes shake { 25% { transform: translateX(-4px); } 75% { transform: translateX(4px); } }
 
@@ -136,8 +146,9 @@
         <li><b>Every day is a tile.</b> Your last 13 weeks, laid out exactly like your graph.</li>
         <li><b>Busy days fight back.</b> Monsters rise from them, labeled with the real date and count.</li>
         <li><b>Your best day is the boss.</b> Beat it to unseal the Gate. Your streak is your armor.</li>
+        <li><b>Every move is a timing test.</b> Strike in the gold zone for a critical. Only a perfect press dodges a hit completely.</li>
       </ul>
-      <p class="fine">Move with arrow keys or WASD. In a fight press A to attack, F to flee.<br>
+      <p class="fine">Move with arrow keys or WASD. In a fight press A to attack or F to flee, then Space at the right moment.<br>
       Your username is sent to a public community API that reads your contribution calendar. Nothing else leaves your browser.</p>
     </div>
   </section>
@@ -162,6 +173,10 @@
         <div class="stat trait"><div class="k">Trait from your weekday pattern</div><div class="v" id="sum-trait" style="font-size:16px"></div><div id="sum-trait-text" class="k"></div></div>
         <p class="quiet" id="sum-quiet" hidden>A quiet graph. Few spirits stir here, so some lost ghosts have risen from your empty days.</p>
         <div class="xp-table" id="sum-xp"></div>
+        <div class="settings">
+          <label><input type="checkbox" id="opt-calm">Calm mode: slower timing, wider windows</label>
+          <label><input type="checkbox" id="opt-assist">Auto-timing: every timing press counts as Good</label>
+        </div>
         <div class="row" style="justify-content:flex-start;margin-top:16px">
           <button id="btn-enter">Enter the graph</button>
           <button id="btn-back" class="ghost">Different username</button>
@@ -185,9 +200,14 @@
             <div class="fighter"><canvas id="c-mon"></canvas><div id="c-mon-hp"></div></div>
           </div>
           <div class="clog" id="clog" aria-live="polite"></div>
-          <div class="row">
+          <div class="grade" id="qte-grade" aria-live="assertive"></div>
+          <canvas id="qte" aria-hidden="true"></canvas>
+          <div class="row" id="choose-row">
             <button id="btn-attack">Attack (A)</button>
             <button id="btn-flee" class="ghost">Flee (F)</button>
+          </div>
+          <div class="row" id="qte-row" hidden>
+            <button id="btn-qte" class="alt">Now! (Space)</button>
           </div>
         </div>
       </div>
@@ -385,6 +405,17 @@ function validateMap(map) {
 }
 
 /* ---------- hero and balance ---------- */
+/* Timing (QTE) balance. Windows are +/- milliseconds around the target moment. */
+const QTE = {
+  perfect: 70, good: 170, auraPerfect: 10, calm: 1.6, grace: 120,
+  atkMult: { perfect: 1.6, good: 1, miss: 0.5 },
+  defMult: { perfect: 0, good: 0.4, miss: 1 },
+  counter: 0.5, dmgScale: 1.25
+};
+const SETTINGS_KEY = 'cq:v1:settings';
+let settings = { calm: false, assist: false };
+try { settings = { ...settings, ...JSON.parse(localStorage.getItem(SETTINGS_KEY) || '{}') }; } catch (_) {}
+const saveSettings = () => { try { localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings)); } catch (_) {} };
 const xpForLevel = (n) => 25 * n * (n - 1);
 function levelFor(xp) { let L = 1; while (L < 10 && xp >= xpForLevel(L + 1)) L++; return L; }
 function makeTrait(days, total) {
@@ -404,7 +435,7 @@ function makeHero(set) {
 }
 function makeMonster(t, hero, map) {
   const f = 1 + 0.12 * (hero.startLevel - 1), tier = t.tier;
-  const hp = Math.round((5 + 7 * tier) * f * (tier === 5 ? 1.4 : 1)), dmg = Math.round((1 + tier) * f);
+  const hp = Math.round((5 + 7 * tier) * f * (tier === 5 ? 1.4 : 1)), dmg = Math.round((1 + tier) * f * QTE.dmgScale);
   const name = tier === 5 ? (map.emptyQuarter ? 'The Phantom of the Empty Quarter' : `The Phantom of ${fmtDate(t.day.date)}`) : TIER_NAMES[tier];
   return { name, tier, hp, maxHp: hp, dmg, xp: tier === 5 ? 100 : 15 * tier };
 }
@@ -546,7 +577,7 @@ function tileAt(p) { return state.map.grid[p.col] && state.map.grid[p.col][p.row
 function newRun(set) {
   const map = generateMap(set), hero = makeHero(set), s0 = map.tiles[0];
   state = { version: 1, set, map, hero, pos: { col: s0.col, row: s0.row }, prev: null, rng: map.seed, combat: null,
-            stats: { steps: 0, defeated: 0, chests: 0, wisps: 0 }, status: 'exploring', bossDown: false, shards: 0, log: [] };
+            stats: { steps: 0, defeated: 0, chests: 0, wisps: 0, crits: 0, dodges: 0 }, status: 'exploring', bossDown: false, shards: 0, log: [] };
   s0.visited = true; reveal();
   log(`You wake in a crypt on ${fmtDate(s0.day.date)}. Somewhere ahead waits the Phantom of your best day.`);
   if (map.shardsNeeded) log(`Its ward is fed by your other big days. Banish ${map.shardsNeeded} elite${map.shardsNeeded > 1 ? 's' : ''} (Ghouls or Liches) to collect soul shards and break it.`);
@@ -562,6 +593,7 @@ function loadSave() {
     s.map.grid = buildGrid(s.map.cols, s.map.tiles);
     if (!Number.isInteger(s.shards)) s.shards = 0;
     if (!Number.isInteger(s.map.shardsNeeded)) s.map.shardsNeeded = 0;
+    if (s.combat) s.combat.phase = 'choose'; // a timing test in progress is not resumed
     return s;
   } catch (_) { return null; }
 }
@@ -601,23 +633,91 @@ function gainXp(x) {
 }
 function startCombat(t) {
   state.status = 'combat';
-  state.combat = { col: t.col, row: t.row, m: makeMonster(t, state.hero, state.map), lines: [] };
+  state.combat = { col: t.col, row: t.row, m: makeMonster(t, state.hero, state.map), lines: [], phase: 'choose' };
   if (t.tier === 5) state.combat.lines.push('The air turns cold. Your best day has come back for you.');
+  $('#qte-grade').textContent = '';
   renderCombat(true);
 }
 function clog(msg) { state.combat.lines.push(msg); state.combat.lines = state.combat.lines.slice(-2); }
+
+/* ---------- timing (QTE) ---------- */
+let qte = null;        // the active timing test; never saved
+let testGrade = null;  // test hook: a fixed grade or a function returning one
+function later(fn, ms) {
+  const c = state.combat;
+  setTimeout(() => { if (state && state.combat === c) fn(); }, testGrade ? 0 : ms);
+}
+function startQte(kind, done) {
+  const c = state.combat, tier = c.m.tier, calm = settings.calm ? QTE.calm : 1;
+  const P = (QTE.perfect + QTE.auraPerfect * state.hero.aura) * calm, G = QTE.good * calm;
+  let dur, target, zone = 0;
+  if (kind === 'attack') { dur = (1200 - 40 * tier) * calm; zone = 0.5 + 0.3 * rand(); target = zone * dur; }
+  else { target = (1150 - 80 * tier) * calm; dur = target + G; }
+  qte = { kind, start: performance.now(), dur, target, P, G, zone, done, over: false };
+  c.phase = 'qte';
+  renderCombat();
+  if (testGrade) { const g = typeof testGrade === 'function' ? testGrade(kind) : testGrade; setTimeout(() => finishQte(g), 0); return; }
+  if (settings.assist) { qte.timer = setTimeout(() => finishQte('good'), target); return; }
+  qte.timer = setTimeout(() => finishQte('miss', 'too late'), dur + 30);
+}
+function qtePress(time) {
+  if (!qte || qte.over || settings.assist || testGrade) return;
+  const t = time - qte.start;
+  if (t < QTE.grace) return; // ignore the key press that started the action
+  const off = Math.abs(t - qte.target);
+  if (off <= qte.P) finishQte('perfect');
+  else if (off <= qte.G) finishQte('good');
+  else finishQte('miss', t < qte.target ? 'too early' : 'too late');
+}
+function finishQte(grade, why) {
+  if (!qte || qte.over) return;
+  qte.over = true; clearTimeout(qte.timer);
+  const q = qte; qte = null;
+  const labels = q.kind === 'attack'
+    ? { perfect: 'CRITICAL!', good: 'GOOD HIT', miss: 'GLANCING BLOW' }
+    : { perfect: 'PERFECT DODGE!', good: 'BLOCKED', miss: 'HIT!' };
+  const el = $('#qte-grade');
+  el.textContent = (why ? why.toUpperCase() + ' · ' : '') + labels[grade];
+  el.className = 'grade ' + grade; void el.offsetWidth; if (!REDUCED) el.classList.add('pop');
+  q.done(grade);
+}
 function attack() {
-  if (!state || state.status !== 'combat') return;
+  if (!state || state.status !== 'combat' || state.combat.phase !== 'choose') return;
+  startQte('attack', resolveAttack);
+}
+function resolveAttack(grade) {
   const c = state.combat, t = tileAt(c), h = state.hero, m = c.m;
   const bonus = h.trait.rows.includes(t.row) ? 2 : 0;
-  const dmg = Math.max(1, Math.round((h.atk + bonus) * (0.8 + 0.4 * rand())));
+  const dmg = Math.max(1, Math.round((h.atk + bonus) * QTE.atkMult[grade] * (0.9 + 0.2 * rand())));
   m.hp = Math.max(0, m.hp - dmg);
-  clog(`You hit ${m.name} for ${dmg}${bonus ? ' (trait +2)' : ''}.`);
-  if (m.hp === 0) return winFight(t, m);
-  const md = Math.max(1, Math.round(m.dmg * (0.8 + 0.4 * rand())));
-  h.hp = Math.max(0, h.hp - md); clog(`${m.name} strikes back for ${md}.`);
-  if (h.hp === 0) return lose(m);
-  renderCombat(false, true); renderHud(); save();
+  if (grade === 'perfect') state.stats.crits = (state.stats.crits || 0) + 1;
+  clog(`${grade === 'perfect' ? 'Critical! ' : ''}You hit ${m.name} for ${dmg}${bonus ? ' (trait +2)' : ''}.`);
+  c.phase = 'wait'; renderCombat(false, false, true);
+  if (m.hp === 0) return later(() => winFight(t, m), 550);
+  later(() => enemyTurn(m.tier === 5 ? 2 : 1), 600);
+}
+function enemyTurn(n) {
+  const m = state.combat.m;
+  clog(m.tier === 5 && n === 1 ? `${m.name} strikes again!` : `${m.name} lunges at you!`);
+  startQte('defend', (g) => resolveDefend(g, n));
+}
+function resolveDefend(grade, n) {
+  const c = state.combat, h = state.hero, m = c.m, t = tileAt(c);
+  if (grade === 'perfect') {
+    state.stats.dodges = (state.stats.dodges || 0) + 1;
+    const counter = Math.max(1, Math.round(h.atk * QTE.counter));
+    m.hp = Math.max(0, m.hp - counter); clog(`Perfect dodge! You counter for ${counter}.`);
+    c.phase = 'wait'; renderCombat(false, false, true);
+    if (m.hp === 0) return later(() => winFight(t, m), 550);
+  } else {
+    const md = Math.max(1, Math.round(m.dmg * QTE.defMult[grade] * (0.9 + 0.2 * rand())));
+    h.hp = Math.max(0, h.hp - md);
+    clog(grade === 'good' ? `You block. ${m.name} still deals ${md}.` : `${m.name} hits you for ${md}.`);
+    c.phase = 'wait'; renderCombat(false, true); renderHud();
+    if (h.hp === 0) return later(() => lose(m), 650);
+  }
+  if (n > 1) return later(() => enemyTurn(n - 1), 450);
+  later(() => { c.phase = 'choose'; renderCombat(true); save(); }, 350);
 }
 function winFight(t, m) {
   const h = state.hero; t.resolved = true; state.stats.defeated++;
@@ -632,12 +732,22 @@ function winFight(t, m) {
   renderHud(); save(); $('#map').focus();
 }
 function flee() {
-  if (!state || state.status !== 'combat') return;
-  const h = state.hero, cost = Math.ceil(h.maxHp * 0.1);
-  h.hp = Math.max(1, h.hp - cost);
-  const from = { ...state.pos }; state.pos = state.prev || state.pos; h.anim = { from, start: performance.now() };
-  state.combat = null; state.status = 'exploring'; $('#combat').hidden = true;
-  log(`You fled and lost ${cost} HP. It still haunts that day.`); renderHud(); save(); $('#map').focus();
+  if (!state || state.status !== 'combat' || state.combat.phase !== 'choose') return;
+  clog(`You turn to run. ${state.combat.m.name} strikes at your back!`);
+  startQte('defend', resolveFlee);
+}
+function resolveFlee(grade) {
+  const c = state.combat, h = state.hero, m = c.m;
+  const md = grade === 'perfect' ? 0 : Math.max(1, Math.round(m.dmg * QTE.defMult[grade] * (0.9 + 0.2 * rand())));
+  h.hp = Math.max(1, h.hp - md); // fleeing never kills
+  if (grade === 'perfect') state.stats.dodges = (state.stats.dodges || 0) + 1;
+  c.phase = 'wait'; renderCombat(false, md > 0); renderHud();
+  later(() => {
+    const from = { ...state.pos }; state.pos = state.prev || state.pos; h.anim = { from, start: performance.now() };
+    state.combat = null; state.status = 'exploring'; $('#combat').hidden = true;
+    log(md ? `You escaped but took ${md} damage. It still haunts that day.` : 'A perfect escape. It still haunts that day.');
+    renderHud(); save(); $('#map').focus();
+  }, 500);
 }
 function lose(m) { state.status = 'lost'; state.killer = m.name; $('#combat').hidden = true; save(); showEnd(); }
 function win() { state.status = 'won'; save(); showEnd(); }
@@ -659,9 +769,12 @@ function renderHud() {
     <span class="boss">Soul shards <b>${state.shards}/${state.map.shardsNeeded}</b></span>
     <span class="boss ${state.bossDown ? 'down' : ''}">${state.bossDown ? 'Phantom banished. The Gate is open' : `Phantom ${state.shards < state.map.shardsNeeded ? 'warded' : 'exposed'} on ${fmtShort(boss.day.date)}`}</span>`;
 }
-function renderCombat(first, hit) {
+function renderCombat(first, hit, monHit) {
   const c = state.combat, m = c.m, h = state.hero, t = tileAt(c);
   $('#combat').hidden = false;
+  $('#choose-row').hidden = c.phase !== 'choose';
+  $('#qte-row').hidden = c.phase !== 'qte' || settings.assist;
+  if (monHit && !REDUCED) { const mc = $('#c-mon'); mc.classList.remove('shake'); void mc.offsetWidth; mc.classList.add('shake'); }
   $('#m-name').textContent = m.name;
   $('#m-src').textContent = sourceLabel(t, state.map);
   const hc = sizeCanvas($('#c-hero'), 96, 96); drawSprite(hc, 'hero', 48, 48, 7);
@@ -670,9 +783,10 @@ function renderCombat(first, hit) {
   drawSprite(mc, MONSTER_SPRITE[m.tier], 48, 48, 7);
   $('#c-hero-hp').innerHTML = `<b>You</b><br><span class="bar"><i style="width:${(h.hp / h.maxHp) * 100}%"></i></span> ${h.hp}/${h.maxHp}`;
   $('#c-mon-hp').innerHTML = `<b>${esc(m.name.length > 22 ? 'The Phantom' : m.name)}</b><br><span class="bar"><i style="width:${(m.hp / m.maxHp) * 100}%"></i></span> ${m.hp}/${m.maxHp}`;
-  $('#clog').innerHTML = c.lines.map(esc).join('<br>') || `Level ${t.day.level} day. It hits for about ${m.dmg}.`;
+  $('#clog').innerHTML = c.lines.map(esc).join('<br>') || `Level ${t.day.level} day. It hits for about ${m.dmg}. Attack, then press Space as the marker crosses the gold zone.`;
   if (hit && !REDUCED) { const f = $('.fight'); f.classList.remove('shake'); void f.offsetWidth; f.classList.add('shake'); }
-  if (first) $('#btn-attack').focus();
+  if (first && c.phase === 'choose') $('#btn-attack').focus();
+  if (c.phase === 'qte' && !settings.assist) $('#btn-qte').focus();
 }
 function showSummary() {
   const s = state.set, h = state.hero, d = s.days;
@@ -718,7 +832,7 @@ function showEnd() {
   $('#end-title').className = won ? 'win' : 'lose';
   $('#end-sub').textContent = won ? `${s.username} survived 91 haunted days.` : `Slain by ${state.killer}. The same map is waiting for a rematch.`;
   const row = (k, v) => `<dt>${k}</dt><dd>${v}</dd>`;
-  $('#end-game').innerHTML = row('Final level', h.level) + row('XP', h.xp) + row('Monsters banished', state.stats.defeated) + row('Chests opened', state.stats.chests) + row('Treasure', h.treasure) + row('Steps', state.stats.steps);
+  $('#end-game').innerHTML = row('Final level', h.level) + row('XP', h.xp) + row('Monsters banished', state.stats.defeated) + row('Critical hits', state.stats.crits || 0) + row('Perfect dodges', state.stats.dodges || 0) + row('Chests opened', state.stats.chests) + row('Treasure', h.treasure) + row('Steps', state.stats.steps);
   $('#end-gh').innerHTML = row('Contributions (91 days)', h.total91) + row('Active days', `${d.filter((x) => x.count > 0).length} of 91`) + row('Current streak', `${s.streak} days`) + row('Best day', `${best.count} on ${fmtShort(best.date)}`) + row('Year total', s.yearTotal);
   const today = d[d.length - 1];
   $('#end-today').textContent = today.count > 0 ? `Today's tile is already glowing (${today.count} contribution${today.count === 1 ? '' : 's'}). Tomorrow your graph grows by one more day.` : "Today's tile is still dark. Commit something and come back tomorrow: your map will be different.";
@@ -744,11 +858,18 @@ $('#btn-enter').onclick = () => enterMap(true);
 $('#btn-back').onclick = () => { localStorage.removeItem(SAVE_KEY); show('screen-start'); };
 $('#btn-attack').onclick = attack;
 $('#btn-flee').onclick = flee;
+$('#btn-qte').addEventListener('pointerdown', (e) => { e.preventDefault(); qtePress(e.timeStamp || performance.now()); });
+$('#btn-qte').addEventListener('click', (e) => { if (e.detail === 0) qtePress(performance.now()); }); // keyboard-triggered click
+$('#qte').addEventListener('pointerdown', (e) => qtePress(e.timeStamp || performance.now()));
+$('#opt-calm').checked = settings.calm;
+$('#opt-assist').checked = settings.assist;
+$('#opt-calm').onchange = (e) => { settings.calm = e.target.checked; saveSettings(); };
+$('#opt-assist').onchange = (e) => { settings.assist = e.target.checked; saveSettings(); };
 $('#btn-again').onclick = () => { newRun(state.set); save(); enterMap(true); };
 $('#btn-new').onclick = () => { localStorage.removeItem(SAVE_KEY); state = null; refreshContinue(); show('screen-start'); $('#username').focus(); };
 $('#btn-share').onclick = async () => {
   const u = new URL(location.href); u.search = state.set.source === 'demo' ? '?demo' : '?u=' + encodeURIComponent(state.set.username);
-  const text = `${u.toString()}  ${state.status === 'won' ? 'I exorcised my GitHub graph' : 'My GitHub graph defeated me'} at level ${state.hero.level}. Can you survive yours?`;
+  const text = `${u.toString()}  ${state.status === 'won' ? 'I exorcised my GitHub graph' : 'My GitHub graph defeated me'} at level ${state.hero.level} with ${state.stats.dodges || 0} perfect dodges. Can you survive yours?`;
   try { await navigator.clipboard.writeText(text); $('#share-note').textContent = 'Copied. Send it to a friend and haunt them.'; }
   catch (_) { $('#share-note').textContent = text; }
 };
@@ -760,8 +881,13 @@ document.addEventListener('keydown', (e) => {
   if (!state || $('#screen-map').hidden) return;
   const k = e.key.toLowerCase();
   if (state.status === 'combat') {
-    if (k === 'a' || k === 'enter' || k === ' ') { e.preventDefault(); attack(); }
-    else if (k === 'f' || k === 'escape') { e.preventDefault(); flee(); }
+    const hitKey = k === ' ' || k === 'enter' || k === 'a' || k === 'j' || k === 'k';
+    if (!hitKey && k !== 'f' && k !== 'escape') return;
+    e.preventDefault();
+    if (e.repeat) return;
+    const phase = state.combat && state.combat.phase;
+    if (phase === 'qte') { if (hitKey) qtePress(e.timeStamp || performance.now()); }
+    else if (phase === 'choose') { if (k === 'f' || k === 'escape') flee(); else attack(); }
     return;
   }
   const dirs = { arrowup: [0,-1], w: [0,-1], arrowdown: [0,1], s: [0,1], arrowleft: [-1,0], a: [-1,0], arrowright: [1,0], d: [1,0] };
@@ -792,6 +918,38 @@ function frame(now) {
 }
 requestAnimationFrame(frame);
 
+const QW = 320, QH = 110;
+const qteCtx = sizeCanvas($('#qte'), QW, QH);
+function drawQte(now) {
+  const ctx = qteCtx; ctx.clearRect(0, 0, QW, QH);
+  ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  if (!qte) return;
+  const t = now - qte.start;
+  ctx.font = '9px "Press Start 2P", monospace';
+  if (qte.kind === 'attack') {
+    const x0 = 20, w = QW - 40, y = 60, hgt = 18;
+    const cx = x0 + w * (qte.target / qte.dur), gw = w * (qte.G / qte.dur), pw = w * (qte.P / qte.dur);
+    ctx.fillStyle = '#ffd257'; ctx.fillText(settings.assist ? 'AUTO-TIMING' : 'STRIKE! SPACE IN THE GOLD', QW / 2, 24);
+    ctx.fillStyle = '#1b2233'; rrect(ctx, x0, y - hgt / 2, w, hgt, 5); ctx.fill();
+    ctx.fillStyle = 'rgba(38,166,65,.85)'; ctx.fillRect(cx - gw, y - hgt / 2, gw * 2, hgt);
+    ctx.fillStyle = '#ffd257'; ctx.fillRect(cx - pw, y - hgt / 2, pw * 2, hgt);
+    const px = x0 + w * clamp(t / qte.dur, 0, 1);
+    ctx.fillStyle = '#fff'; ctx.fillRect(px - 2, y - hgt / 2 - 7, 4, hgt + 14);
+    ctx.beginPath(); ctx.moveTo(px - 6, y - hgt / 2 - 9); ctx.lineTo(px + 6, y - hgt / 2 - 9); ctx.lineTo(px, y - hgt / 2 - 2); ctx.fill();
+  } else {
+    const cx = QW / 2, cy = 64, r0 = 12, R = 44;
+    const k = t / qte.target;
+    const pr = (R - r0) * (qte.P / qte.target), gr = (R - r0) * (qte.G / qte.target);
+    ctx.fillStyle = '#ff9a9a'; ctx.fillText(settings.assist ? 'AUTO-TIMING' : 'DODGE! SPACE ON THE GOLD', QW / 2, 9);
+    ctx.fillStyle = 'rgba(38,166,65,.25)'; ctx.beginPath(); ctx.arc(cx, cy, r0 + gr, 0, 7); ctx.fill();
+    ctx.strokeStyle = '#ffd257'; ctx.lineWidth = Math.max(3, pr * 2); ctx.beginPath(); ctx.arc(cx, cy, r0, 0, 7); ctx.stroke();
+    const r = Math.max(2, r0 + (R - r0) * (1 - k));
+    ctx.strokeStyle = k > 1 ? 'rgba(255,107,107,.5)' : '#ff6b6b'; ctx.lineWidth = 3;
+    ctx.beginPath(); ctx.arc(cx, cy, r, 0, 7); ctx.stroke();
+  }
+}
+(function qteLoop(now) { requestAnimationFrame(qteLoop); if (state && state.combat && !$('#combat').hidden) drawQte(now); })(performance.now());
+
 /* ---------- boot ---------- */
 refreshContinue();
 const params = new URLSearchParams(location.search);
@@ -803,7 +961,13 @@ window.__cq = {
   get state() { return state; },
   teleport(col, row) { state.prev = { ...state.pos }; state.pos = { col, row }; const t = tileAt(state.pos); t.visited = true; reveal(); enterTile(t); renderHud(); },
   find(pred) { return state.map.tiles.filter(pred).map((t) => ({ col: t.col, row: t.row, kind: t.kind, tier: t.tier, date: t.day.date, count: t.day.count })); },
-  stopIntro() { if (state) state.animStart = null; }
+  stopIntro() { if (state) state.animStart = null; },
+  get qte() { return qte && { kind: qte.kind, start: qte.start, target: qte.target, P: qte.P, G: qte.G }; },
+  // Balance bots: 'perfect' | 'good' | 'miss' | 'mixed' (25% perfect, 50% good, 25% miss, seeded) | null for real input
+  setGrade(policy) {
+    if (policy === 'mixed') { const r = makeRng(1234); testGrade = () => { const x = r.next(); return x < 0.25 ? 'perfect' : x < 0.75 ? 'good' : 'miss'; }; }
+    else testGrade = policy;
+  }
 };
 </script>
 </body>
