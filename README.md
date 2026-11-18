@@ -62,6 +62,14 @@ This repository currently holds the **design prototype**, created on 16 Nov 2026
 | Current streak | Streak Aura: +1 ATK, +5 HP, and a wider perfect-timing window per full week, up to 4 weeks |
 | Your busiest weekday | A trait: +2 ATK when fighting in that weekday's row |
 
+## Play with friends and come back tomorrow
+
+- **Raid a friend's graph.** Fill in a friend's username under "Raid a friend's graph". Your hero is built from your graph, the map and the Phantom from theirs. Direct link: `?u=<you>&vs=<friend>`.
+- **Challenge links.** "Copy challenge link" copies `?vs=<map owner>`. Whoever opens it enters their own username and raids that graph.
+- **Today's tile.** If you contributed today you get the **Commit Blessing**: a free relic at the start of the run. If not, the **Uncommitted Curse** makes monsters hit 15% harder until you commit.
+- **Trophies.** 12 trophies are saved in your browser across runs, for example *Zero Regressions* (beat the Phantom without taking damage) and *Graph Raider* (win a raid).
+- **Share card.** "Save share card" downloads a 1200×630 PNG of your map and run stats, sized for social posts.
+
 ## Sound and effects
 
 - All sound effects and the ambient score are synthesized in the browser with the Web Audio API. There are no audio files and no third-party music. Press **M** or use the footer button to mute.

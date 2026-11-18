@@ -161,6 +161,24 @@
   .relic-card .rt { color: var(--muted); line-height: 1.35; }
   .hud .relics img { width: 22px; height: 22px; image-rendering: pixelated; vertical-align: middle; margin-right: 2px; }
 
+  /* raid, omen, trophies, share card */
+  .raid-row { width: 100%; display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; align-items: center; font-size: 13.5px; color: var(--muted); }
+  .raid-row input { min-width: 200px; font-size: 15px; padding: 9px 12px; border-color: #5d3fb0; }
+  .omen { margin-top: 12px; }
+  .omen.blessed { border-color: #26a641; box-shadow: 0 0 18px rgba(57,211,83,.15); }
+  .omen.blessed .v { color: #8dffa0; }
+  .omen.cursed { border-color: #c0392b; box-shadow: 0 0 18px rgba(255,80,80,.15); }
+  .omen.cursed .v { color: #ff8a8a; }
+  .trophy-head { font-size: 11px; color: var(--muted); text-align: center; margin: 18px 0 10px; }
+  #end-trophies { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 8px; }
+  .trophy { border: 2px solid var(--line); border-radius: 8px; padding: 8px 10px; background: #0d1117; font-size: 12.5px; color: var(--muted); opacity: .5; }
+  .trophy b { display: block; font-family: var(--pixel); font-size: 9px; line-height: 1.6; color: var(--muted); }
+  .trophy.got { opacity: 1; border-color: #9a7a1e; }
+  .trophy.got b { color: #ffd257; }
+  .trophy.new { border-color: #ffd257; box-shadow: 0 0 16px rgba(255,210,87,.4); animation: pop .5s ease-out; }
+  .trophy.new b::after { content: ' NEW'; color: #8dffa0; }
+  #share-img { display: block; width: 100%; max-width: 600px; margin: 14px auto 0; border-radius: 8px; border: 2px solid var(--line); }
+
   /* results */
   .end h2 { text-align: center; font-size: 18px; margin: 6px 0 4px; }
   .end h2.win { color: var(--g4); } .end h2.lose { color: var(--red); }
@@ -190,9 +208,14 @@
         <input id="username" type="text" placeholder="GitHub username" maxlength="39" spellcheck="false" aria-label="GitHub username">
         <button type="submit">Raise my graph</button>
         <button type="button" id="btn-demo" class="ghost">Play the demo</button>
+        <div class="raid-row">
+          <label for="vs">Raid a friend's graph (optional):</label>
+          <input id="vs" type="text" placeholder="friend's username" maxlength="39" spellcheck="false">
+        </div>
       </form>
       <p id="start-error" class="error" hidden></p>
       <div class="row" id="continue-row" hidden style="margin-top:12px"><button type="button" id="btn-continue" class="alt">Continue run</button></div>
+      <p class="fine" id="start-trophies"></p>
       <ul class="how">
         <li><b>Every day is a tile.</b> Your last 13 weeks, laid out exactly like your graph.</li>
         <li><b>Busy days fight back.</b> Monsters rise from them, labeled with the real date and count.</li>
@@ -211,7 +234,7 @@
 
   <!-- SUMMARY -->
   <section id="screen-summary" class="screen" hidden>
-    <h1 class="title" style="font-size:22px">The graph of <span id="sum-name"></span></h1>
+    <h1 class="title" style="font-size:22px" id="sum-title">The graph of <span id="sum-name"></span></h1>
     <p class="tag" id="sum-range"></p>
     <div class="card summary">
       <div class="portrait">
@@ -222,6 +245,7 @@
       <div>
         <div class="stats" id="sum-stats"></div>
         <div class="stat trait"><div class="k">Trait from your weekday pattern</div><div class="v" id="sum-trait" style="font-size:16px"></div><div id="sum-trait-text" class="k"></div></div>
+        <div class="stat omen" id="sum-omen"><div class="k" id="sum-omen-k"></div><div class="v" id="sum-omen-v" style="font-size:16px"></div><div class="k" id="sum-omen-t"></div></div>
         <p class="quiet" id="sum-quiet" hidden>A quiet graph. Few spirits stir here, so some lost ghosts have risen from your empty days.</p>
         <div class="xp-table" id="sum-xp"></div>
         <div class="settings">
@@ -288,12 +312,15 @@
         <div class="card"><h3>ON GITHUB</h3><dl id="end-gh"></dl></div>
       </div>
       <p class="today" id="end-today"></p>
+      <div id="end-trophies-wrap"><h3 class="trophy-head" id="end-trophy-head"></h3><div id="end-trophies"></div></div>
       <div class="row">
         <button id="btn-again">Play this graph again</button>
         <button id="btn-new" class="ghost">New username</button>
         <button id="btn-share" class="alt">Copy challenge link</button>
+        <button id="btn-card" class="ghost">Save share card</button>
       </div>
       <p class="fine" id="share-note"></p>
+      <img id="share-img" alt="Share card preview" hidden>
     </div>
   </section>
 
@@ -618,7 +645,7 @@ function makeHero(set) {
 }
 function makeMonster(t, hero, map) {
   const f = 1 + 0.12 * (hero.startLevel - 1), tier = t.tier;
-  const hp = Math.round((5 + 7 * tier) * f * (tier === 5 ? 1.4 : 1)), dmg = Math.round((1 + tier) * f * QTE.dmgScale);
+  const hp = Math.round((5 + 7 * tier) * f * (tier === 5 ? 1.4 : 1)), dmg = Math.round((1 + tier) * f * QTE.dmgScale * (hero.omen === 'cursed' ? 1.15 : 1));
   const name = tier === 5 ? (map.emptyQuarter ? 'The Phantom of the Empty Quarter' : `The Phantom of ${fmtDate(t.day.date)}`) : TIER_NAMES[tier];
   return { name, tier, hp, maxHp: hp, dmg, xp: tier === 5 ? 100 : 15 * tier };
 }
@@ -1155,12 +1182,20 @@ function setBar(el, hp, max) {
   el.querySelector('.hpnum').textContent = `${hp}/${max}`;
 }
 
-function newRun(set) {
-  const map = generateMap(set), hero = makeHero(set), s0 = map.tiles[0];
-  state = { version: 1, set, map, hero, pos: { col: s0.col, row: s0.row }, prev: null, rng: map.seed, combat: null,
-            stats: { steps: 0, defeated: 0, chests: 0, wisps: 0, crits: 0, dodges: 0 }, status: 'exploring', bossDown: false, shards: 0, log: [] };
+/* set: the graph the map is raised from. heroSet: the graph the hero is built from (a raid when it differs). */
+function newRun(set, heroSet) {
+  const raid = heroSet && heroSet.username.toLowerCase() !== set.username.toLowerCase() ? heroSet : null;
+  const hs = raid || set;
+  const map = generateMap(set), hero = makeHero(hs), s0 = map.tiles[0];
+  const today = hs.days[hs.days.length - 1];
+  hero.omen = today.count > 0 ? 'blessed' : 'cursed';
+  state = { version: 1, set, heroSet: raid, map, hero, pos: { col: s0.col, row: s0.row }, prev: null, rng: map.seed, combat: null,
+            stats: { steps: 0, defeated: 0, chests: 0, wisps: 0, crits: 0, dodges: 0, bossDmg: 0, bossHpLeft: null }, status: 'exploring', bossDown: false, shards: 0,
+            pendingBlessing: hero.omen === 'blessed', log: [] };
   s0.visited = true; reveal();
-  log(`You wake in a crypt on ${fmtDate(s0.day.date)}. Somewhere ahead waits the Phantom of your best day.`);
+  log(raid ? `${hs.username} breaks into ${set.username}'s graph on ${fmtDate(s0.day.date)}. Their Phantom is waiting.`
+           : `You wake in a crypt on ${fmtDate(s0.day.date)}. Somewhere ahead waits the Phantom of your best day.`);
+  log(hero.omen === 'blessed' ? `Commit Blessing: ${hs.username} contributed today, so a relic awaits.` : 'Uncommitted Curse: no contributions today, so monsters hit 15% harder. Commit to lift it.');
   if (map.shardsNeeded) log(`Its ward is fed by your other big days. Banish ${map.shardsNeeded} elite${map.shardsNeeded > 1 ? 's' : ''} (Ghouls or Liches) to collect soul shards and break it.`);
 }
 function save() {
@@ -1258,7 +1293,8 @@ function clog(msg) { state.combat.lines.push(msg); state.combat.lines = state.co
 /* ---------- relics ---------- */
 const RELIC_ICON = {};
 function relicIcon(id) { return RELIC_ICON[id] || (RELIC_ICON[id] = SPR['r_' + id].base.toDataURL()); }
-function offerRelic() {
+function offerRelic(title) {
+  state.relicTitle = title || 'The chest holds a relic. Choose one.';
   const owned = state.hero.relics, pool = RELICS.filter((r) => !owned.includes(r.id));
   if (!pool.length) return;
   for (let i = pool.length - 1; i > 0; i--) { const j = Math.floor(rand() * (i + 1)); [pool[i], pool[j]] = [pool[j], pool[i]]; }
@@ -1268,6 +1304,7 @@ function offerRelic() {
 }
 function showRelicOffer() {
   if (!state || state.status !== 'relic' || !state.relicOffer) return;
+  $('#relic-title').textContent = state.relicTitle || 'The chest holds a relic. Choose one.';
   const box = $('#relic-cards'); box.innerHTML = '';
   state.relicOffer.forEach((id, i) => {
     const r = relicById(id), b = document.createElement('button');
@@ -1422,6 +1459,7 @@ function resolveDefend(grade, i) {
   } else {
     const md = Math.max(1, Math.round(m.dmg * dmgMult * QTE.defMult[grade] * (0.9 + 0.2 * rand())));
     h.hp = Math.max(0, h.hp - md);
+    if (m.tier === 5) state.stats.bossDmg = (state.stats.bossDmg || 0) + md;
     clog(grade === 'good' ? `You block. ${m.name} still deals ${md}.` : `${m.name} hits you for ${md}.`);
     stageMonStrike(grade, md, h.hp === 0);
     c.phase = 'wait'; renderCombat(false); renderHud();
@@ -1458,7 +1496,7 @@ function winFight(t, m) {
     }, 750);
   }
   if (t.boss) {
-    state.bossDown = true; log('The Phantom falls. The Gate is unsealed!');
+    state.bossDown = true; state.stats.bossHpLeft = h.hp; log('The Phantom falls. The Gate is unsealed!');
     const g = state.map.tiles[state.map.gateIdx];
     whiteout(); fxShake(mapFx, 10);
     setTimeout(() => { Sfx.play('gate'); mapRing(g.col, g.row, { color: '#ffb13c', vr: 200, w: 5, life: 0.9 }); mapBurst(g.col, g.row, 30, { color: ['#ffd257', '#ff9a3c', '#fff3b0'], speed: 120, grav: -80, life: 1.4, size: 3, glow: true, jitter: 20 }); mapText(g.col, g.row, 'THE GATE OPENS', { color: '#ffd257', life: 1.8 }); }, 400);
@@ -1490,11 +1528,93 @@ function resolveFlee(grade) {
 }
 function lose(m) {
   state.status = 'lost'; state.killer = m.name; $('#combat').hidden = true; save();
-  Sfx.setMode('off'); Sfx.play('lose'); bgCelebrate(false); showEnd();
+  Sfx.setMode('off'); Sfx.play('lose'); bgCelebrate(false); awardTrophies(); save(); showEnd();
 }
 function win() {
   state.status = 'won'; save();
-  Sfx.setMode('off'); Sfx.play('win'); whiteout(); bgCelebrate(true); showEnd();
+  Sfx.setMode('off'); Sfx.play('win'); whiteout(); bgCelebrate(true);
+  const fresh = awardTrophies(); save(); showEnd();
+  if (fresh.length) setTimeout(() => Sfx.play('relic'), 900);
+}
+
+/* ---------- trophies: saved in this browser across runs ---------- */
+const TROPHY_KEY = 'cq:v1:trophies';
+const TROPHIES = [
+  { id: 'first', name: 'First Exorcism', text: 'Win a run.', test: (s) => s.won },
+  { id: 'self', name: 'Know Thyself', text: 'Win on your own live graph.', test: (s) => s.won && !s.raid && s.source !== 'demo' },
+  { id: 'raider', name: 'Graph Raider', text: "Win a raid on a friend's graph.", test: (s) => s.won && s.raid },
+  { id: 'blessed', name: 'Shipped Today', text: 'Win with the Commit Blessing.', test: (s) => s.won && s.omen === 'blessed' },
+  { id: 'cursed', name: 'Against the Curse', text: 'Win under the Uncommitted Curse.', test: (s) => s.won && s.omen === 'cursed' },
+  { id: 'flawless', name: 'Zero Regressions', text: 'Defeat the Phantom without taking damage.', test: (s) => s.bossDown && s.bossDmg === 0 },
+  { id: 'close', name: 'Hotfix in Prod', text: 'Defeat the Phantom with 5 HP or less.', test: (s) => s.bossDown && s.bossHpLeft != null && s.bossHpLeft <= 5 },
+  { id: 'dodges', name: 'Untouchable', text: '10 perfect dodges in one run.', test: (s) => s.dodges >= 10 },
+  { id: 'crits', name: 'Critical Path', text: '10 critical hits in one run.', test: (s) => s.crits >= 10 },
+  { id: 'relics', name: 'Dependency Hell', text: 'Hold 4 relics in one run.', test: (s) => s.relics >= 4 },
+  { id: 'speed', name: 'Speedrun', text: 'Win in 20 steps or fewer.', test: (s) => s.won && s.steps <= 20 },
+  { id: 'nochest', name: 'No Dependencies', text: 'Win without opening a chest.', test: (s) => s.won && s.chests === 0 }
+];
+function loadTrophies() { try { return JSON.parse(localStorage.getItem(TROPHY_KEY)) || {}; } catch (_) { return {}; } }
+function awardTrophies() {
+  const have = loadTrophies(), st = state.stats;
+  const facts = { won: state.status === 'won', raid: !!state.heroSet, source: state.set.source, omen: state.hero.omen, bossDown: state.bossDown,
+                  bossDmg: st.bossDmg || 0, bossHpLeft: st.bossHpLeft, dodges: st.dodges || 0, crits: st.crits || 0, relics: (state.hero.relics || []).length,
+                  steps: st.steps, chests: st.chests };
+  const fresh = [];
+  for (const t of TROPHIES) if (!have[t.id] && t.test(facts)) { have[t.id] = new Date().toISOString().slice(0, 10); fresh.push(t.id); }
+  try { localStorage.setItem(TROPHY_KEY, JSON.stringify(have)); } catch (_) {}
+  state.newTrophies = fresh;
+  return fresh;
+}
+function renderTrophies() {
+  const have = loadTrophies(), fresh = (state && state.newTrophies) || [];
+  $('#end-trophy-head').textContent = `TROPHIES ${Object.keys(have).length}/${TROPHIES.length}` + (fresh.length ? ` · ${fresh.length} NEW` : '');
+  $('#end-trophies').innerHTML = TROPHIES.map((t) => `<div class="trophy ${have[t.id] ? 'got' : ''} ${fresh.includes(t.id) ? 'new' : ''}"><b>${esc(t.name)}</b>${esc(t.text)}</div>`).join('');
+  refreshStartTrophies();
+}
+function refreshStartTrophies() {
+  const n = Object.keys(loadTrophies()).length;
+  $('#start-trophies').textContent = n ? `Trophies earned in this browser: ${n} of ${TROPHIES.length}` : '';
+}
+
+/* ---------- share card: a 1200x630 PNG of the run ---------- */
+function makeShareCard() {
+  const W = 1200, H = 630, c = document.createElement('canvas'); c.width = W; c.height = H;
+  const ctx = c.getContext('2d'); ctx.imageSmoothingEnabled = false;
+  const won = state.status === 'won', hs = state.heroSet || state.set, owner = state.set.username, h = state.hero;
+  const g = ctx.createLinearGradient(0, 0, 0, H); g.addColorStop(0, '#22163a'); g.addColorStop(1, '#0b0e14');
+  ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+  const r = makeRng(5); for (let i = 0; i < 120; i++) { ctx.fillStyle = `rgba(255,255,255,${0.15 + r.next() * 0.5})`; ctx.fillRect(r.next() * W, r.next() * H * 0.6, 2, 2); }
+  glow(ctx, 1090, 90, 140, 'rgba(255,240,200,A)', 0.18); ctx.fillStyle = '#efe6c4'; ctx.beginPath(); ctx.arc(1090, 90, 38, 0, 7); ctx.fill();
+  ctx.textBaseline = 'top'; ctx.textAlign = 'left';
+  ctx.font = '40px "Press Start 2P", monospace';
+  ctx.fillStyle = '#0e4429'; ctx.fillText('Contrib', 44, 40); ctx.fillStyle = '#39d353'; ctx.fillText('Contrib', 40, 36);
+  const cw = ctx.measureText('Contrib').width;
+  ctx.fillStyle = '#6b3510'; ctx.fillText('Quest', 44 + cw, 40); ctx.fillStyle = '#ff9a3c'; ctx.fillText('Quest', 40 + cw, 36);
+  ctx.font = '18px "Press Start 2P", monospace'; ctx.fillStyle = won ? '#8dffa0' : '#ff8a8a';
+  ctx.fillText(state.heroSet ? `${hs.username} ${won ? 'exorcised' : 'fell in'} ${owner}'s graph` : `${owner}'s graph: ${won ? 'EXORCISED' : 'DEFEATED'}`, 40, 100);
+  // the map, drawn in full with every tile revealed
+  const L = layout(state.map, 38, 4, true);
+  ctx.save(); ctx.translate(40, 150);
+  const seenBackup = state.map.tiles.map((t) => t.seen); state.map.tiles.forEach((t) => { t.seen = true; });
+  drawMap(ctx, state.map, L, { now: 0, animStart: null, fog: false, labels: true, hero: { pos: state.pos, aura: h.aura, face: h.face || 1 }, bossDown: state.bossDown });
+  state.map.tiles.forEach((t, i) => { t.seen = seenBackup[i]; });
+  ctx.restore();
+  // stats column
+  const x0 = 40 + L.w + 40, rows = [
+    ['Level', h.level], ['Monsters banished', state.stats.defeated], ['Critical hits', state.stats.crits || 0], ['Perfect dodges', state.stats.dodges || 0],
+    ['Relics', (h.relics || []).length], ['Steps', state.stats.steps], ['Contributions (91d)', h.total91], ['Streak', `${hs.streak} days`]
+  ];
+  ctx.font = '22px system-ui, sans-serif';
+  rows.forEach(([k, v], i) => {
+    const y = 160 + i * 42;
+    ctx.fillStyle = '#8b98ab'; ctx.textAlign = 'left'; ctx.fillText(k, x0, y);
+    ctx.fillStyle = '#ffffff'; ctx.textAlign = 'right'; ctx.font = 'bold 22px system-ui, sans-serif'; ctx.fillText(String(v), W - 40, y); ctx.font = '22px system-ui, sans-serif';
+  });
+  (h.relics || []).forEach((id, i) => drawSprite(ctx, 'r_' + id, x0 + 22 + i * 46, 530, 3));
+  ctx.textAlign = 'left'; ctx.font = '16px system-ui, sans-serif'; ctx.fillStyle = '#b48cff';
+  const link = new URL(location.href); link.search = state.set.source === 'demo' ? '?demo' : '?vs=' + encodeURIComponent(owner);
+  ctx.fillText(`Can you survive this graph? ${link.host}${link.pathname}${link.search}`, 40, H - 40);
+  return c;
 }
 
 /* ---------- screens ---------- */
@@ -1548,28 +1668,37 @@ function renderCombat(first) {
   if (c.phase === 'qte' && !settings.assist) $('#btn-qte').focus();
 }
 function showSummary() {
-  const s = state.set, h = state.hero, d = s.days;
-  $('#sum-name').textContent = s.username;
+  const s = state.set, h = state.hero, d = s.days, hs = state.heroSet || s;
+  if (state.heroSet) $('#sum-title').innerHTML = `${esc(hs.username)} raids the graph of <span id="sum-name">${esc(s.username)}</span>`;
+  else $('#sum-title').innerHTML = `The graph of <span id="sum-name">${esc(s.username)}</span>`;
   $('#sum-range').textContent = `${fmtDate(d[0].date)} to ${fmtDate(d[d.length - 1].date)} · ${s.source === 'demo' ? 'demo data' : s.source === 'cache' ? 'cached data' : 'live data'}`;
   const pc = sizeCanvas($('#hero-portrait'), 160, 160);
   if (h.aura) glow(pc, 80, 80, 80, 'rgba(180,140,255,A)', 0.2 + 0.12 * h.aura);
   drawSprite(pc, 'hero', 80, 80, 11);
   const av = $('#sum-avatar');
-  if (s.source !== 'demo') { av.src = `https://github.com/${encodeURIComponent(s.username)}.png?size=24`; av.hidden = false; av.onerror = () => { av.hidden = true; }; } else av.hidden = true;
+  if (hs.source !== 'demo') { av.src = `https://github.com/${encodeURIComponent(hs.username)}.png?size=24`; av.hidden = false; av.onerror = () => { av.hidden = true; }; } else av.hidden = true;
   $('#sum-aura').textContent = h.aura ? `STREAK AURA · TIER ${h.aura}` : 'NO AURA YET';
   const best = d.reduce((b, x) => (x.count >= b.count ? x : b), d[0]);
   const stat = (k, v, sub = '') => `<div class="stat"><div class="k">${k}</div><div class="v">${v} <small>${sub}</small></div></div>`;
   $('#sum-stats').innerHTML = [
-    stat('Contributions, last 91 days', h.total91, `gives ${Math.round(15 * Math.sqrt(h.total91))} starting XP`),
+    stat(state.heroSet ? `${esc(hs.username)}'s contributions, 91 days` : 'Contributions, last 91 days', h.total91, `gives ${Math.round(15 * Math.sqrt(h.total91))} starting XP`),
     stat('Starting level', h.level, `of 10`),
-    stat('Current streak', `${s.streak} day${s.streak === 1 ? '' : 's'}`, h.aura ? `aura: +${h.aura} ATK, +${5 * h.aura} HP` : 'reach 7 days for an aura'),
+    stat('Current streak', `${hs.streak} day${hs.streak === 1 ? '' : 's'}`, h.aura ? `aura: +${h.aura} ATK, +${5 * h.aura} HP` : 'reach 7 days for an aura'),
     stat('Hero', `${h.maxHp} HP`, `${h.atk} ATK`),
-    stat('Your best day (the boss)', best.count, fmtDate(best.date)),
-    stat('Year total', s.yearTotal, 'contributions')
+    stat(state.heroSet ? `${esc(s.username)}'s best day (the boss)` : 'Your best day (the boss)', best.count, fmtDate(best.date)),
+    stat(state.heroSet ? `${esc(s.username)}'s year total` : 'Year total', s.yearTotal, 'contributions')
   ].join('');
   $('#sum-trait').textContent = h.trait.name;
   $('#sum-trait-text').textContent = h.trait.text;
   $('#sum-quiet').hidden = !state.map.quiet;
+  $('#sum-quiet').textContent = `A quiet graph. Few spirits stir here, so some lost ghosts have risen from ${state.heroSet ? 'its' : 'your'} empty days.`;
+  const today = hs.days[hs.days.length - 1], om = $('#sum-omen');
+  om.className = 'stat omen ' + h.omen;
+  $('#sum-omen-k').textContent = `Today's tile (${fmtDate(today.date)})`;
+  $('#sum-omen-v').textContent = h.omen === 'blessed' ? 'Commit Blessing' : 'Uncommitted Curse';
+  $('#sum-omen-t').textContent = h.omen === 'blessed'
+    ? `${today.count} contribution${today.count === 1 ? '' : 's'} today. You start the run with a free relic.`
+    : 'No contributions yet today, so monsters hit 15% harder. Commit something, then come back for the blessing.';
   $('#sum-xp').innerHTML = 'XP per level: ' + Array.from({ length: 10 }, (_, i) => `<span class="${i + 1 === h.level ? 'on' : ''}">L${i + 1} ${xpForLevel(i + 1)}</span>`).join('');
   show('screen-summary'); $('#btn-enter').focus();
 }
@@ -1586,37 +1715,50 @@ function enterMap(animate = true) {
   else $('#combat').hidden = true;
   $('#relic').hidden = true;
   if (state.status === 'relic') showRelicOffer();
+  if (state.pendingBlessing && state.status === 'exploring') {
+    state.pendingBlessing = false;
+    setTimeout(() => { if (state && state.status === 'exploring' && !$('#screen-map').hidden) offerRelic('Commit Blessing: you contributed today. Choose a relic.'); }, animate && !REDUCED ? 1500 : 300);
+  }
   if (animate && !REDUCED) Sfx.play('rise');
   $('#map').focus();
 }
 function showEnd() {
   const s = state.set, h = state.hero, d = s.days, won = state.status === 'won';
   const best = d.reduce((b, x) => (x.count >= b.count ? x : b), d[0]);
-  $('#end-title').textContent = won ? 'The Gate opens. Your graph is exorcised.' : 'You became part of the graph.';
+  const hs = state.heroSet;
+  $('#end-title').textContent = hs ? (won ? `${s.username}'s graph is exorcised.` : `${s.username}'s graph claimed you.`) : won ? 'The Gate opens. Your graph is exorcised.' : 'You became part of the graph.';
   $('#end-title').className = won ? 'win' : 'lose';
-  $('#end-sub').textContent = won ? `${s.username} survived 91 haunted days.` : `Slain by ${state.killer}. The same map is waiting for a rematch.`;
+  $('#end-sub').textContent = won ? `${hs ? hs.username : s.username} survived 91 haunted days.` : `Slain by ${state.killer}. The same map is waiting for a rematch.`;
   const row = (k, v) => `<dt>${k}</dt><dd>${v}</dd>`;
   $('#end-game').innerHTML = row('Final level', h.level) + row('XP', h.xp) + row('Monsters banished', state.stats.defeated) + row('Critical hits', state.stats.crits || 0) + row('Perfect dodges', state.stats.dodges || 0) + row('Chests opened', state.stats.chests) + row('Relics', (h.relics || []).map((id) => relicById(id).name).join(', ') || 'None') + row('Treasure', h.treasure) + row('Steps', state.stats.steps);
-  $('#end-gh').innerHTML = row('Contributions (91 days)', h.total91) + row('Active days', `${d.filter((x) => x.count > 0).length} of 91`) + row('Current streak', `${s.streak} days`) + row('Best day', `${best.count} on ${fmtShort(best.date)}`) + row('Year total', s.yearTotal);
-  const today = d[d.length - 1];
+  $('#end-gh').closest('.card').querySelector('h3').textContent = hs ? `${s.username.toUpperCase()} ON GITHUB` : 'ON GITHUB';
+  $('#end-gh').innerHTML = (hs ? row(`${esc(hs.username)}'s contributions (91 days)`, h.total91) + row(`${esc(s.username)}'s contributions (91 days)`, d.reduce((a, x) => a + x.count, 0)) : row('Contributions (91 days)', h.total91)) + row('Active days', `${d.filter((x) => x.count > 0).length} of 91`) + row('Current streak', `${s.streak} days`) + row('Best day', `${best.count} on ${fmtShort(best.date)}`) + row('Year total', s.yearTotal);
+  const hsd = (hs || s).days, today = hsd[hsd.length - 1];
   $('#end-today').textContent = today.count > 0 ? `Today's tile is already glowing (${today.count} contribution${today.count === 1 ? '' : 's'}). Tomorrow your graph grows by one more day.` : "Today's tile is still dark. Commit something and come back tomorrow: your map will be different.";
-  $('#share-note').textContent = '';
+  $('#share-note').textContent = ''; $('#share-img').hidden = true;
+  renderTrophies();
   show('screen-end');
 }
 
 /* ---------- flow ---------- */
-async function startUser(raw) {
-  const name = raw.trim().replace(/^@/, '');
+async function startUser(raw, vsRaw) {
+  const name = raw.trim().replace(/^@/, ''), vs = (vsRaw || '').trim().replace(/^@/, '');
   const err = $('#start-error');
   if (!USERNAME_RE.test(name)) { err.textContent = 'That is not a valid GitHub username.'; err.hidden = false; return; }
-  err.hidden = true; $('#loading-text').textContent = `Summoning ${name}'s graph…`; show('screen-loading');
-  try { const set = await fetchLive(name); newRun(set); save(); showSummary(); }
+  if (vs && !USERNAME_RE.test(vs)) { err.textContent = "Your friend's username is not a valid GitHub username."; err.hidden = false; return; }
+  const raid = vs && vs.toLowerCase() !== name.toLowerCase();
+  err.hidden = true; $('#loading-text').textContent = raid ? `Summoning ${name} to raid ${vs}'s graph…` : `Summoning ${name}'s graph…`; show('screen-loading');
+  try {
+    if (raid) { const [mine, theirs] = await Promise.all([fetchLive(name), fetchLive(vs)]); newRun(theirs, mine); }
+    else newRun(await fetchLive(name));
+    save(); showSummary();
+  }
   catch (e) { show('screen-start'); err.innerHTML = `${esc(e.message || 'Something went wrong.')} You can still <a href="#" id="err-demo" style="color:var(--purple)">play the demo</a>.`; err.hidden = false;
     $('#err-demo').onclick = (ev) => { ev.preventDefault(); startDemo(); }; }
 }
 function startDemo() { newRun(makeDemoSet()); save(); showSummary(); }
 
-$('#form').addEventListener('submit', (e) => { e.preventDefault(); startUser($('#username').value); });
+$('#form').addEventListener('submit', (e) => { e.preventDefault(); startUser($('#username').value, $('#vs').value); });
 $('#btn-demo').onclick = startDemo;
 $('#btn-enter').onclick = () => enterMap(true);
 $('#btn-back').onclick = () => { localStorage.removeItem(SAVE_KEY); show('screen-start'); };
@@ -1629,13 +1771,21 @@ $('#opt-calm').checked = settings.calm;
 $('#opt-assist').checked = settings.assist;
 $('#opt-calm').onchange = (e) => { settings.calm = e.target.checked; saveSettings(); };
 $('#opt-assist').onchange = (e) => { settings.assist = e.target.checked; saveSettings(); };
-$('#btn-again').onclick = () => { newRun(state.set); save(); enterMap(true); };
+$('#btn-again').onclick = () => { newRun(state.set, state.heroSet); save(); enterMap(true); };
 $('#btn-new').onclick = () => { localStorage.removeItem(SAVE_KEY); state = null; refreshContinue(); show('screen-start'); $('#username').focus(); };
 $('#btn-share').onclick = async () => {
-  const u = new URL(location.href); u.search = state.set.source === 'demo' ? '?demo' : '?u=' + encodeURIComponent(state.set.username);
-  const text = `${u.toString()}  ${state.status === 'won' ? 'I exorcised my GitHub graph' : 'My GitHub graph defeated me'} at level ${state.hero.level} with ${state.stats.dodges || 0} perfect dodges. Can you survive yours?`;
+  const owner = state.set.username, won = state.status === 'won';
+  const u = new URL(location.href); u.search = state.set.source === 'demo' ? '?demo' : '?vs=' + encodeURIComponent(owner);
+  const what = state.heroSet ? `I ${won ? 'exorcised' : 'died in'} ${owner}'s GitHub graph` : won ? 'I exorcised my GitHub graph' : 'My GitHub graph defeated me';
+  const text = `${u.toString()}  ${what} at level ${state.hero.level} with ${state.stats.dodges || 0} perfect dodges. Raid it with your own graph: can you do better?`;
   try { await navigator.clipboard.writeText(text); $('#share-note').textContent = 'Copied. Send it to a friend and haunt them.'; }
   catch (_) { $('#share-note').textContent = text; }
+};
+$('#btn-card').onclick = () => {
+  const c = makeShareCard(), url = c.toDataURL('image/png'), img = $('#share-img');
+  img.src = url; img.hidden = false;
+  const a = document.createElement('a'); a.href = url; a.download = `contribquest-${state.set.username}.png`; document.body.appendChild(a); a.click(); a.remove();
+  $('#share-note').textContent = 'Share card saved. Post it with your challenge link.';
 };
 $('#btn-continue').onclick = () => { const s = loadSave(); if (!s) return refreshContinue(); state = s; if (s.status === 'won' || s.status === 'lost') showEnd(); else enterMap(false); };
 document.querySelectorAll('.dpad button').forEach((b) => b.addEventListener('click', () => {
@@ -1661,7 +1811,7 @@ document.addEventListener('keydown', (e) => {
 function refreshContinue() {
   const s = loadSave();
   $('#continue-row').hidden = !s;
-  if (s) $('#btn-continue').textContent = `Continue ${s.set.username}'s run`;
+  if (s) $('#btn-continue').textContent = s.heroSet ? `Continue ${s.heroSet.username}'s raid on ${s.set.username}` : `Continue ${s.set.username}'s run`;
 }
 
 /* ---------- teaser + frame loop ---------- */
@@ -1806,8 +1956,14 @@ document.addEventListener('click', (e) => { if (e.target.closest('button') && e.
 /* ---------- boot ---------- */
 refreshContinue();
 const params = new URLSearchParams(location.search);
+refreshStartTrophies();
+if (params.get('vs')) $('#vs').value = params.get('vs');
 if (params.has('demo')) startDemo();
-else if (params.get('u')) { $('#username').value = params.get('u'); startUser(params.get('u')); }
+else if (params.get('u')) { $('#username').value = params.get('u'); startUser(params.get('u'), params.get('vs')); }
+else if (params.get('vs')) {
+  const err = $('#start-error'); err.textContent = `Enter your GitHub username to raid ${params.get('vs')}'s graph with your own hero.`;
+  err.hidden = false; err.style.color = 'var(--purple)'; $('#username').focus();
+}
 
 /* test hooks for the preview's screenshots and smoke tests */
 window.__cq = {
@@ -1817,6 +1973,9 @@ window.__cq = {
   stopIntro() { if (state) state.animStart = null; },
   forcePlan(p) { forcedPlan = p; },
   pickRelic(i) { pickRelic(i); },
+  newRun(set, heroSet) { newRun(set, heroSet); },
+  demoSet: () => makeDemoSet(),
+  card: () => makeShareCard().toDataURL('image/png'),
   get qte() { return qte && { kind: qte.kind, type: qte.type, start: qte.start, target: qte.target, P: qte.P, G: qte.G, pauseAt: qte.pauseAt, pause: qte.pause, decoy: qte.decoy }; },
   // Balance bots: 'perfect' | 'good' | 'miss' | 'mixed' (25% perfect, 50% good, 25% miss, seeded) | null for real input
   setGrade(policy) {
