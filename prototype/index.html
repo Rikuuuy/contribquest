@@ -179,6 +179,13 @@
   .class-card[aria-checked="true"] { border-color: #ffd257; box-shadow: 0 0 16px rgba(255,210,87,.3); }
   .class-card[aria-checked="true"] .cn { color: #ffd257; }
   .hud .cls { font-family: var(--pixel); font-size: 9px; color: #ffd257; }
+  .cd { font-family: var(--pixel); font-size: 8px; letter-spacing: 1px; }
+  .stars { display: inline-flex; gap: 2px; vertical-align: -1px; margin-right: 4px; }
+  .cd.d1 { color: #8dffa0; } .cd.d2 { color: #9fd8ff; } .cd.d3 { color: #ffb38a; }
+  .cd.d4 { color: #ff6b6b; text-shadow: 0 0 8px rgba(255,60,60,.6); animation: pulse 1.4s infinite; }
+  .class-card .cdx { font-size: 11px; opacity: .85; }
+  .hud .press { font-size: 12.5px; }
+  .hud .press b { color: #ffb38a; } .hud .press.max b { color: #ff6b6b; }
 
   /* raid, omen, trophies, share card */
   .raid-row { width: 100%; display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; align-items: center; font-size: 13.5px; color: var(--muted); }
@@ -653,188 +660,295 @@ const CLASSES = {
   mage: { name: 'Mage', strike: 'charge', guard: 'ring', hp: 0.9, atk: 2, color: ['#c0503a', '#7a2a1e'],
     text: 'Hold Space to charge a spell and release in the gold. Hold too long and it overloads. Critical spells hit x1.9. -10% HP, +2 ATK.' }
 };
-/* ---------- hero sprites: 16x16, an outfit per class with a race's face and skin ---------- */
+/* ---------- hero sprites: 24x24, an outfit per class with a race's face; auto-shaded, with an animated cape ---------- */
 const OUTFITS = {
  "wanderer": {
   "rows": [
-   "......AAAA......",
-   ".....AAAAAA.....",
-   "....AAAAAAAA....",
-   "....ABBBBBBA....",
-   "....AssssssA....",
-   "....AsessesA....",
-   "....ASsmmsSA....",
-   "...AAABSSBAAA...",
-   "..AAAAATTAAAAA..",
-   ".AAAAAAAAAAAAs..",
-   ".ABAAllllAABAWW.",
-   ".ABAAAAAAAABAxx.",
-   "..ABAAAAAABA.WW.",
-   "..ABBAAAABBA....",
-   "...bbb..bbb.....",
-   "...bbb..bbb....."
-  ],
-  "step": [
-   "..bbb....bbb....",
-   "..bb......bb...."
+   "........................",
+   ".........AAAAAA.........",
+   "........AAAAAAAA........",
+   ".......AAAAAAAAAA.......",
+   "......AAAAAAAAAAAA......",
+   "......AAAkkkkkkAAA......",
+   "......AAkssssssAAA......",
+   "......AAksessesAAA......",
+   "......AAkSssssSAAA......",
+   "......AAAkSmmSkAAA......",
+   ".....BBBBAkkkkABBBB.....",
+   "....AABBBBBBBBBBBBAA....",
+   "...AAAAAAABBAAAAAAAA....",
+   "..AAAAAAAAABBAAAAAAAss..",
+   "..AAsAAAAAABBAAAAAAA.L..",
+   "..AAAAAAkkGGkkAAAAA.MMM.",
+   "...AAAAAAAAAAAAAAA.MxxM.",
+   "...CAAAAAAAAAAAAAC.MxxM.",
+   "...CCAAAAAAAAAAACC..MM..",
+   "..CCCAAAAAAAAAAACCC.....",
+   "..CCCAAAAABAAAAACCC.....",
+   "..CCCCAAAABAAAACCCC.....",
+   "....LLLL....LLLL........",
+   "...LLLLL....LLLLL......."
   ],
   "pal": {
-   "A": "#6c4bb5",
-   "B": "#432c7a",
-   "T": "#ffd257",
-   "w": "#8b93a3",
-   "W": "#545a69",
-   "x": "#ffd27a",
-   "l": "#7a4a26",
-   "b": "#2a1d14"
+   "A": "#5b3fa8",
+   "B": "#e07a2e",
+   "C": "#33245e",
+   "k": "#120c1e",
+   "G": "#ffd257",
+   "L": "#4a3020",
+   "M": "#8b93a3",
+   "x": "#ffd27a"
+  },
+  "fx": {
+   "lantern": [
+    20.5,
+    16.5
+   ]
   }
  },
  "knight": {
   "rows": [
-   ".......TT.......",
-   ".....wwTTww.....",
-   "....wwwwwwww....",
-   "....wWWWWWWw.w..",
-   "....wssssssw.w..",
-   "....wsessesw.w..",
-   "....wSsmmsSw.w..",
-   "...wwWWWWWWwwW..",
-   "TTTwwAATTAAwwll.",
-   "TATwAAAAAAAAws..",
-   "TATwAABllBAAw...",
-   "TATWAAAAAAAAW...",
-   ".T..WAAAAAAW....",
-   "....WWAAAAWW....",
-   "....WWW..WWW....",
-   "....bbb..bbb...."
-  ],
-  "step": [
-   "...WWW....WWW...",
-   "...bb......bb..."
+   "...........BB...........",
+   "..........BBBB..........",
+   ".........MMMMMM.........",
+   "........MMMMMMMM...M....",
+   ".......MMMMMMMMMM..M....",
+   ".......MMGGGGGGMM..M....",
+   ".......MMssssssMM..M....",
+   ".......MMsessesMM..M....",
+   ".......MMSssssSMM..M....",
+   ".......MMMSmmSMMM..M....",
+   "......CMMMMMMMMMMC.M....",
+   "..GGGGCAAAAAAAAAAC.M....",
+   ".GMMMMGAAAAAAAAAAMGGG...",
+   ".GMBBMGAAAAAAAAAAMsL....",
+   ".GMBBMGAAkkGGkkAAMML....",
+   ".GMMBMGAAAAAAAAAAM......",
+   "..GMMGCAAAAAAAAAAC......",
+   "...GG.CCAAAAAAAACC......",
+   "......CCAAAAAAAACC......",
+   ".....CCCMMMAAMMMCCC.....",
+   ".....CCCMMM..MMMCCC.....",
+   ".....CCCMMM..MMMCCC.....",
+   "......MMMMM..MMMMM......",
+   ".....LLLLLL..LLLLLL....."
   ],
   "pal": {
-   "A": "#3b6fb5",
-   "B": "#24467a",
-   "T": "#ffd257",
-   "w": "#c9d2de",
-   "W": "#7d8799",
-   "l": "#7a4a26",
-   "b": "#3a3f4a",
-   "x": "#ffffff"
+   "A": "#2f5fa8",
+   "B": "#d23a3a",
+   "C": "#8e1f2c",
+   "k": "#1a1e28",
+   "G": "#e8b84a",
+   "L": "#4a3020",
+   "M": "#aeb8c8"
+  },
+  "fx": {
+   "blade": [
+    19,
+    3,
+    10
+   ]
   }
  },
  "rogue": {
   "rows": [
-   "................",
-   "......AAAA......",
-   ".....AAAAAA.....",
-   "....AAABBAAA....",
-   "....AssssssA....",
-   "....AsessesA....",
-   "....ABBBBBBA....",
-   "...AABBBBBBAA...",
-   "..sAAAAllAAAAs..",
-   ".wWAAAAAAAAAAWw.",
-   ".w.ABAAAAAABA.w.",
-   "...ABAAllAABA...",
-   "...ABAAAAAABA...",
-   "....bbA..Abb....",
-   "....bb....bb....",
-   "....bb....bb...."
+   "........................",
+   "..........AAAA..........",
+   "........AAAAAAAA........",
+   ".......AAAAAAAAAA.......",
+   "......AAAAAAAAAAAA......",
+   "......AAAkkkkkkAAA......",
+   "......AAkssssssAAA......",
+   "......AAksessesAAA......",
+   "......AABBBBBBBBAA......",
+   "......AABBBBBBBBAAC.....",
+   ".....AAAABBBBBBAAAACC...",
+   "....AAAAAAAAAAAAAAA.CCC.",
+   "...sAAAAAAAAAAAAAAAs.CC.",
+   "..MLAAAAAAAAAAAAAAALM...",
+   ".M..AAAkkkGGkkkAAA..M...",
+   "M...AAAAAAAAAAAAAA...M..",
+   "....AAAAAAAAAAAAAA......",
+   "....AAAAAA..AAAAAA......",
+   "....AAAAA....AAAAA......",
+   "....LLLL......LLLL......",
+   "....LLLL......LLLL......",
+   "....LLLL......LLLL......",
+   "....LLLLL.....LLLLL.....",
+   "...LLLLLL....LLLLLL....."
   ],
-  "step": [
-   "...bb......bb...",
-   "..bb........bb.."
-  ],
-  "masked": true,
   "pal": {
-   "A": "#2f6b45",
-   "B": "#1c4029",
-   "T": "#b0b0b0",
-   "w": "#d8dde6",
-   "W": "#6e7685",
-   "l": "#5a3a20",
-   "b": "#1e1a16",
-   "x": "#ffffff"
+   "A": "#2c5a3e",
+   "B": "#22262c",
+   "C": "#b8343a",
+   "k": "#0e1210",
+   "G": "#c0a050",
+   "L": "#3a2a1e",
+   "M": "#d8dde6"
+  },
+  "masked": true,
+  "fx": {
+   "tips": [
+    [
+     0,
+     15
+    ],
+    [
+     21,
+     15
+    ]
+   ]
   }
  },
  "mage": {
   "rows": [
-   ".......AA.....x.",
-   "......AAA....xgx",
-   ".....AAAAA....W.",
-   "...TTTTTTTTT..W.",
-   "....AssssssA..W.",
-   "....AsessesA..W.",
-   "....ASsmmsSA..W.",
-   "...AAAASSAAAA.W.",
-   "..AAAAATTAAAAAs.",
-   "..AABAAAAAABAAW.",
-   "..AABATTTTABAAW.",
-   ".AAABAAAAAABAAW.",
-   ".AABBAAAAAABBAW.",
-   ".AABBBAAAABBBAW.",
-   "..AAAAAAAAAAA.W.",
-   "....bb....bb...."
-  ],
-  "step": [
-   "..AAAAAAAAAAA.W.",
-   "...bb......bb..."
+   "............A......xx...",
+   "...........AA.....xxxx..",
+   "..........AAAA.....GG...",
+   ".........AAAAA.....W....",
+   "........AAAAAA.....W....",
+   "....BBBBBBBBBBBBBB.W....",
+   "......AAAssssssAA..W....",
+   "......AAAsessesAA..W....",
+   "......AAASssssSAA..W....",
+   "......AAAkSmmSkAA..W....",
+   ".....AAAAAkkkkAAAAsW....",
+   "....AAAAAAAAAAAAAAsW....",
+   "....AAAAAAAAAAAABAAW....",
+   "...AAAAAAAxAAAAABAAW....",
+   "...AAABGGGGGGGGGBAAW....",
+   "...AAAAAAAAAAAAABAAW....",
+   "..AAAAAAAAAAxAAAAAAAA...",
+   "..AAAAAAAAAAAAAAAAAAA...",
+   ".AAAAAAAAAxAAAAAAAAAAA..",
+   ".AAAAAAAAAAAAAAAAAAAAA..",
+   ".AABBBBBBBBBBBBBBBBBAA..",
+   "..AAAAAAAAAAAAAAAAAAA...",
+   "......LLLL....LLLL......",
+   ".....LLLLL....LLLLL....."
   ],
   "pal": {
-   "A": "#a8322b",
-   "B": "#6a1c18",
-   "T": "#ffd257",
+   "A": "#8e2236",
+   "B": "#ffd257",
+   "k": "#1c0a10",
+   "G": "#ffd257",
    "W": "#7a4a26",
-   "w": "#c9a46a",
    "x": "#9fe7ff",
-   "g": "#5fd0ff",
-   "l": "#ffd257",
-   "b": "#2a1d14"
+   "L": "#2a1d14"
+  },
+  "fx": {
+   "orb": [
+    19.5,
+    0.8
+   ]
   }
  }
 };
 const RACES = {
   human: { name: 'Human', skin: ['#f2c79b', '#d6a274'], eye: '#1a1a24', mouth: '#9a5a48', text: 'Adaptable: +10% XP from everything.', lines: ['Coffee first, then commits.', 'Just one more feature.'] },
   elf: { name: 'Elf', skin: ['#f7e0c4', '#dcbc98'], eye: '#2fa86b', mouth: '#a8685a', ears: true, text: 'Keen Eyes: the Perfect timing window is 15 ms wider.', lines: ['I can see your off-by-one from here.', 'Tabs. Always tabs.'] },
-  orc: { name: 'Orc', skin: ['#7fae5a', '#5c8a3e'], eye: '#ffcf3a', mouth: '#3d5a28', tusks: true, text: 'Brute: +2 ATK.', lines: ['SMASH THE BUGS!', 'Me no read docs.'] },
-  skeleton: { name: 'Skeleton', skin: ['#ebe6d6', '#b9b3a0'], eye: '#ff6a2a', mouth: '#2a2420', teeth: true, text: 'Undying: once per run, a lethal hit leaves you at 1 HP.', lines: ['I came back for the bugs.', 'Legacy code? I AM legacy.'] },
-  vampire: { name: 'Vampire', skin: ['#e6e1f0', '#c2b9d6'], eye: '#e0263c', mouth: '#5a1020', fangs: true, text: 'Bloodthirst: every critical hit heals 2 HP.', lines: ['I only code after midnight.', 'Your commits look... delicious.'] }
+  orc: { name: 'Orc', skin: ['#7fae5a', '#5c8a3e'], eye: '#ffcf3a', mouth: '#3d5a28', tusks: true, glow: 'rgba(255,207,58,A)', text: 'Brute: +2 ATK.', lines: ['SMASH THE BUGS!', 'Me no read docs.'] },
+  skeleton: { name: 'Skeleton', skin: ['#ebe6d6', '#b9b3a0'], eye: '#ff6a2a', mouth: '#2a2420', teeth: true, glow: 'rgba(255,106,42,A)', text: 'Undying: once per run, a lethal hit leaves you at 1 HP.', lines: ['I came back for the bugs.', 'Legacy code? I AM legacy.'] },
+  vampire: { name: 'Vampire', skin: ['#e6e1f0', '#c2b9d6'], eye: '#e0263c', mouth: '#5a1020', fangs: true, glow: 'rgba(224,38,60,A)', text: 'Bloodthirst: every critical hit heals 2 HP.', lines: ['I only code after midnight.', 'Your commits look... delicious.'] }
 };
 const heroRace = (h) => RACES[(h && h.race) || 'human'] || RACES.human;
 const hasRace = (id) => !!(state && (state.hero.race || 'human') === id);
+function mixHex(hex, to, k) {
+  const n = parseInt(hex.slice(1), 16), t = to === 'w' ? 255 : 0;
+  const c = [(n >> 16) & 255, (n >> 8) & 255, n & 255].map((v) => Math.round(v + (t - v) * k));
+  return '#' + c.map((v) => v.toString(16).padStart(2, '0')).join('');
+}
+const FLAT = new Set(['e', 'k', 'm', 'u', 'x']); // never auto-shaded
 function heroKey(cls, race, frame = 'idle') {
-  const key = `H:${cls}:${race}:${frame}`;
+  const key = `H24:${cls}:${race}:${frame}`;
   if (SPR[key]) return key;
   const O = OUTFITS[cls] || OUTFITS.wanderer, R = RACES[race] || RACES.human;
   const g = O.rows.map((r) => r.split(''));
-  if (frame === 'step') { g[14] = O.step[0].split(''); g[15] = O.step[1].split(''); }
-  if (R.ears) { g[5][3] = 's'; g[4][2] = 'S'; g[5][12] = 's'; g[4][13] = 'S'; }
+  // race features on the face block (rows 6-9, columns 9-14)
+  if (R.ears) { g[7][8] = 's'; g[6][7] = 's'; g[7][15] = 's'; g[6][16] = 's'; }
   if (!O.masked) {
-    if (R.tusks) { g[6][6] = 'u'; g[6][9] = 'u'; }
-    if (R.teeth) { g[6][6] = 'm'; g[6][7] = 'u'; g[6][8] = 'm'; g[6][9] = 'u'; g[6][5] = 'S'; g[6][10] = 'S'; }
-    if (R.fangs) { g[6][7] = 'u'; g[6][8] = 'u'; g[6][6] = 'm'; g[6][9] = 'm'; }
+    if (R.tusks) { g[9][10] = 'u'; g[9][13] = 'u'; }
+    if (R.teeth) { g[8][11] = 'k'; g[8][12] = 'k'; g[9][10] = 'u'; g[9][11] = 'm'; g[9][12] = 'u'; g[9][13] = 'm'; }
+    if (R.fangs) { g[9][11] = 'u'; g[9][12] = 'u'; }
   }
-  const ex = [6, 9];
-  if (frame === 'blink') ex.forEach((x) => { g[5][x] = R.teeth ? 'm' : 'S'; });
-  if (frame === 'lookL' || frame === 'lookR') { const d = frame === 'lookL' ? -1 : 1; ex.forEach((x) => { g[5][x] = 's'; }); ex.forEach((x) => { g[5][x + d] = 'e'; }); }
+  if (frame === 'blink') { g[7][10] = 'S'; g[7][13] = 'S'; }
+  if (frame === 'lookL' || frame === 'lookR') { const d = frame === 'lookL' ? -1 : 1; g[7][10] = 's'; g[7][13] = 's'; g[7][10 + d] = 'e'; g[7][13 + d] = 'e'; }
+  if (frame === 'sway' || frame === 'step') {
+    // the cape flutters: rows 17-21 grow one cape pixel on the left and lose one on the right every other row
+    for (let y = 17; y < 22; y++) {
+      const row = g[y], l = row.indexOf('C'), r = row.lastIndexOf('C');
+      if (l > 0) row[l - 1] = 'C';
+      if (r > l && y % 2) row[r] = '.';
+    }
+  }
+  if (frame === 'step') {
+    // feet apart: the left half of the bottom two rows moves left, the right half moves right
+    for (const y of [22, 23]) { const left = g[y].slice(0, 12), right = g[y].slice(12); left.push(left.shift()); right.unshift(right.pop()); g[y] = left.concat(right); }
+  }
   const pal = { ...O.pal, s: R.skin[0], S: R.skin[1], e: R.eye, m: R.mouth, u: '#f4efe0' };
-  const c = document.createElement('canvas'); c.width = 16; c.height = 16; const x = c.getContext('2d');
-  g.forEach((row, yy) => row.forEach((ch, xx) => { if (ch !== '.' && pal[ch]) { x.fillStyle = pal[ch]; x.fillRect(xx, yy, 1, 1); } }));
+  const at = (x, y) => (y < 0 || y > 23 || x < 0 || x > 23 ? '.' : g[y][x]);
+  const c = document.createElement('canvas'); c.width = 24; c.height = 24; const ctx = c.getContext('2d');
+  for (let y = 0; y < 24; y++) for (let x = 0; x < 24; x++) {
+    const ch = g[y][x]; if (ch === '.' || !pal[ch]) continue;
+    let col = pal[ch];
+    if (!FLAT.has(ch)) {
+      // light from the top left: shade on right/bottom edges, rim light on top/left edges, darker near the right side
+      const top = at(x, y - 1) === '.', left = at(x - 1, y) === '.', right = at(x + 1, y) === '.', bottom = at(x, y + 1) === '.';
+      if (right || bottom) col = mixHex(col, 'b', 0.38);
+      else if (top || left) col = mixHex(col, 'w', 0.3);
+      else if (at(x + 2, y) === '.' || at(x + 1, y + 1) === '.') col = mixHex(col, 'b', 0.18);
+      else if ((x + y) % 7 === 0 && (ch === 'A' || ch === 'C')) col = mixHex(col, 'b', 0.1); // cloth texture
+    }
+    ctx.fillStyle = col; ctx.fillRect(x, y, 1, 1);
+  }
   const base = outlineSprite(c, '#05060a');
   SPR[key] = { base, white: silhouette(base, '#ffffff'), red: silhouette(base, '#ff4040'), gold: silhouette(base, '#ffd257') };
   return key;
 }
-/* Frame choice: a step while moving, a blink every few seconds, eyes that follow the cursor on the summary. */
+/* Frame choice: a step while moving, a blink every few seconds, the cape swaying, eyes that follow the cursor on the summary. */
 function heroSpriteAt(now, o = {}) {
   const h = o.hero || (state && state.hero) || {};
-  let frame = 'idle';
+  let frame = REDUCED ? 'idle' : Math.floor((now + (o.seed || 0)) / 520) % 2 ? 'sway' : 'idle';
   if (o.moving) frame = 'step';
   else if (!REDUCED && (now + (o.seed || 0)) % 3400 < 130) frame = 'blink';
   else if (o.look) frame = o.look < 0 ? 'lookL' : 'lookR';
   return heroKey(h.cls || 'wanderer', h.race || 'human', frame);
 }
+/* Glows drawn on top of the sprite: glowing eyes, the lantern, the blade glint, dagger shine, the staff orb. */
+function heroFX(ctx, h, cx, cy, sc, now, flip = false, alpha = 1) {
+  if (!h || alpha <= 0) return;
+  const O = OUTFITS[h.cls || 'wanderer'] || OUTFITS.wanderer, R = heroRace(h), f = O.fx || {};
+  const P = (px, py) => [flip ? cx + 13 * sc - (px + 1.5) * sc : cx - 13 * sc + (px + 1.5) * sc, cy - 13 * sc + (py + 1.5) * sc];
+  const t = REDUCED ? 0 : now;
+  ctx.save(); ctx.globalAlpha *= alpha; ctx.globalCompositeOperation = 'lighter';
+  if (R.glow) for (const px of [10, 13]) { const [x, y] = P(px, 7); glow(ctx, x, y, sc * 2.2, R.glow, 0.55 + 0.25 * Math.sin(t / 300)); }
+  if (f.lantern) { const [x, y] = P(...f.lantern); glow(ctx, x, y, sc * 5, 'rgba(255,190,100,A)', 0.55 + 0.12 * Math.sin(t / 90) + 0.08 * Math.sin(t / 37)); }
+  if (f.orb) { const [x, y] = P(...f.orb); glow(ctx, x, y, sc * 4.5, 'rgba(120,220,255,A)', 0.6 + 0.2 * Math.sin(t / 260)); }
+  if (f.blade && !REDUCED) { const k = (now % 2600) / 500; if (k < 1) { const [x, y] = P(f.blade[0], f.blade[1] + (f.blade[2] - f.blade[1]) * k); glow(ctx, x, y, sc * 2.6, 'rgba(255,255,255,A)', 0.9); } }
+  if (f.tips && !REDUCED) { const k = (now % 3000) / 300; if (k < 1) for (const tp of f.tips) { const [x, y] = P(...tp); glow(ctx, x, y, sc * 2.2, 'rgba(230,240,255,A)', 0.9 * (1 - k)); } }
+  ctx.restore();
+}
+/* Class difficulty. pMul/gMul scale the Perfect/Good windows, speed scales how long each test takes (lower is faster).
+   Pressure: every monster banished narrows windows by "ramp" (down to "floor") and speeds tests up, so a run gets harder
+   the further you go; harder classes ramp faster. Harder classes earn more treasure. */
+const DIFFICULTY = {
+  knight: { stars: 1, label: 'Easy', pMul: 1.25, gMul: 1.2, speed: 1.12, ramp: 0.01, floor: 0.92, loot: 1, dmg: 0.85 },
+  wanderer: { stars: 2, label: 'Normal', pMul: 0.95, gMul: 0.9, speed: 0.96, ramp: 0.02, floor: 0.82, loot: 1.1, dmg: 1.5 },
+  mage: { stars: 3, label: 'Hard', pMul: 0.72, gMul: 0.62, speed: 0.9, ramp: 0.03, floor: 0.72, loot: 1.25, dmg: 2.4 },
+  rogue: { stars: 4, label: 'Nightmare', pMul: 0.62, gMul: 0.68, speed: 0.82, ramp: 0.04, floor: 0.6, loot: 1.5, dmg: 3.0 }
+};
+const classDiff = (h) => DIFFICULTY[(h && h.cls) || 'wanderer'] || DIFFICULTY.wanderer;
+function pressure() {
+  if (!state) return 1;
+  const Df = classDiff(state.hero);
+  let pr = Math.max(Df.floor, 1 - Df.ramp * (state.stats.defeated || 0));
+  if (state.combat && state.combat.m.phase2) pr *= 0.9;
+  return pr;
+}
+const STAR_PATH = 'M5 0.4l1.4 3 3.2.4-2.4 2.2.6 3.2L5 7.6 2.2 9.2l.6-3.2L.4 3.8l3.2-.4z';
+const stars = (n) => `<span class="stars" role="img" aria-label="${n} of 4 stars">${[0, 1, 2, 3].map((i) => `<svg viewBox="0 0 10 10" width="10" height="10"><path d="${STAR_PATH}" fill="${i < n ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="0.9"/></svg>`).join('')}</span>`;
 const heroClass = (h) => CLASSES[(h && h.cls) || 'wanderer'] || CLASSES.wanderer;
+const CLASS_HINT_SUFFIX = (h) => ` Difficulty: ${classDiff(h).label}.`;
 const CLASS_HINT = {
   wanderer: 'Attack, then press Space as the marker crosses the gold.',
   knight: 'Attack on the gold. When it strikes, hold Space to block, or tap right at impact to parry.',
@@ -843,8 +957,8 @@ const CLASS_HINT = {
 };
 const heroSprite = () => heroSpriteAt(performance.now());
 /* Damage multipliers per timing grade, by test type. Combo multipliers apply to each of its three hits. */
-const ATK_MULT = { bar: { perfect: 1.6, good: 1, miss: 0.5 }, charge: { perfect: 1.9, good: 1.1, miss: 0.4 }, combo: { perfect: 0.7, good: 0.45, miss: 0.12 } };
-const DEF_MULT = { ring: { perfect: 0, good: 0.4, miss: 1 }, shield: { perfect: 0, good: 0.3, miss: 1 }, sidestep: { perfect: 0, good: 0.55, miss: 1 } };
+const ATK_MULT = { bar: { perfect: 1.6, good: 1, miss: 0.5 }, charge: { perfect: 1.9, good: 1.1, miss: 0.4 }, combo: { perfect: 0.55, good: 0.35, miss: 0.08 } };
+const DEF_MULT = { ring: { perfect: 0, good: 0.4, miss: 1 }, shield: { perfect: 0, good: 0.3, miss: 1 }, sidestep: { perfect: 0, good: 0.8, miss: 1 } };
 function applyStats(h) {
   const R = h.relics || [], C = heroClass(h);
   h.maxHp = Math.round((30 + 6 * (h.level - 1) + 5 * h.aura + h.trait.hp + (R.includes('coffee') ? 10 : 0)) * C.hp);
@@ -874,7 +988,7 @@ function makeHero(set) {
 }
 function makeMonster(t, hero, map) {
   const f = 1 + 0.12 * (hero.startLevel - 1), tier = t.tier;
-  const hp = Math.round((5 + 7 * tier) * f * (tier === 5 ? 1.4 : 1)), dmg = Math.round((1 + tier) * f * QTE.dmgScale * (hero.omen === 'cursed' ? 1.15 : 1));
+  const hp = Math.round((5 + 7 * tier) * f * (tier === 5 ? 1.4 : 1)), dmg = Math.round((1 + tier) * f * QTE.dmgScale * (hero.omen === 'cursed' ? 1.15 : 1) * (DIFFICULTY[hero.cls] || DIFFICULTY.wanderer).dmg);
   const name = tier === 5 ? (map.emptyQuarter ? 'The Phantom of the Empty Quarter' : `The Phantom of ${fmtDate(t.day.date)}`) : TIER_NAMES[tier];
   return { name, tier, hp, maxHp: hp, dmg, xp: tier === 5 ? 100 : 15 * tier };
 }
@@ -1204,12 +1318,14 @@ function drawMap(ctx, map, L, o) {
     const [x, y] = tileXY(L, col, row), cx = x + T / 2, cy = y + T / 2;
     const ik = h.idleHop ? clamp((now - h.idleHop) / 320, 0, 1) : 1;
     const hop = REDUCED ? 0 : Math.sin(Math.PI * k) * T * 0.2 + Math.sin(Math.PI * ik) * T * 0.16;
-    const hss = T >= 50 ? 3 : 2;
+    const hss = T >= 40 ? 2 : 1;
     const squash = REDUCED || !h.anim || k < 1 ? 1 : 1 - 0.12 * Math.max(0, 1 - (now - h.anim.start - 140) / 120);
     heroPx = { x: cx, y: cy };
     if (h.aura > 0) glow(ctx, cx, cy, T * (0.55 + 0.08 * h.aura), 'rgba(180,140,255,A)', 0.25 + 0.12 * h.aura + 0.08 * Math.sin(now / 250));
     shadow(ctx, cx, cy + T * 0.34, T * (0.5 - hop / T * 0.6));
-    drawSprite(ctx, heroSpriteAt(now, { moving: k < 1, hero: h.hero }), cx, cy - hop + (REDUCED ? 0 : Math.sin(now / 300) * 1), hss, 1, { flip: h.face < 0, sy: squash * (REDUCED ? 1 : 1 + 0.02 * Math.sin(now / 420)), sx: 2 - squash });
+    const hyy = cy - hop - T * 0.12 + (REDUCED ? 0 : Math.sin(now / 300) * 1);
+    drawSprite(ctx, heroSpriteAt(now, { moving: k < 1, hero: h.hero }), cx, hyy, hss, 1, { flip: h.face < 0, sy: squash * (REDUCED ? 1 : 1 + 0.02 * Math.sin(now / 420)), sx: 2 - squash });
+    heroFX(ctx, h.hero, cx, hyy, hss, now, h.face < 0);
     for (let i = 0; i < h.aura * 2; i++) {
       const an = now / 600 + (i * Math.PI * 2) / (h.aura * 2), rr = T * 0.48;
       ctx.fillStyle = 'rgba(210,180,255,.85)'; ctx.fillRect(cx + Math.cos(an) * rr - 1.5, cy - hop + Math.sin(an) * rr * 0.5 - 1.5, 3, 3);
@@ -1263,7 +1379,7 @@ const SW = 440, SH = 190, GROUND = 152, HX = 118, MX = 322;
 let stageCtx = null;
 const stage = { fx: makeFx(), q: [], hero: {}, mon: {}, slowUntil: 0, freezeUntil: 0, last: 0, intro: 0, tier: 1, bg: null };
 const MON_SCALE = (tier) => (tier === 5 ? 7 : tier === 4 ? 6 : 5.5);
-const heroY = () => GROUND - 45;
+const heroY = () => GROUND - 39;
 const monY = (tier) => GROUND - 7 * MON_SCALE(tier);
 const lunge = (dt, out = 110, back = 220) => (dt < 0 || dt > out + back ? 0 : dt < out ? easeOutCubic(dt / out) : 1 - (dt - out) / back);
 function stageBg(level, boss) {
@@ -1389,7 +1505,7 @@ function drawStage(now) {
   if (q && q.kind === 'attack') hx -= 16 * qk;
   const dK = (now - stage.hero.dodge) / 420;
   if (dK >= 0 && dK < 1) {
-    for (let i = 3; i >= 1; i--) { const s2 = Math.sin(Math.PI * Math.max(0, dK - i * 0.08)); drawSprite(ctx, heroKey(state.hero.cls, state.hero.race), HX - s2 * 62, hy - s2 * 34, 5, 0.16 * i, { gold: true }); }
+    for (let i = 3; i >= 1; i--) { const s2 = Math.sin(Math.PI * Math.max(0, dK - i * 0.08)); drawSprite(ctx, heroKey(state.hero.cls, state.hero.race), HX - s2 * 62, hy - s2 * 34, 3, 0.16 * i, { gold: true }); }
     const s = Math.sin(Math.PI * dK); hx -= s * 62; hy -= s * 34;
   }
   const hK = (now - stage.hero.hurt) / 260; if (hK >= 0 && hK < 1) hx -= (1 - hK) * 18;
@@ -1398,7 +1514,8 @@ function drawStage(now) {
   shadow(ctx, HX, GROUND + 2, 72);
   if (state && state.hero.aura) glow(ctx, hx, hy, 62, 'rgba(180,140,255,A)', 0.15 + 0.06 * state.hero.aura);
   if (!REDUCED && !q && deadK === 0) hy += Math.sin(now / 320) * 1.5;
-  drawSprite(ctx, heroSpriteAt(now, { moving: runK >= 0, seed: 700 }), hx, hy + deadK * 30, 5, 1, { white: hK >= 0 && hK < 0.3, rot: -1.4 * deadK, flip: runK >= 0 });
+  drawSprite(ctx, heroSpriteAt(now, { moving: runK >= 0, seed: 700 }), hx, hy + deadK * 30, 3, 1, { white: hK >= 0 && hK < 0.3, rot: -1.4 * deadK, flip: runK >= 0 });
+  if (deadK === 0) heroFX(ctx, state.hero, hx, hy, 3, now, runK >= 0);
   const bK = (now - stage.hero.block) / 260;
   if (bK >= 0 && bK < 1) { ctx.save(); ctx.globalAlpha = 1 - bK; ctx.strokeStyle = '#9fd8ff'; ctx.lineWidth = 5; ctx.beginPath(); ctx.arc(hx + 8, hy, 52, -0.9, 0.9); ctx.stroke(); ctx.restore(); }
   fxDraw(stage.fx, ctx);
@@ -1601,23 +1718,25 @@ function later(fn, ms) {
 function startQte(kind, done, pat = {}) {
   const c = state.combat, tier = c.m.tier, calm = settings.calm ? QTE.calm : 1, C = heroClass(state.hero);
   const mode = kind === 'attack' ? C.strike : C.guard;
+  const Df = classDiff(state.hero), pr = pressure(), tm = Df.speed * (0.8 + 0.2 * pr);
   let P = (QTE.perfect + QTE.auraPerfect * state.hero.aura + (hasRelic('linter') ? 25 : 0)) * calm, G = QTE.good * calm;
   if (hasRace('elf')) P += 15 * calm;
-  if (mode === 'sidestep') P *= 1.5;
+  P *= Df.pMul * pr; G = Math.max(G * Df.gMul * pr, P * 1.4);
+  if (mode === 'sidestep') P *= 1.2;
   let dur, target, zone = 0, extra = {}, type = pat.type || 'normal';
-  if (mode === 'bar') { dur = (1200 - 40 * tier) * calm * (C.slow || 1); zone = 0.5 + 0.3 * rand(); target = zone * dur; }
+  if (mode === 'bar') { dur = (1200 - 40 * tier) * calm * tm * (C.slow || 1); zone = 0.5 + 0.3 * rand(); target = zone * dur; }
   else if (mode === 'combo') {
-    dur = (1500 - 40 * tier) * calm; G = Math.min(G, 120 * calm);
+    dur = (1500 - 40 * tier) * calm * tm; G = Math.min(G, 120 * calm * Df.gMul * pr);
     const z0 = 0.22 + 0.06 * rand(), g1 = 0.22 + 0.05 * rand(), g2 = 0.22 + 0.05 * rand();
     extra = { zones: [z0, z0 + g1, z0 + g1 + g2].map((z) => z * dur), hits: [] }; target = extra.zones[2];
   } else if (mode === 'charge') {
-    const fill = (1000 - 30 * tier) * calm;
+    const fill = (1000 - 30 * tier) * calm * tm;
     extra = { fill, downAt: null }; target = 0.82 * fill; dur = 2600 * calm;
   } else {
-    const base = (type === 'quick' ? 640 : 1150 - 80 * tier) * calm * (pat.speed || 1);
+    const base = (type === 'quick' ? 640 : 1150 - 80 * tier) * calm * tm * (pat.speed || 1);
     target = base;
-    if (type === 'flaky') { const pause = (320 + 220 * rand()) * calm; extra = { pauseAt: base * (0.4 + 0.25 * rand()), pause }; target = base + pause; }
-    if (type === 'conflict') extra = { decoy: base + (300 + 120 * rand()) * calm * (rand() < 0.5 ? -1 : 1) };
+    if (type === 'flaky') { const pause = (320 + 220 * rand()) * calm * tm; extra = { pauseAt: base * (0.4 + 0.25 * rand()), pause }; target = base + pause; }
+    if (type === 'conflict') extra = { decoy: base + Math.max(G * 1.6, (300 + 120 * rand()) * calm * tm) * (rand() < 0.5 ? -1 : 1) };
     dur = target + G;
     if (mode === 'shield') { extra.holding = false; extra.downAt = null; }
   }
@@ -1627,13 +1746,25 @@ function startQte(kind, done, pat = {}) {
   Sfx.play(kind === 'attack' ? 'windup' : type === 'quick' ? 'windup' : 'warn');
   if (type === 'flaky' && !testGrade) { const q = qte; setTimeout(() => { if (qte === q) Sfx.play('stutter'); }, extra.pauseAt); }
   renderCombat();
-  if (testGrade) { const g = typeof testGrade === 'function' ? testGrade(kind) : testGrade; setTimeout(() => finishQte(g), 0); return; }
+  if (testGrade) { const g = testGrade.skill ? simulateGrade(qte, testGrade) : typeof testGrade === 'function' ? testGrade(kind) : testGrade; setTimeout(() => finishQte(g), 0); return; }
   const q = qte;
   if (settings.assist) { q.timer = setTimeout(() => finishQte('good'), mode === 'charge' ? 300 : target); return; }
   if (mode === 'combo') q.timer = setTimeout(() => { if (qte === q) { while (q.hits.length < 3) q.hits.push('miss'); finishQte(q.hits.slice(), q.hits.every((g) => g === 'miss') ? 'too late' : ''); } }, dur + 30);
   else if (mode === 'charge') q.timer = setTimeout(() => { if (qte === q && q.downAt == null) finishQte('miss', 'too slow'); }, dur);
   else if (mode === 'shield') q.timer = setTimeout(() => shieldImpact(q), target);
   else q.timer = setTimeout(() => finishQte('miss', 'too late'), dur + 30);
+}
+/* Test bot that presses like a person: each press lands at a random offset from the target, normal with sigma = skill ms.
+   Wider windows (easier classes, Calm mode) then really do produce better grades. */
+function gauss(r) { let u = 0; while (!u) u = r.next(); return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * r.next()); }
+function simulateGrade(q, sk) {
+  const one = (limit) => { const off = gauss(sk.rng) * sk.skill; if (limit != null && off > limit) return 'miss'; const a = Math.abs(off); return a <= q.P ? 'perfect' : a <= q.G ? 'good' : 'miss'; };
+  if (q.mode === 'combo') return [one(), one(), one()];
+  if (q.mode === 'charge') return one(q.fill - q.target);
+  if (q.type === 'conflict' && sk.rng.next() < sk.skill / 600) return 'miss'; // fell for the decoy
+  if (q.type === 'flaky' && sk.rng.next() < sk.skill / 700) return 'miss';   // pressed at the old pace
+  if (q.mode === 'shield') { const g = one(); return g === 'miss' && sk.rng.next() < 0.7 ? 'good' : g; } // holding early saves most misses
+  return one();
 }
 function shieldImpact(q) {
   if (qte !== q || q.over) return;
@@ -1812,7 +1943,8 @@ function resolveDefend(grade, i) {
 }
 function winFight(t, m) {
   const h = state.hero; t.resolved = true; state.stats.defeated++;
-  const gold = m.tier === 5 ? 30 : m.tier * 3; h.treasure += gold;
+  const before = pressure();
+  const gold = Math.round((m.tier === 5 ? 30 : m.tier * 3) * classDiff(h).loot); h.treasure += gold;
   state.combat = null; state.status = 'exploring'; $('#combat').hidden = true;
   Sfx.setMode('explore');
   log(`${m.name} is banished: +${m.xp} XP, +${gold} treasure.`);
@@ -1820,6 +1952,12 @@ function winFight(t, m) {
   mapBurst(t.col, t.row, 8 + m.tier * 2, { color: ['#ffd257', '#ffb13c'], speed: 130, up: 120, grav: 520, life: 0.8, size: 4, shape: 'coin' });
   mapText(t.col, t.row, `+${m.xp} XP`, { color: '#8fd3ff' });
   gainXp(m.xp);
+  const after = pressure();
+  if (after < before - 0.001 && !t.boss) {
+    const pct = Math.round(after * classDiff(h).pMul * 100);
+    log(`The graph grows restless: timing windows ${pct}%.`);
+    setTimeout(() => { if (state) mapText(state.pos.col, state.pos.row, `TIMING ${pct}%`, { color: after <= classDiff(h).floor ? '#ff6b6b' : '#ffb38a', dy: 14, size: 8, life: 1.4 }); }, 650);
+  }
   if (m.tier >= 3 && m.tier < 5 && state.shards < state.map.shardsNeeded) {
     state.shards++;
     const shattered = state.shards === state.map.shardsNeeded, boss = state.map.tiles[state.map.bossIdx];
@@ -1893,6 +2031,7 @@ const TROPHIES = [
   { id: 'relics', name: 'Dependency Hell', text: 'Hold 4 relics in one run.', test: (s) => s.relics >= 4 },
   { id: 'speed', name: 'Speedrun', text: 'Win in 20 steps or fewer.', test: (s) => s.won && s.steps <= 20 },
   { id: 'nochest', name: 'No Dependencies', text: 'Win without opening a chest.', test: (s) => s.won && s.chests === 0 },
+  { id: 'nightmare', name: 'Nightmare Mode', text: 'Win with a Nightmare class.', test: (s) => s.won && s.nightmare },
   { id: 'fullstack', name: 'Full Stack', text: 'Win with all four classes.', test: (s) => s.classWins >= 4 }
 ];
 function loadTrophies() { try { return JSON.parse(localStorage.getItem(TROPHY_KEY)) || {}; } catch (_) { return {}; } }
@@ -1902,7 +2041,7 @@ function awardTrophies() {
   if (state.status === 'won') { classWins[state.hero.cls || 'wanderer'] = true; try { localStorage.setItem('cq:v1:classwins', JSON.stringify(classWins)); } catch (_) {} }
   const facts = { won: state.status === 'won', raid: !!state.heroSet, source: state.set.source, omen: state.hero.omen, bossDown: state.bossDown,
                   bossDmg: st.bossDmg || 0, bossHpLeft: st.bossHpLeft, dodges: st.dodges || 0, crits: st.crits || 0, relics: (state.hero.relics || []).length,
-                  steps: st.steps, chests: st.chests, classWins: Object.keys(classWins).filter((k) => CLASSES[k]).length };
+                  steps: st.steps, chests: st.chests, classWins: Object.keys(classWins).filter((k) => CLASSES[k]).length, nightmare: classDiff(state.hero).stars === 4 };
   const fresh = [];
   for (const t of TROPHIES) if (!have[t.id] && t.test(facts)) { have[t.id] = new Date().toISOString().slice(0, 10); fresh.push(t.id); }
   try { localStorage.setItem(TROPHY_KEY, JSON.stringify(have)); } catch (_) {}
@@ -1977,7 +2116,8 @@ function renderHud() {
   const xpPct = next ? ((h.xp - cur) / (next - cur)) * 100 : 100;
   const hud = $('#hud');
   hud.innerHTML = `
-    <span class="name">${esc(h.name)}</span> <span class="cls">${esc(heroClass(h).name.toUpperCase())}</span>
+    <span class="name">${esc(h.name)}</span> <span class="cls">${esc(heroClass(h).name.toUpperCase())} <span class="cd d${classDiff(h).stars}">${stars(classDiff(h).stars)}</span></span>
+    <span class="press ${pressure() <= classDiff(h).floor + 0.001 ? 'max' : ''}" title="Width of your timing windows. They shrink every time you banish a monster.">Timing <b>${Math.round(pressure() * classDiff(h).pMul * 100)}%</b></span>
     <span>Lv <b data-k="lv">${h.level}</b></span>
     <span>HP <span class="bar"><i style="width:${(h.hp / h.maxHp) * 100}%"></i></span> <b data-k="hp">${h.hp}</b>/${h.maxHp}</span>
     <span>XP <span class="bar xp"><i style="width:${xpPct}%"></i></span> <span data-k="xp">${h.xp}</span>${next ? '/' + next : ''}</span>
@@ -2002,7 +2142,7 @@ function renderCombat(first) {
   $('#choose-row').hidden = c.phase !== 'choose';
   $('#qte-row').hidden = c.phase !== 'qte' || settings.assist;
   $('#m-name').textContent = m.name;
-  $('#m-src').textContent = sourceLabel(t, state.map);
+  $('#m-src').textContent = `${sourceLabel(t, state.map)} · timing ${Math.round(pressure() * classDiff(h).pMul * 100)}%`;
   if (!$('#c-hero-hp .fill')) buildBars(m);
   // HP bars drop when the hit lands on the stage, not when the timing test resolves
   const hp = h.hp, mhp = m.hp;
@@ -2052,8 +2192,9 @@ function renderClassPick() {
   for (const [id, C] of Object.entries(CLASSES)) {
     const b = document.createElement('button');
     b.type = 'button'; b.className = 'class-card'; b.setAttribute('role', 'radio'); b.setAttribute('aria-checked', String(h.cls === id)); b.disabled = locked && h.cls !== id;
-    b.innerHTML = `<canvas aria-hidden="true"></canvas><span class="cn">${esc(C.name)}</span><span class="ct">${esc(C.text)}</span>`;
-    const ctx = sizeCanvas(b.querySelector('canvas'), 56, 56); drawSprite(ctx, heroKey(id, h.race), 28, 28, 3);
+    const Df = DIFFICULTY[id];
+    b.innerHTML = `<canvas aria-hidden="true"></canvas><span class="cn">${esc(C.name)}</span><span class="cd d${Df.stars}">${stars(Df.stars)} ${Df.label.toUpperCase()}</span><span class="ct">${esc(C.text)}</span><span class="ct cdx">Timing windows ${Math.round(Df.pMul * 100)}%, shrinking ${Math.round(Df.ramp * 100)}% per kill to ${Math.round(Df.floor * Df.pMul * 100)}%. Treasure ×${Df.loot}.</span>`;
+    const ctx = sizeCanvas(b.querySelector('canvas'), 56, 56); drawSprite(ctx, heroKey(id, h.race), 28, 28, 2); heroFX(ctx, { cls: id, race: h.race }, 28, 28, 2, 0);
     b.onclick = () => chooseClass(id); box.appendChild(b);
   }
 }
@@ -2064,7 +2205,7 @@ function renderRacePick() {
     const b = document.createElement('button');
     b.type = 'button'; b.className = 'class-card'; b.setAttribute('role', 'radio'); b.setAttribute('aria-checked', String((h.race || 'human') === id)); b.disabled = locked && h.race !== id;
     b.innerHTML = `<canvas aria-hidden="true"></canvas><span class="cn">${esc(R.name)}</span><span class="ct">${esc(R.text)}</span>`;
-    const ctx = sizeCanvas(b.querySelector('canvas'), 56, 56); drawSprite(ctx, heroKey(h.cls, id), 28, 28, 3);
+    const ctx = sizeCanvas(b.querySelector('canvas'), 56, 56); drawSprite(ctx, heroKey(h.cls, id), 28, 28, 2); heroFX(ctx, { cls: h.cls, race: id }, 28, 28, 2, 0);
     b.onclick = () => chooseRace(id); box.appendChild(b);
   }
 }
@@ -2276,7 +2417,8 @@ function drawPortrait(now) {
   const hk = clamp((now - portrait.hop) / 380, 0, 1), hop = REDUCED ? 0 : Math.sin(Math.PI * hk) * 18;
   const breathe = REDUCED ? 1 : 1 + 0.025 * Math.sin(now / 450);
   shadow(ctx, 85, 160, 90 - hop, 0.4);
-  drawSprite(ctx, heroSpriteAt(now, { look }), 85, 88 - hop, 8, 1, { sy: breathe });
+  drawSprite(ctx, heroSpriteAt(now, { look }), 85, 86 - hop, 6, 1, { sy: breathe });
+  heroFX(ctx, h, 85, 86 - hop, 6, now);
   if (!REDUCED) {
     const C = h.cls, ph = (now / 1000) % 4;
     if (C === 'mage' && ph < 1.2) { ctx.fillStyle = `rgba(159,231,255,${0.8 - ph * 0.6})`; for (let i = 0; i < 3; i++) ctx.fillRect(140 + Math.sin(now / 200 + i) * 6, 20 - ph * 20 - i * 6 + 20, 3, 3); }
@@ -2517,6 +2659,7 @@ window.__cq = {
   get qte() { return qte && { kind: qte.kind, mode: qte.mode, zones: qte.zones, fill: qte.fill, downAt: qte.downAt, holding: qte.holding, type: qte.type, start: qte.start, target: qte.target, P: qte.P, G: qte.G, pauseAt: qte.pauseAt, pause: qte.pause, decoy: qte.decoy }; },
   // Balance bots: 'perfect' | 'good' | 'miss' | 'mixed' (25% perfect, 50% good, 25% miss, seeded) | null for real input
   setGrade(policy) {
+    if (typeof policy === 'string' && policy.startsWith('skill:')) { const [, sk, seed] = policy.split(':').map(Number); testGrade = { skill: sk, rng: makeRng(sk * 7919 + (seed || 0) * 104729) }; return; }
     if (policy === 'mixed') { const r = makeRng(1234); testGrade = () => { const x = r.next(); return x < 0.25 ? 'perfect' : x < 0.75 ? 'good' : 'miss'; }; }
     else testGrade = policy;
   }

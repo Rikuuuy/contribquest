@@ -39,6 +39,17 @@ This repository currently holds the **design prototype**, created on 16 Nov 2026
      | Knight | Gold bar, slower sweep | **Hold** Space to block (×0.3 damage); press right at impact to **parry** | +25% HP, −1 ATK |
      | Rogue | **Combo**: three gold marks in one sweep, each graded | **Sidestep**: 1.5× wider Perfect window and a full-ATK counter, but a near miss only grazes (×0.55) | −10% HP |
      | Mage | **Charge**: hold Space and release in the gold; holding to 100% overloads | Press as the ring meets the gold | −10% HP, +2 ATK, critical ×1.9 |
+   - Classes have different **difficulty**. Harder classes have narrower and faster timing tests, take more damage, and earn more treasure:
+
+     | Class | Difficulty | Timing windows | Shrink per kill (floor) | Monster damage | Treasure |
+     | --- | --- | --- | --- | --- | --- |
+     | Knight | ★ Easy | 125% | 1% (to 92%) | ×0.85 | ×1 |
+     | Wanderer | ★★ Normal | 95% | 2% (to 82%) | ×1.5 | ×1.1 |
+     | Mage | ★★★ Hard | 72% | 3% (to 72%) | ×2.4 | ×1.25 |
+     | Rogue | ★★★★ Nightmare | 62% | 4% (to 60%) | ×3.0 | ×1.5 |
+
+     **The run gets harder as you go:** every monster you banish narrows your timing windows and speeds the tests up, and the boss's Phase 2 narrows them another 10%. The HUD shows your current **Timing %**.
+
    - Pick a **race** too. It changes your hero's face and gives one passive:
 
      | Race | Look | Passive |
@@ -86,7 +97,7 @@ This repository currently holds the **design prototype**, created on 16 Nov 2026
 - **Raid a friend's graph.** Fill in a friend's username under "Raid a friend's graph". Your hero is built from your graph, the map and the Phantom from theirs. Direct link: `?u=<you>&vs=<friend>`.
 - **Challenge links.** "Copy challenge link" copies `?vs=<map owner>`. Whoever opens it enters their own username and raids that graph.
 - **Today's tile.** If you contributed today you get the **Commit Blessing**: a free relic at the start of the run. If not, the **Uncommitted Curse** makes monsters hit 15% harder until you commit.
-- **Trophies.** 13 trophies are saved in your browser across runs, for example *Zero Regressions* (beat the Phantom without taking damage) and *Graph Raider* (win a raid).
+- **Trophies.** 14 trophies are saved in your browser across runs, for example *Zero Regressions* (beat the Phantom without taking damage) and *Graph Raider* (win a raid).
 - **Share card.** "Save share card" downloads a 1200×630 PNG of your map and run stats, sized for social posts.
 
 ## Sound and effects
