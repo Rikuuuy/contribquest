@@ -163,6 +163,15 @@
 
   /* hero classes */
   .class-head { font-size: 10px; color: var(--muted); margin: 16px 0 8px; }
+  #race-pick { display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap: 8px; }
+  .portrait-wrap { position: relative; }
+  #hero-portrait { cursor: pointer; display: block; }
+  .bubble { position: absolute; left: 50%; bottom: calc(100% - 14px); transform: translateX(-50%); width: max-content; max-width: 220px; z-index: 2;
+    background: #f4efe0; color: #14121c; font-size: 12.5px; font-weight: 600; line-height: 1.35; padding: 7px 10px; border-radius: 8px; border: 2px solid #05060a; animation: pop .3s ease-out; text-align: center; }
+  .bubble::after { content: ''; position: absolute; left: 50%; top: 100%; transform: translateX(-50%); border: 7px solid transparent; border-top-color: #05060a; }
+  #map-tip { position: absolute; z-index: 3; pointer-events: none; background: rgba(9,11,18,.94); border: 1px solid #5d3fb0; border-radius: 6px; padding: 6px 9px; font-size: 12.5px; color: var(--text); white-space: nowrap; transform: translate(-50%, calc(-100% - 10px)); }
+  #map-tip b { color: #d9c6ff; }
+  #map { cursor: pointer; }
   #class-pick { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 8px; }
   .class-card { display: flex; flex-direction: column; align-items: center; gap: 4px; text-align: center; background: #0d1117; color: var(--text); border: 2px solid var(--line); box-shadow: none; padding: 8px; font-family: var(--sans); font-size: 12px; }
   .class-card .cn { font-family: var(--pixel); font-size: 10px; color: var(--text); }
@@ -248,7 +257,8 @@
     <p class="tag" id="sum-range"></p>
     <div class="card summary">
       <div class="portrait">
-        <canvas id="hero-portrait" aria-hidden="true"></canvas>
+        <div class="portrait-wrap"><div id="portrait-bubble" class="bubble" hidden></div><canvas id="hero-portrait" role="button" tabindex="0" aria-label="Your hero. Click to say hello."></canvas></div>
+        <div class="pixel" style="font-size:9px;color:var(--muted)" id="sum-identity"></div>
         <img id="sum-avatar" class="avatar" alt="" hidden>
         <div class="pixel" style="font-size:10px;color:var(--purple)" id="sum-aura"></div>
       </div>
@@ -257,6 +267,8 @@
         <div class="stat trait"><div class="k">Trait from your weekday pattern</div><div class="v" id="sum-trait" style="font-size:16px"></div><div id="sum-trait-text" class="k"></div></div>
         <div class="stat omen" id="sum-omen"><div class="k" id="sum-omen-k"></div><div class="v" id="sum-omen-v" style="font-size:16px"></div><div class="k" id="sum-omen-t"></div></div>
         <p class="quiet" id="sum-quiet" hidden>A quiet graph. Few spirits stir here, so some lost ghosts have risen from your empty days.</p>
+        <h3 class="class-head">CHOOSE YOUR RACE</h3>
+        <div id="race-pick" role="radiogroup" aria-label="Hero race"></div>
         <h3 class="class-head">CHOOSE YOUR CLASS</h3>
         <div id="class-pick" role="radiogroup" aria-label="Hero class"></div>
         <div class="xp-table" id="sum-xp"></div>
@@ -277,6 +289,7 @@
     <div class="card hud" id="hud"></div>
     <div class="board">
       <canvas id="map" tabindex="0" aria-label="Game map"></canvas>
+      <div id="map-tip" hidden></div>
       <div id="combat" hidden>
         <div class="fight" role="dialog" aria-labelledby="m-name">
           <h3 id="m-name"></h3>
@@ -507,7 +520,7 @@ const QTE = {
   counter: 0.5, dmgScale: 1.25
 };
 const SETTINGS_KEY = 'cq:v1:settings';
-let settings = { calm: false, assist: false, mute: false, heroClass: 'wanderer' };
+let settings = { calm: false, assist: false, mute: false, heroClass: 'wanderer', heroRace: 'human' };
 try { settings = { ...settings, ...JSON.parse(localStorage.getItem(SETTINGS_KEY) || '{}') }; } catch (_) {}
 const saveSettings = () => { try { localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings)); } catch (_) {} };
 
@@ -640,6 +653,187 @@ const CLASSES = {
   mage: { name: 'Mage', strike: 'charge', guard: 'ring', hp: 0.9, atk: 2, color: ['#c0503a', '#7a2a1e'],
     text: 'Hold Space to charge a spell and release in the gold. Hold too long and it overloads. Critical spells hit x1.9. -10% HP, +2 ATK.' }
 };
+/* ---------- hero sprites: 16x16, an outfit per class with a race's face and skin ---------- */
+const OUTFITS = {
+ "wanderer": {
+  "rows": [
+   "......AAAA......",
+   ".....AAAAAA.....",
+   "....AAAAAAAA....",
+   "....ABBBBBBA....",
+   "....AssssssA....",
+   "....AsessesA....",
+   "....ASsmmsSA....",
+   "...AAABSSBAAA...",
+   "..AAAAATTAAAAA..",
+   ".AAAAAAAAAAAAs..",
+   ".ABAAllllAABAWW.",
+   ".ABAAAAAAAABAxx.",
+   "..ABAAAAAABA.WW.",
+   "..ABBAAAABBA....",
+   "...bbb..bbb.....",
+   "...bbb..bbb....."
+  ],
+  "step": [
+   "..bbb....bbb....",
+   "..bb......bb...."
+  ],
+  "pal": {
+   "A": "#6c4bb5",
+   "B": "#432c7a",
+   "T": "#ffd257",
+   "w": "#8b93a3",
+   "W": "#545a69",
+   "x": "#ffd27a",
+   "l": "#7a4a26",
+   "b": "#2a1d14"
+  }
+ },
+ "knight": {
+  "rows": [
+   ".......TT.......",
+   ".....wwTTww.....",
+   "....wwwwwwww....",
+   "....wWWWWWWw.w..",
+   "....wssssssw.w..",
+   "....wsessesw.w..",
+   "....wSsmmsSw.w..",
+   "...wwWWWWWWwwW..",
+   "TTTwwAATTAAwwll.",
+   "TATwAAAAAAAAws..",
+   "TATwAABllBAAw...",
+   "TATWAAAAAAAAW...",
+   ".T..WAAAAAAW....",
+   "....WWAAAAWW....",
+   "....WWW..WWW....",
+   "....bbb..bbb...."
+  ],
+  "step": [
+   "...WWW....WWW...",
+   "...bb......bb..."
+  ],
+  "pal": {
+   "A": "#3b6fb5",
+   "B": "#24467a",
+   "T": "#ffd257",
+   "w": "#c9d2de",
+   "W": "#7d8799",
+   "l": "#7a4a26",
+   "b": "#3a3f4a",
+   "x": "#ffffff"
+  }
+ },
+ "rogue": {
+  "rows": [
+   "................",
+   "......AAAA......",
+   ".....AAAAAA.....",
+   "....AAABBAAA....",
+   "....AssssssA....",
+   "....AsessesA....",
+   "....ABBBBBBA....",
+   "...AABBBBBBAA...",
+   "..sAAAAllAAAAs..",
+   ".wWAAAAAAAAAAWw.",
+   ".w.ABAAAAAABA.w.",
+   "...ABAAllAABA...",
+   "...ABAAAAAABA...",
+   "....bbA..Abb....",
+   "....bb....bb....",
+   "....bb....bb...."
+  ],
+  "step": [
+   "...bb......bb...",
+   "..bb........bb.."
+  ],
+  "masked": true,
+  "pal": {
+   "A": "#2f6b45",
+   "B": "#1c4029",
+   "T": "#b0b0b0",
+   "w": "#d8dde6",
+   "W": "#6e7685",
+   "l": "#5a3a20",
+   "b": "#1e1a16",
+   "x": "#ffffff"
+  }
+ },
+ "mage": {
+  "rows": [
+   ".......AA.....x.",
+   "......AAA....xgx",
+   ".....AAAAA....W.",
+   "...TTTTTTTTT..W.",
+   "....AssssssA..W.",
+   "....AsessesA..W.",
+   "....ASsmmsSA..W.",
+   "...AAAASSAAAA.W.",
+   "..AAAAATTAAAAAs.",
+   "..AABAAAAAABAAW.",
+   "..AABATTTTABAAW.",
+   ".AAABAAAAAABAAW.",
+   ".AABBAAAAAABBAW.",
+   ".AABBBAAAABBBAW.",
+   "..AAAAAAAAAAA.W.",
+   "....bb....bb...."
+  ],
+  "step": [
+   "..AAAAAAAAAAA.W.",
+   "...bb......bb..."
+  ],
+  "pal": {
+   "A": "#a8322b",
+   "B": "#6a1c18",
+   "T": "#ffd257",
+   "W": "#7a4a26",
+   "w": "#c9a46a",
+   "x": "#9fe7ff",
+   "g": "#5fd0ff",
+   "l": "#ffd257",
+   "b": "#2a1d14"
+  }
+ }
+};
+const RACES = {
+  human: { name: 'Human', skin: ['#f2c79b', '#d6a274'], eye: '#1a1a24', mouth: '#9a5a48', text: 'Adaptable: +10% XP from everything.', lines: ['Coffee first, then commits.', 'Just one more feature.'] },
+  elf: { name: 'Elf', skin: ['#f7e0c4', '#dcbc98'], eye: '#2fa86b', mouth: '#a8685a', ears: true, text: 'Keen Eyes: the Perfect timing window is 15 ms wider.', lines: ['I can see your off-by-one from here.', 'Tabs. Always tabs.'] },
+  orc: { name: 'Orc', skin: ['#7fae5a', '#5c8a3e'], eye: '#ffcf3a', mouth: '#3d5a28', tusks: true, text: 'Brute: +2 ATK.', lines: ['SMASH THE BUGS!', 'Me no read docs.'] },
+  skeleton: { name: 'Skeleton', skin: ['#ebe6d6', '#b9b3a0'], eye: '#ff6a2a', mouth: '#2a2420', teeth: true, text: 'Undying: once per run, a lethal hit leaves you at 1 HP.', lines: ['I came back for the bugs.', 'Legacy code? I AM legacy.'] },
+  vampire: { name: 'Vampire', skin: ['#e6e1f0', '#c2b9d6'], eye: '#e0263c', mouth: '#5a1020', fangs: true, text: 'Bloodthirst: every critical hit heals 2 HP.', lines: ['I only code after midnight.', 'Your commits look... delicious.'] }
+};
+const heroRace = (h) => RACES[(h && h.race) || 'human'] || RACES.human;
+const hasRace = (id) => !!(state && (state.hero.race || 'human') === id);
+function heroKey(cls, race, frame = 'idle') {
+  const key = `H:${cls}:${race}:${frame}`;
+  if (SPR[key]) return key;
+  const O = OUTFITS[cls] || OUTFITS.wanderer, R = RACES[race] || RACES.human;
+  const g = O.rows.map((r) => r.split(''));
+  if (frame === 'step') { g[14] = O.step[0].split(''); g[15] = O.step[1].split(''); }
+  if (R.ears) { g[5][3] = 's'; g[4][2] = 'S'; g[5][12] = 's'; g[4][13] = 'S'; }
+  if (!O.masked) {
+    if (R.tusks) { g[6][6] = 'u'; g[6][9] = 'u'; }
+    if (R.teeth) { g[6][6] = 'm'; g[6][7] = 'u'; g[6][8] = 'm'; g[6][9] = 'u'; g[6][5] = 'S'; g[6][10] = 'S'; }
+    if (R.fangs) { g[6][7] = 'u'; g[6][8] = 'u'; g[6][6] = 'm'; g[6][9] = 'm'; }
+  }
+  const ex = [6, 9];
+  if (frame === 'blink') ex.forEach((x) => { g[5][x] = R.teeth ? 'm' : 'S'; });
+  if (frame === 'lookL' || frame === 'lookR') { const d = frame === 'lookL' ? -1 : 1; ex.forEach((x) => { g[5][x] = 's'; }); ex.forEach((x) => { g[5][x + d] = 'e'; }); }
+  const pal = { ...O.pal, s: R.skin[0], S: R.skin[1], e: R.eye, m: R.mouth, u: '#f4efe0' };
+  const c = document.createElement('canvas'); c.width = 16; c.height = 16; const x = c.getContext('2d');
+  g.forEach((row, yy) => row.forEach((ch, xx) => { if (ch !== '.' && pal[ch]) { x.fillStyle = pal[ch]; x.fillRect(xx, yy, 1, 1); } }));
+  const base = outlineSprite(c, '#05060a');
+  SPR[key] = { base, white: silhouette(base, '#ffffff'), red: silhouette(base, '#ff4040'), gold: silhouette(base, '#ffd257') };
+  return key;
+}
+/* Frame choice: a step while moving, a blink every few seconds, eyes that follow the cursor on the summary. */
+function heroSpriteAt(now, o = {}) {
+  const h = o.hero || (state && state.hero) || {};
+  let frame = 'idle';
+  if (o.moving) frame = 'step';
+  else if (!REDUCED && (now + (o.seed || 0)) % 3400 < 130) frame = 'blink';
+  else if (o.look) frame = o.look < 0 ? 'lookL' : 'lookR';
+  return heroKey(h.cls || 'wanderer', h.race || 'human', frame);
+}
 const heroClass = (h) => CLASSES[(h && h.cls) || 'wanderer'] || CLASSES.wanderer;
 const CLASS_HINT = {
   wanderer: 'Attack, then press Space as the marker crosses the gold.',
@@ -647,14 +841,14 @@ const CLASS_HINT = {
   rogue: 'Attack, then press Space on each of the three gold marks.',
   mage: 'Attack, then hold Space and release when the charge reaches the gold.'
 };
-const heroSprite = () => 'hero_' + ((state && state.hero.cls) || 'wanderer');
+const heroSprite = () => heroSpriteAt(performance.now());
 /* Damage multipliers per timing grade, by test type. Combo multipliers apply to each of its three hits. */
 const ATK_MULT = { bar: { perfect: 1.6, good: 1, miss: 0.5 }, charge: { perfect: 1.9, good: 1.1, miss: 0.4 }, combo: { perfect: 0.7, good: 0.45, miss: 0.12 } };
 const DEF_MULT = { ring: { perfect: 0, good: 0.4, miss: 1 }, shield: { perfect: 0, good: 0.3, miss: 1 }, sidestep: { perfect: 0, good: 0.55, miss: 1 } };
 function applyStats(h) {
   const R = h.relics || [], C = heroClass(h);
   h.maxHp = Math.round((30 + 6 * (h.level - 1) + 5 * h.aura + h.trait.hp + (R.includes('coffee') ? 10 : 0)) * C.hp);
-  h.atk = 5 + 2 * (h.level - 1) + h.aura + (R.includes('stack') ? 3 : 0) + C.atk;
+  h.atk = 5 + 2 * (h.level - 1) + h.aura + (R.includes('stack') ? 3 : 0) + C.atk + ((h.race || 'human') === 'orc' ? 2 : 0);
 }
 /* Relics: one is offered from three each time a chest is opened. Each can be owned once. */
 const RELICS = [
@@ -675,7 +869,7 @@ function makeHero(set) {
   const total91 = set.days.reduce((a, d) => a + d.count, 0);
   const xp = Math.round(15 * Math.sqrt(total91));
   const level = levelFor(xp);
-  const h = { name: set.username, xp, level, startLevel: level, aura: Math.min(Math.floor(set.streak / 7), 4), trait: makeTrait(set.days, total91), treasure: 0, total91, relics: [], cls: CLASSES[settings.heroClass] ? settings.heroClass : 'wanderer' };
+  const h = { name: set.username, xp, level, startLevel: level, aura: Math.min(Math.floor(set.streak / 7), 4), trait: makeTrait(set.days, total91), treasure: 0, total91, relics: [], cls: CLASSES[settings.heroClass] ? settings.heroClass : 'wanderer', race: RACES[settings.heroRace] ? settings.heroRace : 'human' };
   applyStats(h); h.hp = h.maxHp; return h;
 }
 function makeMonster(t, hero, map) {
@@ -1008,12 +1202,14 @@ function drawMap(ctx, map, L, o) {
     const h = o.hero; let { col, row } = h.pos, k = 1;
     if (h.anim) { k = clamp((now - h.anim.start) / 140, 0, 1); col = h.anim.from.col + (col - h.anim.from.col) * k; row = h.anim.from.row + (row - h.anim.from.row) * k; }
     const [x, y] = tileXY(L, col, row), cx = x + T / 2, cy = y + T / 2;
-    const hop = REDUCED ? 0 : Math.sin(Math.PI * k) * T * 0.2;
+    const ik = h.idleHop ? clamp((now - h.idleHop) / 320, 0, 1) : 1;
+    const hop = REDUCED ? 0 : Math.sin(Math.PI * k) * T * 0.2 + Math.sin(Math.PI * ik) * T * 0.16;
+    const hss = T >= 50 ? 3 : 2;
     const squash = REDUCED || !h.anim || k < 1 ? 1 : 1 - 0.12 * Math.max(0, 1 - (now - h.anim.start - 140) / 120);
     heroPx = { x: cx, y: cy };
     if (h.aura > 0) glow(ctx, cx, cy, T * (0.55 + 0.08 * h.aura), 'rgba(180,140,255,A)', 0.25 + 0.12 * h.aura + 0.08 * Math.sin(now / 250));
     shadow(ctx, cx, cy + T * 0.34, T * (0.5 - hop / T * 0.6));
-    drawSprite(ctx, heroSprite(), cx, cy - hop + (REDUCED ? 0 : Math.sin(now / 300) * 1), ss, 1, { flip: h.face < 0, sy: squash, sx: 2 - squash });
+    drawSprite(ctx, heroSpriteAt(now, { moving: k < 1, hero: h.hero }), cx, cy - hop + (REDUCED ? 0 : Math.sin(now / 300) * 1), hss, 1, { flip: h.face < 0, sy: squash * (REDUCED ? 1 : 1 + 0.02 * Math.sin(now / 420)), sx: 2 - squash });
     for (let i = 0; i < h.aura * 2; i++) {
       const an = now / 600 + (i * Math.PI * 2) / (h.aura * 2), rr = T * 0.48;
       ctx.fillStyle = 'rgba(210,180,255,.85)'; ctx.fillRect(cx + Math.cos(an) * rr - 1.5, cy - hop + Math.sin(an) * rr * 0.5 - 1.5, 3, 3);
@@ -1067,7 +1263,7 @@ const SW = 440, SH = 190, GROUND = 152, HX = 118, MX = 322;
 let stageCtx = null;
 const stage = { fx: makeFx(), q: [], hero: {}, mon: {}, slowUntil: 0, freezeUntil: 0, last: 0, intro: 0, tier: 1, bg: null };
 const MON_SCALE = (tier) => (tier === 5 ? 7 : tier === 4 ? 6 : 5.5);
-const heroY = () => GROUND - 42;
+const heroY = () => GROUND - 45;
 const monY = (tier) => GROUND - 7 * MON_SCALE(tier);
 const lunge = (dt, out = 110, back = 220) => (dt < 0 || dt > out + back ? 0 : dt < out ? easeOutCubic(dt / out) : 1 - (dt - out) / back);
 function stageBg(level, boss) {
@@ -1193,7 +1389,7 @@ function drawStage(now) {
   if (q && q.kind === 'attack') hx -= 16 * qk;
   const dK = (now - stage.hero.dodge) / 420;
   if (dK >= 0 && dK < 1) {
-    for (let i = 3; i >= 1; i--) { const s2 = Math.sin(Math.PI * Math.max(0, dK - i * 0.08)); drawSprite(ctx, heroSprite(), HX - s2 * 62, hy - s2 * 34, 6, 0.16 * i, { gold: true }); }
+    for (let i = 3; i >= 1; i--) { const s2 = Math.sin(Math.PI * Math.max(0, dK - i * 0.08)); drawSprite(ctx, heroKey(state.hero.cls, state.hero.race), HX - s2 * 62, hy - s2 * 34, 5, 0.16 * i, { gold: true }); }
     const s = Math.sin(Math.PI * dK); hx -= s * 62; hy -= s * 34;
   }
   const hK = (now - stage.hero.hurt) / 260; if (hK >= 0 && hK < 1) hx -= (1 - hK) * 18;
@@ -1201,7 +1397,8 @@ function drawStage(now) {
   const deadK = stage.hero.dead == null ? 0 : clamp((now - stage.hero.dead) / 400, 0, 1);
   shadow(ctx, HX, GROUND + 2, 72);
   if (state && state.hero.aura) glow(ctx, hx, hy, 62, 'rgba(180,140,255,A)', 0.15 + 0.06 * state.hero.aura);
-  drawSprite(ctx, heroSprite(), hx, hy + deadK * 30, 6, 1, { white: hK >= 0 && hK < 0.3, rot: -1.4 * deadK, flip: runK >= 0 });
+  if (!REDUCED && !q && deadK === 0) hy += Math.sin(now / 320) * 1.5;
+  drawSprite(ctx, heroSpriteAt(now, { moving: runK >= 0, seed: 700 }), hx, hy + deadK * 30, 5, 1, { white: hK >= 0 && hK < 0.3, rot: -1.4 * deadK, flip: runK >= 0 });
   const bK = (now - stage.hero.block) / 260;
   if (bK >= 0 && bK < 1) { ctx.save(); ctx.globalAlpha = 1 - bK; ctx.strokeStyle = '#9fd8ff'; ctx.lineWidth = 5; ctx.beginPath(); ctx.arc(hx + 8, hy, 52, -0.9, 0.9); ctx.stroke(); ctx.restore(); }
   fxDraw(stage.fx, ctx);
@@ -1260,6 +1457,7 @@ function loadSave() {
     if (!Number.isInteger(s.map.shardsNeeded)) s.map.shardsNeeded = 0;
     if (!Array.isArray(s.hero.relics)) s.hero.relics = [];
     if (!CLASSES[s.hero.cls]) s.hero.cls = 'wanderer';
+    if (!RACES[s.hero.race]) s.hero.race = 'human';
     if (s.combat) s.combat.phase = 'choose'; // a timing test in progress is not resumed
     return s;
   } catch (_) { return null; }
@@ -1311,7 +1509,7 @@ function enterTile(t) {
   }
 }
 function gainXp(x) {
-  const h = state.hero; h.xp += x; const L = levelFor(h.xp);
+  const h = state.hero; if (hasRace('human')) x = Math.round(x * 1.1); h.xp += x; const L = levelFor(h.xp);
   if (L > h.level) {
     h.level = L; applyStats(h); h.hp = h.maxHp; log(`Level up! You are now level ${L}. HP fully restored.`);
     setTimeout(() => {
@@ -1404,6 +1602,7 @@ function startQte(kind, done, pat = {}) {
   const c = state.combat, tier = c.m.tier, calm = settings.calm ? QTE.calm : 1, C = heroClass(state.hero);
   const mode = kind === 'attack' ? C.strike : C.guard;
   let P = (QTE.perfect + QTE.auraPerfect * state.hero.aura + (hasRelic('linter') ? 25 : 0)) * calm, G = QTE.good * calm;
+  if (hasRace('elf')) P += 15 * calm;
   if (mode === 'sidestep') P *= 1.5;
   let dur, target, zone = 0, extra = {}, type = pat.type || 'normal';
   if (mode === 'bar') { dur = (1200 - 40 * tier) * calm * (C.slow || 1); zone = 0.5 + 0.3 * rand(); target = zone * dur; }
@@ -1529,6 +1728,10 @@ function resolveAttack(grade) {
   if (m.hp > 0) checkPhase(m);
   const crits = grades.filter((g) => g === 'perfect').length;
   state.stats.crits = (state.stats.crits || 0) + crits;
+  if (crits && hasRace('vampire') && h.hp < h.maxHp) {
+    const heal = Math.min(h.maxHp - h.hp, 2 * crits); h.hp += heal; renderHud();
+    stageAt(260, () => fxText(stage.fx, HX, heroY() - 72, '+' + heal + ' HP', { color: '#ff5a7a', size: 10 }));
+  }
   const verb = mode === 'charge' ? 'Your spell hits' : grades.length > 1 ? `Your ${grades.length}-hit combo hits` : 'You hit';
   clog(`${crits && grades.length === 1 ? 'Critical! ' : ''}${verb} ${m.name} for ${dmg}${bonus ? ' (trait +2)' : ''}.`);
   const gap = 170;
@@ -1594,6 +1797,10 @@ function resolveDefend(grade, i) {
     const md = Math.max(1, Math.round(m.dmg * dmgMult * DEF_MULT[heroClass(h).guard][grade] * (0.9 + 0.2 * rand())));
     h.hp = Math.max(0, h.hp - md);
     if (m.tier === 5) state.stats.bossDmg = (state.stats.bossDmg || 0) + md;
+    if (h.hp === 0 && hasRace('skeleton') && !state.undying) {
+      state.undying = true; h.hp = 1; clog('Your bones rattle back together. UNDYING!');
+      stageAt(250, () => { fxText(stage.fx, HX, heroY() - 72, 'UNDYING!', { color: '#ff9a5c', size: 13, life: 1.3 }); fxRing(stage.fx, HX, heroY(), { color: '#ff6a2a', vr: 220, w: 5 }); });
+    }
     clog(grade === 'good' ? (heroClass(h).guard === 'sidestep' ? `It grazes you for ${md}.` : `You block. ${m.name} still deals ${md}.`) : `${m.name} hits you for ${md}.`);
     stageMonStrike(grade, md, h.hp === 0);
     c.phase = 'wait'; renderCombat(false); renderHud();
@@ -1733,7 +1940,7 @@ function makeShareCard() {
   const L = layout(state.map, 38, 4, true);
   ctx.save(); ctx.translate(40, 150);
   const seenBackup = state.map.tiles.map((t) => t.seen); state.map.tiles.forEach((t) => { t.seen = true; });
-  drawMap(ctx, state.map, L, { now: 0, animStart: null, fog: false, labels: true, hero: { pos: state.pos, aura: h.aura, face: h.face || 1 }, bossDown: state.bossDown });
+  drawMap(ctx, state.map, L, { now: 1000, animStart: null, fog: false, labels: true, hero: { pos: state.pos, aura: h.aura, face: h.face || 1, hero: h }, bossDown: state.bossDown });
   state.map.tiles.forEach((t, i) => { t.seen = seenBackup[i]; });
   ctx.restore();
   // stats column
@@ -1809,9 +2016,8 @@ function showSummary() {
   if (state.heroSet) $('#sum-title').innerHTML = `${esc(hs.username)} raids the graph of <span id="sum-name">${esc(s.username)}</span>`;
   else $('#sum-title').innerHTML = `The graph of <span id="sum-name">${esc(s.username)}</span>`;
   $('#sum-range').textContent = `${fmtDate(d[0].date)} to ${fmtDate(d[d.length - 1].date)} · ${s.source === 'demo' ? 'demo data' : s.source === 'cache' ? 'cached data' : 'live data'}`;
-  const pc = sizeCanvas($('#hero-portrait'), 160, 160);
-  if (h.aura) glow(pc, 80, 80, 80, 'rgba(180,140,255,A)', 0.2 + 0.12 * h.aura);
-  drawSprite(pc, heroSprite(), 80, 80, 11);
+  portrait.ctx = sizeCanvas($('#hero-portrait'), 170, 170);
+  $('#sum-identity').textContent = `${heroRace(h).name.toUpperCase()} ${heroClass(h).name.toUpperCase()}`;
   const av = $('#sum-avatar');
   if (hs.source !== 'demo') { av.src = `https://github.com/${encodeURIComponent(hs.username)}.png?size=24`; av.hidden = false; av.onerror = () => { av.hidden = true; }; } else av.hidden = true;
   $('#sum-aura').textContent = h.aura ? `STREAK AURA · TIER ${h.aura}` : 'NO AURA YET';
@@ -1837,7 +2043,7 @@ function showSummary() {
     ? `${today.count} contribution${today.count === 1 ? '' : 's'} today. You start the run with a free relic.`
     : 'No contributions yet today, so monsters hit 15% harder. Commit something, then come back for the blessing.';
   $('#sum-xp').innerHTML = 'XP per level: ' + Array.from({ length: 10 }, (_, i) => `<span class="${i + 1 === h.level ? 'on' : ''}">L${i + 1} ${xpForLevel(i + 1)}</span>`).join('');
-  renderClassPick();
+  renderRacePick(); renderClassPick();
   show('screen-summary'); $('#btn-enter').focus();
 }
 function renderClassPick() {
@@ -1847,16 +2053,34 @@ function renderClassPick() {
     const b = document.createElement('button');
     b.type = 'button'; b.className = 'class-card'; b.setAttribute('role', 'radio'); b.setAttribute('aria-checked', String(h.cls === id)); b.disabled = locked && h.cls !== id;
     b.innerHTML = `<canvas aria-hidden="true"></canvas><span class="cn">${esc(C.name)}</span><span class="ct">${esc(C.text)}</span>`;
-    const ctx = sizeCanvas(b.querySelector('canvas'), 48, 48); drawSprite(ctx, 'hero_' + id, 24, 24, 3);
+    const ctx = sizeCanvas(b.querySelector('canvas'), 56, 56); drawSprite(ctx, heroKey(id, h.race), 28, 28, 3);
     b.onclick = () => chooseClass(id); box.appendChild(b);
   }
+}
+function renderRacePick() {
+  const h = state.hero, box = $('#race-pick'); box.innerHTML = '';
+  const locked = state.stats.steps > 0;
+  for (const [id, R] of Object.entries(RACES)) {
+    const b = document.createElement('button');
+    b.type = 'button'; b.className = 'class-card'; b.setAttribute('role', 'radio'); b.setAttribute('aria-checked', String((h.race || 'human') === id)); b.disabled = locked && h.race !== id;
+    b.innerHTML = `<canvas aria-hidden="true"></canvas><span class="cn">${esc(R.name)}</span><span class="ct">${esc(R.text)}</span>`;
+    const ctx = sizeCanvas(b.querySelector('canvas'), 56, 56); drawSprite(ctx, heroKey(h.cls, id), 28, 28, 3);
+    b.onclick = () => chooseRace(id); box.appendChild(b);
+  }
+}
+function chooseRace(id) {
+  if (!state || !RACES[id] || state.stats.steps > 0) return;
+  settings.heroRace = id; saveSettings();
+  const h = state.hero; h.race = id; applyStats(h); h.hp = h.maxHp;
+  save(); showSummary(); portrait.hop = performance.now(); heroSay(RACES[id].lines[0]);
+  const sel = document.querySelector('#race-pick .class-card[aria-checked="true"]'); if (sel) sel.focus();
 }
 function chooseClass(id) {
   if (!state || !CLASSES[id] || state.stats.steps > 0) return;
   settings.heroClass = id; saveSettings();
   const h = state.hero; h.cls = id; applyStats(h); h.hp = h.maxHp;
-  save(); showSummary();
-  const sel = document.querySelector('.class-card[aria-checked="true"]'); if (sel) sel.focus();
+  save(); showSummary(); portrait.hop = performance.now(); heroSay(CLASS_LINES[id]); Sfx.play('levelup');
+  const sel = document.querySelector('#class-pick .class-card[aria-checked="true"]'); if (sel) sel.focus();
 }
 function enterMap(animate = true) {
   show('screen-map');
@@ -1876,6 +2100,8 @@ function enterMap(animate = true) {
     setTimeout(() => { if (state && state.status === 'exploring' && !$('#screen-map').hidden) offerRelic('Commit Blessing: you contributed today. Choose a relic.'); }, animate && !REDUCED ? 1500 : 300);
   }
   if (animate && !REDUCED) Sfx.play('rise');
+  idle.last = performance.now(); mapBubble = null; $('#map-tip').hidden = true;
+  if (animate) setTimeout(() => { if (state && state.status === 'exploring') mapSay(heroRace(state.hero).lines[0]); }, 1900);
   $('#map').focus();
 }
 function showEnd() {
@@ -2028,11 +2254,113 @@ function bgCelebrate(won) {
 }
 addEventListener('resize', bgResize); bgResize();
 
+/* ---------- hero personality: lines, the summary portrait, map idle behaviour ---------- */
+const HERO_LINES = ['LGTM!', 'Ship it!', 'Works on my machine.', 'It is not a bug, it is a feature.', 'One more commit...', 'Who wrote this? Oh. Me.', 'git push and pray.'];
+const CLASS_LINES = { wanderer: 'My lantern sees every empty day.', knight: 'Hold the line. And the shield.', rogue: 'Three hits. Zero tests.', mage: 'Wait for the charge...' };
+function heroLine() {
+  const h = state.hero, pool = [...HERO_LINES, ...heroRace(h).lines, CLASS_LINES[h.cls] || ''].filter(Boolean);
+  return pool[Math.floor(Math.random() * pool.length)];
+}
+const portrait = { ctx: null, hop: 0, mx: null };
+let bubbleTimer = null;
+function heroSay(text) {
+  const b = $('#portrait-bubble'); b.textContent = text; b.hidden = false;
+  clearTimeout(bubbleTimer); bubbleTimer = setTimeout(() => { b.hidden = true; }, 2200);
+}
+function drawPortrait(now) {
+  const ctx = portrait.ctx; if (!ctx || !state) return;
+  const h = state.hero; ctx.clearRect(0, 0, 170, 170);
+  if (h.aura) glow(ctx, 85, 90, 82, 'rgba(180,140,255,A)', 0.18 + 0.1 * h.aura + (REDUCED ? 0 : 0.05 * Math.sin(now / 400)));
+  let look = 0;
+  if (portrait.mx != null) { const r = $('#hero-portrait').getBoundingClientRect(), dx = portrait.mx - (r.left + r.width / 2); look = dx < -50 ? -1 : dx > 50 ? 1 : 0; }
+  const hk = clamp((now - portrait.hop) / 380, 0, 1), hop = REDUCED ? 0 : Math.sin(Math.PI * hk) * 18;
+  const breathe = REDUCED ? 1 : 1 + 0.025 * Math.sin(now / 450);
+  shadow(ctx, 85, 160, 90 - hop, 0.4);
+  drawSprite(ctx, heroSpriteAt(now, { look }), 85, 88 - hop, 8, 1, { sy: breathe });
+  if (!REDUCED) {
+    const C = h.cls, ph = (now / 1000) % 4;
+    if (C === 'mage' && ph < 1.2) { ctx.fillStyle = `rgba(159,231,255,${0.8 - ph * 0.6})`; for (let i = 0; i < 3; i++) ctx.fillRect(140 + Math.sin(now / 200 + i) * 6, 20 - ph * 20 - i * 6 + 20, 3, 3); }
+    if (C === 'wanderer' && ph < 1.4) glow(ctx, 136, 108, 16, 'rgba(255,210,122,A)', 0.6 - ph * 0.4);
+    if (C === 'knight' && ph > 3.6) { ctx.fillStyle = '#ffffff'; const g = (ph - 3.6) / 0.4; ctx.fillRect(130, 40 + g * 40, 4, 4); }
+    if (C === 'rogue' && ph > 3.5) { ctx.fillStyle = '#d8dde6'; const a = (ph - 3.5) * 12; ctx.fillRect(22 + Math.cos(a) * 6, 112 + Math.sin(a) * 6, 3, 3); ctx.fillRect(148 - Math.cos(a) * 6, 112 + Math.sin(a) * 6, 3, 3); }
+  }
+}
+function pokePortrait() { portrait.hop = performance.now(); heroSay(heroLine()); Sfx.play('wisp'); }
+$('#hero-portrait').addEventListener('click', pokePortrait);
+$('#hero-portrait').addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); pokePortrait(); } });
+addEventListener('pointermove', (e) => { portrait.mx = e.clientX; });
+
+/* map: idle actions, a speech bubble, click the hero, tap a neighbouring tile, hover for the day's details */
+const idle = { last: performance.now(), action: 0, z: 0, hop: 0 };
+let mapBubble = null;
+['keydown', 'pointerdown'].forEach((ev) => addEventListener(ev, () => { idle.last = performance.now(); }, { capture: true }));
+function mapSay(text) { mapBubble = { text, start: performance.now() }; }
+function heroReact() { idle.hop = performance.now(); mapSay(heroLine()); Sfx.play('wisp'); const p = state.pos; mapBurst(p.col, p.row, 8, { color: ['#ffd257', '#fff3b0'], speed: 80, grav: -60, life: 0.7, size: 2, glow: true }); }
+function idleTick(now) {
+  if (!state || state.status !== 'exploring' || REDUCED) return;
+  const for_ = now - idle.last, p = state.pos, c = tileCenter(p.col, p.row); if (!c) return;
+  if (for_ > 3500 && now - idle.action > 4500) {
+    idle.action = now; const T = mapLayout.tile, cls = state.hero.cls;
+    if (cls === 'mage') fxBurst(mapFx, c.x + T * 0.3, c.y - T * 0.45, 8, { color: ['#9fe7ff', '#5fd0ff'], speed: 30, grav: -60, drag: 1, life: 1, size: 2, glow: true });
+    else if (cls === 'knight') { fxRing(mapFx, c.x + T * 0.3, c.y - T * 0.3, { color: '#ffffff', vr: 60, w: 2, life: 0.35 }); Sfx.play('block'); }
+    else if (cls === 'rogue') { state.hero.face = -(state.hero.face || 1); idle.hop = now; fxBurst(mapFx, c.x, c.y, 6, { color: '#d8dde6', speed: 90, grav: 100, life: 0.4, size: 2 }); }
+    else fxBurst(mapFx, c.x + T * 0.35, c.y + T * 0.1, 6, { color: ['#ffd27a', '#fff3b0'], speed: 25, grav: -40, life: 1, size: 2, glow: true });
+  }
+  if (for_ > 14000 && now - idle.z > 1600) { idle.z = now; fxText(mapFx, c.x + 12, c.y - mapLayout.tile * 0.55, 'z', { color: '#d9c6ff', size: 8 + Math.floor(Math.random() * 4), vy: -26, life: 1.6 }); }
+}
+function drawMapBubble(ctx, now) {
+  if (!mapBubble || !state) return;
+  const age = now - mapBubble.start; if (age > 2400) { mapBubble = null; return; }
+  const c = tileCenter(state.pos.col, state.pos.row), L = mapLayout; if (!c) return;
+  ctx.save(); ctx.font = '600 12px system-ui, sans-serif'; ctx.textBaseline = 'middle'; ctx.textAlign = 'center';
+  const w = ctx.measureText(mapBubble.text).width + 18, hgt = 24;
+  const x = clamp(c.x, w / 2 + 2, L.w - w / 2 - 2), y = Math.max(hgt / 2 + 2, c.y - L.tile * 0.95);
+  ctx.globalAlpha = age > 2100 ? (2400 - age) / 300 : Math.min(1, age / 120);
+  ctx.fillStyle = '#05060a'; rrect(ctx, x - w / 2 - 2, y - hgt / 2 - 2, w + 4, hgt + 4, 8); ctx.fill();
+  ctx.fillStyle = '#f4efe0'; rrect(ctx, x - w / 2, y - hgt / 2, w, hgt, 7); ctx.fill();
+  ctx.beginPath(); ctx.moveTo(c.x - 5, y + hgt / 2); ctx.lineTo(c.x + 5, y + hgt / 2); ctx.lineTo(c.x, y + hgt / 2 + 7); ctx.fill();
+  ctx.fillStyle = '#14121c'; ctx.fillText(mapBubble.text, x, y + 1); ctx.restore();
+}
+function tileFromEvent(e) {
+  if (!mapLayout || !state) return null;
+  const r = $('#map').getBoundingClientRect(), k = mapLayout.w / r.width;
+  const x = (e.clientX - r.left) * k, y = (e.clientY - r.top) * k, step = mapLayout.tile + mapLayout.gap;
+  const col = Math.floor((x - mapLayout.ox) / step), row = Math.floor((y - mapLayout.oy) / step);
+  const t = state.map.grid[col] && state.map.grid[col][row];
+  return t && t.kind !== 'void' ? { t, x: (mapLayout.ox + col * step + mapLayout.tile / 2) / k, y: (mapLayout.oy + row * step) / k } : null;
+}
+const KIND_LABEL = { fog: 'An empty day', wisp: 'A soul wisp', chest: 'A chest', start: 'The crypt where you woke', gate: 'The Gate' };
+function tileInfo(t) {
+  const d = t.day, when = `<b>${fmtDate(d.date)}</b> · ${d.count} contribution${d.count === 1 ? '' : 's'}`;
+  let what;
+  if (t.boss) what = t.resolved ? 'The Phantom, banished' : 'The Phantom of this day';
+  else if (!t.seen) what = 'Hidden in the fog';
+  else if (t.kind === 'monster') what = t.resolved ? `${TIER_NAMES[t.tier]}, banished` : TIER_NAMES[t.tier];
+  else what = (KIND_LABEL[t.kind] || '') + (t.resolved && (t.kind === 'chest' || t.kind === 'wisp') ? ', taken' : '');
+  return `${when}<br>${what}`;
+}
+$('#map').addEventListener('pointerdown', (e) => {
+  if (!state || state.status !== 'exploring') return;
+  const hit = tileFromEvent(e); if (!hit) return;
+  const dc = hit.t.col - state.pos.col, dr = hit.t.row - state.pos.row;
+  if (!dc && !dr) heroReact(); else if (Math.abs(dc) + Math.abs(dr) === 1) tryMove(dc, dr);
+});
+$('#map').addEventListener('pointermove', (e) => {
+  const tip = $('#map-tip'), hit = tileFromEvent(e);
+  if (!hit || (state && state.status === 'combat')) { tip.hidden = true; return; }
+  tip.innerHTML = tileInfo(hit.t); tip.hidden = false;
+  const half = tip.offsetWidth / 2 + 4, bw = $('#map').getBoundingClientRect().width;
+  tip.style.left = clamp(hit.x, half, bw - half) + 'px';
+  tip.style.top = (hit.y < tip.offsetHeight + 14 ? hit.y + mapLayout.tile + tip.offsetHeight + 24 : hit.y) + 'px';
+});
+$('#map').addEventListener('pointerleave', () => { $('#map-tip').hidden = true; });
+
 let lastFrame = performance.now();
 function frame(now) {
   requestAnimationFrame(frame);
   const dt = Math.min(0.05, (now - lastFrame) / 1000); lastFrame = now;
   drawBg(now, dt);
+  if (!$('#screen-summary').hidden) drawPortrait(now);
   if (!$('#screen-start').hidden) {
     if (now - teaserStart > 5200) teaserStart = now;
     const animStart = REDUCED ? null : teaserStart + 700;
@@ -2046,10 +2374,12 @@ function frame(now) {
     }
     const [sx, sy] = fxShakeOffset(mapFx);
     mapCtx.save(); mapCtx.clearRect(-20, -20, L.w + 40, L.h + 40); mapCtx.translate(sx, sy);
-    const hero = { pos: state.pos, anim: state.hero.anim, aura: state.hero.aura, face: state.hero.face || 1 };
+    const hero = { pos: state.pos, anim: state.hero.anim, aura: state.hero.aura, face: state.hero.face || 1, idleHop: idle.hop, hero: state.hero };
     drawMap(mapCtx, state.map, L, { now, animStart: state.animStart, fog: true, labels: true, hero, bossDown: state.bossDown, warded: state.shards < state.map.shardsNeeded, shards: state.shards, lantern: hasRelic('review') ? 3.4 : 2.7 });
     fxDraw(mapFx, mapCtx);
+    drawMapBubble(mapCtx, now);
     mapCtx.restore();
+    idleTick(now);
   }
 }
 requestAnimationFrame(frame);
@@ -2177,6 +2507,11 @@ window.__cq = {
   pickRelic(i) { pickRelic(i); },
   newRun(set, heroSet) { newRun(set, heroSet); },
   demoSet: () => makeDemoSet(),
+  layout: () => mapLayout,
+  idle,
+  heroKey: (c, r, f) => heroKey(c, r, f),
+  draw: (ctx, k, x, y, sc) => drawSprite(ctx, k, x, y, sc),
+  setRace(id) { settings.heroRace = id; if (state) { state.hero.race = id; applyStats(state.hero); state.hero.hp = state.hero.maxHp; } },
   setClass(id) { settings.heroClass = id; if (state) { state.hero.cls = id; applyStats(state.hero); state.hero.hp = state.hero.maxHp; } },
   card: () => makeShareCard().toDataURL('image/png'),
   get qte() { return qte && { kind: qte.kind, mode: qte.mode, zones: qte.zones, fill: qte.fill, downAt: qte.downAt, holding: qte.holding, type: qte.type, start: qte.start, target: qte.target, P: qte.P, G: qte.G, pauseAt: qte.pauseAt, pause: qte.pause, decoy: qte.decoy }; },

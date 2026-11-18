@@ -39,6 +39,17 @@ This repository currently holds the **design prototype**, created on 16 Nov 2026
      | Knight | Gold bar, slower sweep | **Hold** Space to block (×0.3 damage); press right at impact to **parry** | +25% HP, −1 ATK |
      | Rogue | **Combo**: three gold marks in one sweep, each graded | **Sidestep**: 1.5× wider Perfect window and a full-ATK counter, but a near miss only grazes (×0.55) | −10% HP |
      | Mage | **Charge**: hold Space and release in the gold; holding to 100% overloads | Press as the ring meets the gold | −10% HP, +2 ATK, critical ×1.9 |
+   - Pick a **race** too. It changes your hero's face and gives one passive:
+
+     | Race | Look | Passive |
+     | --- | --- | --- |
+     | Human | — | Adaptable: +10% XP from everything |
+     | Elf | Pointed ears, green eyes | Keen Eyes: Perfect window +15 ms |
+     | Orc | Green skin, tusks | Brute: +2 ATK |
+     | Skeleton | Skull face, ember eyes | Undying: once per run, a lethal hit leaves you at 1 HP |
+     | Vampire | Pale skin, red eyes, fangs | Bloodthirst: every critical hit heals 2 HP |
+
+   - Your hero is alive: it breathes, blinks, and its eyes follow your cursor on the hero screen. Click it (or press Enter on it) and it talks back. On the map, click your hero for a line, tap a neighbouring tile to step there, and hover any tile to see its date and contribution count. Leave the game alone and your hero fidgets with its gear, then falls asleep.
 6. Every chest offers a choice of **3 relics**. Keep one per chest, each at most once:
 
    | Relic | Effect |
