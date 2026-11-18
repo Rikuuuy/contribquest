@@ -31,18 +31,26 @@ This repository currently holds the **design prototype**, created on 16 Nov 2026
      - **Flaky Test Ghoul** freezes its ring part-way, then finishes. Pressing at the old pace is too early.
      - **Merge Conflict Lich** sends a dashed decoy ring with the real one. Only the solid ring counts.
      - **The Phantom** strikes twice. Below half HP it enters **Phase 2**: three faster strikes mixing every pattern.
+   - Pick a **class** on the hero screen. Each class changes the timing tests:
+
+     | Class | Strike | Defend | Stats |
+     | --- | --- | --- | --- |
+     | Wanderer | Press on the gold bar | Press as the ring meets the gold | Balanced |
+     | Knight | Gold bar, slower sweep | **Hold** Space to block (×0.3 damage); press right at impact to **parry** | +25% HP, −1 ATK |
+     | Rogue | **Combo**: three gold marks in one sweep, each graded | **Sidestep**: 1.5× wider Perfect window and a full-ATK counter, but a near miss only grazes (×0.55) | −10% HP |
+     | Mage | **Charge**: hold Space and release in the gold; holding to 100% overloads | Press as the ring meets the gold | −10% HP, +2 ATK, critical ×1.9 |
 6. Every chest offers a choice of **3 relics**. Keep one per chest, each at most once:
 
    | Relic | Effect |
    | --- | --- |
    | Rubber Duck | The first missed timing in each fight counts as Good |
    | Hotfix | Every perfect dodge heals 6% of max HP |
-   | Force Push | Critical hits deal ×2.0 instead of ×1.6 |
+   | Force Push | Critical hits deal 25% more damage |
    | Linter | The Perfect window is 25 ms wider |
    | Stack Overflow | +3 ATK |
    | Cold Brew | +10 max HP, and heal 10 now |
    | Git Blame | Counter-attacks deal full ATK instead of half |
-   | Pair Programmer | Glancing blows deal ×0.8 instead of ×0.5 |
+   | Pair Programmer | Glancing blows deal 60% more damage |
    | Code Review | Your lantern reveals and lights a wider area |
    | CI Cache | Fleeing with a Good press takes no damage |
 7. The boss is the Phantom of your best day. It is warded until you banish 3 elites (Ghouls or Liches).
@@ -67,7 +75,7 @@ This repository currently holds the **design prototype**, created on 16 Nov 2026
 - **Raid a friend's graph.** Fill in a friend's username under "Raid a friend's graph". Your hero is built from your graph, the map and the Phantom from theirs. Direct link: `?u=<you>&vs=<friend>`.
 - **Challenge links.** "Copy challenge link" copies `?vs=<map owner>`. Whoever opens it enters their own username and raids that graph.
 - **Today's tile.** If you contributed today you get the **Commit Blessing**: a free relic at the start of the run. If not, the **Uncommitted Curse** makes monsters hit 15% harder until you commit.
-- **Trophies.** 12 trophies are saved in your browser across runs, for example *Zero Regressions* (beat the Phantom without taking damage) and *Graph Raider* (win a raid).
+- **Trophies.** 13 trophies are saved in your browser across runs, for example *Zero Regressions* (beat the Phantom without taking damage) and *Graph Raider* (win a raid).
 - **Share card.** "Save share card" downloads a 1200×630 PNG of your map and run stats, sized for social posts.
 
 ## Sound and effects
