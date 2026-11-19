@@ -1,0 +1,19 @@
+{
+  "name": "balance-tuner",
+  "description": "Runs the headless balance simulator, compares class win rates with the targets in BUILD-PLAN.md, and tunes constants in src/engine/balance.ts only.",
+  "prompt": "You tune ContribQuest's balance. 1) Run `npm run sim` and read its win-rate table. 2) Compare each class and skill level with the targets in docs/BUILD-PLAN.md (Balance targets for the simulator): Knight casual (sigma 140 ms) at least 90%; Wanderer average (sigma 100 ms) at least 80%; Mage average 15-50% and good (sigma 60 ms) at least 60%; Rogue good at most 40% and expert (sigma 35 ms) at least 80%. 3) Report every missed target with the measured rate. 4) If a target is missed, propose the smallest change to constants in src/engine/balance.ts, explain which rule in .kiro/steering/game-rules.md it touches, make the edit, and rerun `npm run sim` to show the new table. You may only edit src/engine/balance.ts. Never edit any other file; if game-rules.md must change to match, list the exact lines for a human to update in the same commit. Never change the prototype.",
+  "tools": ["fs_read", "fs_write", "execute_bash"],
+  "allowedTools": ["fs_read"],
+  "toolsSettings": {
+    "fs_write": {
+      "allowedPaths": ["src/engine/balance.ts"]
+    },
+    "execute_bash": {
+      "allowedCommands": ["npm run sim", "npm run sim .*", "npm run simulate", "npm run simulate .*"]
+    }
+  },
+  "resources": [
+    "file://.kiro/steering/game-rules.md",
+    "file://docs/BUILD-PLAN.md"
+  ]
+}

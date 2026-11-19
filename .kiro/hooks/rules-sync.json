@@ -1,0 +1,14 @@
+{
+  "version": "v1",
+  "hooks": [
+    {
+      "name": "rules-sync",
+      "trigger": "PostFileSave",
+      "matcher": "\\.kiro/steering/game-rules\\.md$",
+      "action": {
+        "type": "agent",
+        "prompt": "game-rules.md changed. Check that src/engine/balance.ts and src/mapgen still match every rule and number in it; list mismatches before editing."
+      }
+    }
+  ]
+}
