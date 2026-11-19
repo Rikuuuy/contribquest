@@ -191,6 +191,22 @@ Requirements with no PRD FR ID are tagged with the PRD section they come from, f
 
 12.4 WHEN a relic offer is made THE SYSTEM SHALL show it 380 ms later with the `chest` sound, focus the first card, and hide it on pick. [FR-REL-1]
 
+### Requirement 17: Timing accuracy feedback
+
+**User story:** As a player, I want to see how early or late each press was, so I can learn the timing instead of guessing.
+
+#### Acceptance criteria
+
+17.1 WHILE a ring, sidestep, or shield test runs THE SYSTEM SHALL draw the moving ring green while the current time is inside the Good window and gold (thicker, glowing) inside the Perfect window, using the same offset-corrected time that grading uses. [FR-FX-9]
+
+17.2 WHILE a ring, sidestep, or shield test runs THE SYSTEM SHALL draw an approach strip from the test start to impact plus G, with the Perfect zone in gold, the Good zone in green, the flaky pause freezing its marker, and the conflict decoy as a dashed tick. [FR-FX-9]
+
+17.3 WHEN a press, release, or parry is graded against a target THE SYSTEM SHALL record its signed error (press time minus target, after the offset) and append "N MS EARLY", "N MS LATE", or "ON TIME" (|error| < 8 ms) to the grade line. Early shield holds and charge overloads record nothing. [FR-FX-9]
+
+17.4 WHILE no test is running in a fight THE SYSTEM SHALL draw the hit-error meter: centre = target, ±220 ms full width, the last test's P and G as bands, the last 12 errors as ticks with the newest highlighted, and the average of the last 20 once there are at least 5. [FR-FX-9]
+
+17.5 WHEN the timing offset slider changes THE SYSTEM SHALL save `offset` in settings and subtract it from every later press and release time. WHEN "Use my average" is pressed with at least 5 recorded errors THE SYSTEM SHALL set the offset to the current offset plus the average, rounded to 5 ms and clamped to ±150, and clear the history. [FR-FX-9]
+
 ### Requirement 13: Combat and map effects
 
 #### Acceptance criteria

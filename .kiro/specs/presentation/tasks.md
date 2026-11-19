@@ -64,6 +64,9 @@ These are Phase 3 (Wed 25 – Fri 27 Nov), except task 1.3, which Phase 1 needs 
   - [ ] 6.3 Combat panel in `src/render/screens/combat.ts` (sprites, HP bars with the 110 ms delay, source label, hint, buttons, Now! button, grade line) and the `advance` scheduling in `main.ts`
     - _Requirements: 11.1, 11.3, 11.5, 12.1–12.3 (FR-COM-3, FR-COM-5, FR-CLS-9)_
     - _Verify: `npm run build`_
+  - [ ] 6.4 Timing accuracy feedback: colour cue and approach strip in `qte-gauge.ts`, `recordHit` / `offText` and the hit-error meter in `src/render/hit-meter.ts`, offset slider and "Use my average" on the summary; offset subtraction lives in the engine input adapter in `main.ts`
+    - _Requirements: 17.1–17.5 (FR-FX-9)_
+    - _Verify: `npx vitest --run tests/render/hit-meter.test.ts`_
 
 - [ ] 7. Effects
   - [ ] 7.1 Port the `fx*` particle system to `src/render/fx.ts` and the stage to `src/render/stage.ts` (background, strike and hit effects, hit-stop, slow motion, death, phase 2)
