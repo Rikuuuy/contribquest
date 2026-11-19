@@ -1,0 +1,1459 @@
+{
+  "source": "docs/BUILD-PLAN.md timeline (phases 0-4) and .kiro/specs/*/tasks.md",
+  "statuses": [
+    "todo",
+    "doing",
+    "done"
+  ],
+  "items": [
+    {
+      "id": "phase-0-prd",
+      "phase": 0,
+      "spec": null,
+      "task": "0.1",
+      "title": "Write PRD v1.5 (everything built since v1.4)",
+      "status": "done",
+      "verify": "grep -q '^| Version | 1.5' docs/PRD.md"
+    },
+    {
+      "id": "phase-0-steering",
+      "phase": 0,
+      "spec": null,
+      "task": "0.2",
+      "title": "Write steering: product, tech, structure, game-rules, art-style",
+      "status": "done",
+      "verify": "ls .kiro/steering/{product,tech,structure,game-rules,art-style}.md"
+    },
+    {
+      "id": "phase-0-specs",
+      "phase": 0,
+      "spec": null,
+      "task": "0.3",
+      "title": "Write 6 specs with requirements.md, design.md, tasks.md",
+      "status": "done",
+      "verify": "ls .kiro/specs/{data-import,map-generation,combat-timing,progression,presentation,social}/{requirements,design,tasks}.md"
+    },
+    {
+      "id": "phase-0-scaffold",
+      "phase": 0,
+      "spec": null,
+      "task": "0.4",
+      "title": "Vite + TypeScript + Vitest + fast-check scaffold",
+      "status": "done",
+      "verify": "npm run typecheck && npm test && npm run build"
+    },
+    {
+      "id": "phase-0-deploy",
+      "phase": 0,
+      "spec": null,
+      "task": "0.5",
+      "title": "GitHub Pages deploy workflow (prototype kept at /prototype/)",
+      "status": "done",
+      "verify": "test -f .github/workflows/deploy.yml && npm run build && test -f dist/prototype/index.html"
+    },
+    {
+      "id": "phase-0-hooks",
+      "phase": 0,
+      "spec": null,
+      "task": "0.6",
+      "title": "Kiro hooks: test-on-save, rules-sync, balance-check",
+      "status": "done",
+      "verify": "node -e \"for (const f of require('fs').readdirSync('.kiro/hooks')) JSON.parse(require('fs').readFileSync('.kiro/hooks/'+f,'utf8'))\""
+    },
+    {
+      "id": "phase-0-agent",
+      "phase": 0,
+      "spec": null,
+      "task": "0.7",
+      "title": "Custom agent balance-tuner (edits src/engine/balance.ts only)",
+      "status": "done",
+      "verify": "node -e \"JSON.parse(require('fs').readFileSync('.kiro/agents/balance-tuner.json','utf8'))\""
+    },
+    {
+      "id": "phase-0-checklist",
+      "phase": 0,
+      "spec": null,
+      "task": "0.8",
+      "title": "Build checklist mirroring every tasks.md",
+      "status": "done",
+      "verify": "node -e \"JSON.parse(require('fs').readFileSync('docs/build-checklist.json','utf8'))\""
+    },
+    {
+      "id": "phase-0-journal",
+      "phase": 0,
+      "spec": null,
+      "task": "0.9",
+      "title": "Kiro journal from 16 Nov 2026 with a template for future days",
+      "status": "done",
+      "verify": "test -f docs/kiro-journal.md"
+    },
+    {
+      "id": "phase-0-readme",
+      "phase": 0,
+      "spec": null,
+      "task": "0.10",
+      "title": "README 'How it's built' section",
+      "status": "done",
+      "verify": "grep -q \"^## How it's built\" README.md"
+    },
+    {
+      "id": "data-import-1.1",
+      "phase": 1,
+      "spec": "data-import",
+      "task": "1.1",
+      "title": "Create `src/data/constants.ts` (`WINDOW`, `CACHE_TTL_MS`, `FETCH_TIMEOUT_MS`, `API_BASE`, `USERNAME_RE`, storage keys) and `src/data/errors.ts` (`DataError`, `Result`, `ERROR_TEXT` with the prototype strings)",
+      "status": "todo",
+      "verify": "npm run typecheck"
+    },
+    {
+      "id": "data-import-1.2",
+      "phase": 1,
+      "spec": "data-import",
+      "task": "1.2",
+      "title": "Create `src/data/schema.ts` with `ContributionDaySchema`, `ApiResponseSchema`, `ContributionSetSchema`, `CacheEntrySchema`, and the `ClassId` / `RaceId` enums; export inferred types",
+      "status": "todo",
+      "verify": "npm run typecheck"
+    },
+    {
+      "id": "data-import-2.1",
+      "phase": 1,
+      "spec": "data-import",
+      "task": "2.1",
+      "title": "Implement `cleanUsername` and `validateUsername` in `src/data/username.ts`",
+      "status": "todo",
+      "verify": "npx vitest --run tests/data/username.test.ts"
+    },
+    {
+      "id": "data-import-2.2",
+      "phase": 1,
+      "spec": "data-import",
+      "task": "2.2",
+      "title": "Write `tests/data/username.test.ts` (valid, empty, 39 and 40 chars, leading/trailing/double hyphen, `@` prefix, whitespace, friend message)",
+      "status": "todo",
+      "verify": "npx vitest --run tests/data/username.test.ts"
+    },
+    {
+      "id": "data-import-2.3",
+      "phase": 1,
+      "spec": "data-import",
+      "task": "2.3",
+      "title": "Implement `parseLaunch` in `src/data/launch.ts` and write `tests/data/launch.test.ts`",
+      "status": "todo",
+      "verify": "npx vitest --run tests/data/launch.test.ts"
+    },
+    {
+      "id": "data-import-3.1",
+      "phase": 1,
+      "spec": "data-import",
+      "task": "3.1",
+      "title": "Implement `parseApiResponse`, `computeStreak`, `buildSet`, `profileFacts` in `src/data/normalize.ts`",
+      "status": "todo",
+      "verify": "npx vitest --run tests/data/normalize.test.ts"
+    },
+    {
+      "id": "data-import-3.2",
+      "phase": 1,
+      "spec": "data-import",
+      "task": "3.2",
+      "title": "Write `tests/data/normalize.test.ts`: unsorted input, more than 91 days, exactly 90 days, `total.lastYear` missing or a string, streak with last day 0, all-zero year, streak across the window edge, avatar URL null for demo",
+      "status": "todo",
+      "verify": "npx vitest --run tests/data/normalize.test.ts"
+    },
+    {
+      "id": "data-import-3.3",
+      "phase": 1,
+      "spec": "data-import",
+      "task": "3.3",
+      "title": "Add `tests/fixtures/profiles.ts` (API-shaped fixture builders for the PRD fixture profiles) and `tests/data/schema.prop.test.ts` for P9: fixtures pass; fast-check mutations are rejected with `ok: false` and never throw",
+      "status": "todo",
+      "verify": "npx vitest --run tests/data/schema.prop.test.ts"
+    },
+    {
+      "id": "data-import-4.1",
+      "phase": 1,
+      "spec": "data-import",
+      "task": "4.1",
+      "title": "Implement `src/data/storage.ts` (`readJson`, `writeJson`, `removeKey`, all non-throwing) and `src/data/settings.ts` (`DEFAULT_SETTINGS`, `loadSettings`, `saveSettings`)",
+      "status": "todo",
+      "verify": "npx vitest --run tests/data/settings.test.ts"
+    },
+    {
+      "id": "data-import-4.2",
+      "phase": 1,
+      "spec": "data-import",
+      "task": "4.2",
+      "title": "Write `tests/data/settings.test.ts` with a throwing storage stub and an in-memory stub",
+      "status": "todo",
+      "verify": "npx vitest --run tests/data/settings.test.ts"
+    },
+    {
+      "id": "data-import-4.3",
+      "phase": 1,
+      "spec": "data-import",
+      "task": "4.3",
+      "title": "Implement `cacheKey`, `readCache` (schema-checked), `writeCache` in `src/data/cache.ts`",
+      "status": "todo",
+      "verify": "npm run typecheck"
+    },
+    {
+      "id": "data-import-5.1",
+      "phase": 1,
+      "spec": "data-import",
+      "task": "5.1",
+      "title": "Implement `fetchProfile` in `src/data/fetch.ts` (encoded URL, no auth, 8 s abort, status mapping, transient flag)",
+      "status": "todo",
+      "verify": "npx vitest --run tests/data/fetch.test.ts"
+    },
+    {
+      "id": "data-import-5.2",
+      "phase": 1,
+      "spec": "data-import",
+      "task": "5.2",
+      "title": "Write `tests/data/fetch.test.ts` with mocked `fetch`: 200, 404, 429, 500, network error, timeout with fake timers, malformed JSON, header and URL checks",
+      "status": "todo",
+      "verify": "npx vitest --run tests/data/fetch.test.ts"
+    },
+    {
+      "id": "data-import-5.3",
+      "phase": 1,
+      "spec": "data-import",
+      "task": "5.3",
+      "title": "Implement `loadProfile` and `loadingText` in `src/data/load.ts` (fresh cache, live + write, stale fallback on transient errors only)",
+      "status": "todo",
+      "verify": "npx vitest --run tests/data/cache.test.ts"
+    },
+    {
+      "id": "data-import-5.4",
+      "phase": 1,
+      "spec": "data-import",
+      "task": "5.4",
+      "title": "Write `tests/data/cache.test.ts`: fresh hit sends no request, stale + 500 returns `cache`, stale + 404 returns the error, corrupt entry ignored, key is lowercase, raw payload not stored",
+      "status": "todo",
+      "verify": "npx vitest --run tests/data/cache.test.ts"
+    },
+    {
+      "id": "data-import-6.1",
+      "phase": 1,
+      "spec": "data-import",
+      "task": "6.1",
+      "title": "Implement `loadRun` in `src/data/load.ts` (validate both names, parallel load, same-name normal run, first error wins)",
+      "status": "todo",
+      "verify": "npx vitest --run tests/data/load.test.ts"
+    },
+    {
+      "id": "data-import-6.2",
+      "phase": 1,
+      "spec": "data-import",
+      "task": "6.2",
+      "title": "Write `tests/data/load.test.ts`: both requests start before either resolves, case-insensitive same name, failure on each side, invalid friend sends no request, loading texts",
+      "status": "todo",
+      "verify": "npx vitest --run tests/data/load.test.ts"
+    },
+    {
+      "id": "data-import-7.1",
+      "phase": 1,
+      "spec": "data-import",
+      "task": "7.1",
+      "title": "Write `scripts/make-demo-data.ts`, porting `makeDemoSet` exactly, and run it once to create `src/data/demo-data.json` in API shape (`total.lastYear` 1287)",
+      "status": "todo",
+      "verify": "npx tsx scripts/make-demo-data.ts && git diff --stat src/data/demo-data.json"
+    },
+    {
+      "id": "data-import-7.2",
+      "phase": 1,
+      "spec": "data-import",
+      "task": "7.2",
+      "title": "Implement `loadDemo` in `src/data/demo.ts` through `parseApiResponse` and `buildSet`",
+      "status": "todo",
+      "verify": "npx vitest --run tests/data/demo.test.ts tests/data/schema.prop.test.ts"
+    },
+    {
+      "id": "data-import-7.3",
+      "phase": 1,
+      "spec": "data-import",
+      "task": "7.3",
+      "title": "Write `tests/data/demo.test.ts`: `fetch` spy never called, 91 days from 2026-08-18 to 2026-11-16, streak 15, yearTotal 1287, index 77 is count 31 level 4, indexes 12–18 and 75 are level 0, and the file equals a fresh generator run; add the demo file to the P9 test",
+      "status": "todo",
+      "verify": "npx vitest --run tests/data/demo.test.ts tests/data/schema.prop.test.ts"
+    },
+    {
+      "id": "data-import-8.1",
+      "phase": 1,
+      "spec": "data-import",
+      "task": "8.1",
+      "title": "Run the whole data suite and the type check; confirm `src/data` imports nothing from `src/mapgen`, `src/engine`, `src/render`, or `src/audio`",
+      "status": "todo",
+      "verify": "npm run typecheck && npx vitest --run tests/data && ! grep -rE \"from ['\\\"]\\.\\./(mapgen|engine|render|audio)\" src/data"
+    },
+    {
+      "id": "map-generation-1.1",
+      "phase": 1,
+      "spec": "map-generation",
+      "task": "1.1",
+      "title": "Implement `fnv1a`, `makeRng`, `nextFloat`, `shuffleInPlace` in `src/mapgen/rng.ts`, ported from the prototype",
+      "status": "todo",
+      "verify": "npx vitest --run tests/mapgen/rng.test.ts tests/mapgen/dates.test.ts"
+    },
+    {
+      "id": "map-generation-1.2",
+      "phase": 1,
+      "spec": "map-generation",
+      "task": "1.2",
+      "title": "Implement the UTC helpers in `src/mapgen/dates.ts` (`parseDate`, `weekday`, `addDays`, `fmtDate`, `fmtShort`)",
+      "status": "todo",
+      "verify": "npx vitest --run tests/mapgen/rng.test.ts tests/mapgen/dates.test.ts"
+    },
+    {
+      "id": "map-generation-1.3",
+      "phase": 1,
+      "spec": "map-generation",
+      "task": "1.3",
+      "title": "Write `tests/mapgen/rng.test.ts` (hash and draw values computed from the prototype, Fisher-Yates order) and `tests/mapgen/dates.test.ts` (weekday of known dates, `fmtDate(\"2026-11-03\") === \"Tue 3 Nov 2026\"`, month and year rollover in `addDays`)",
+      "status": "todo",
+      "verify": "npx vitest --run tests/mapgen/rng.test.ts tests/mapgen/dates.test.ts"
+    },
+    {
+      "id": "map-generation-2.1",
+      "phase": 1,
+      "spec": "map-generation",
+      "task": "2.1",
+      "title": "Create `src/mapgen/types.ts` and `src/mapgen/rules.ts`; re-export the rule constants from `src/engine/balance.ts` and list them in `game-rules.md` if any is missing",
+      "status": "todo",
+      "verify": "npm run typecheck"
+    },
+    {
+      "id": "map-generation-2.2",
+      "phase": 1,
+      "spec": "map-generation",
+      "task": "2.2",
+      "title": "Implement `layoutDays`, `tileAt`, `neighbours` in `src/mapgen/layout.ts`",
+      "status": "todo",
+      "verify": "npx vitest --run tests/mapgen/layout.test.ts"
+    },
+    {
+      "id": "map-generation-2.3",
+      "phase": 1,
+      "spec": "map-generation",
+      "task": "2.3",
+      "title": "Write `tests/mapgen/layout.test.ts`: last date on a Saturday gives 13 columns and no void cells; on a Sunday gives 14; void only at the top of column 0 and the bottom of the last column; `tileAt` outside the grid is null",
+      "status": "todo",
+      "verify": "npx vitest --run tests/mapgen/layout.test.ts"
+    },
+    {
+      "id": "map-generation-3.1",
+      "phase": 1,
+      "spec": "map-generation",
+      "task": "3.1",
+      "title": "Implement `bestDayIndex` and `assignTiles` in `src/mapgen/assign.ts`",
+      "status": "todo",
+      "verify": "npx vitest --run tests/mapgen/assign.test.ts"
+    },
+    {
+      "id": "map-generation-3.2",
+      "phase": 1,
+      "spec": "map-generation",
+      "task": "3.2",
+      "title": "Write `tests/mapgen/assign.test.ts`: each rule row, chest vs monster by `fnv1a(date) % 3`, deco by `% 6`, best day on index 0, best day on index 90 (gate + boss), ties to the latest, all-empty → index 45 and `emptyQuarter`",
+      "status": "todo",
+      "verify": "npx vitest --run tests/mapgen/assign.test.ts"
+    },
+    {
+      "id": "map-generation-3.3",
+      "phase": 1,
+      "spec": "map-generation",
+      "task": "3.3",
+      "title": "Implement `applyShortfall` in `src/mapgen/shortfall.ts` (map RNG `seed ^ 0x9e3779b9`, Fisher-Yates over fog, pop from the end, tier-1 `risen` monsters, `quiet`)",
+      "status": "todo",
+      "verify": "npx vitest --run tests/mapgen/shortfall.test.ts"
+    },
+    {
+      "id": "map-generation-3.4",
+      "phase": 1,
+      "spec": "map-generation",
+      "task": "3.4",
+      "title": "Write `tests/mapgen/shortfall.test.ts`: a quiet profile reaches exactly 6 monsters with `risen` and no deco; a profile without enough fog stops when the pool is empty; a busy profile is untouched and not quiet",
+      "status": "todo",
+      "verify": "npx vitest --run tests/mapgen/shortfall.test.ts"
+    },
+    {
+      "id": "map-generation-4.1",
+      "phase": 1,
+      "spec": "map-generation",
+      "task": "4.1",
+      "title": "Implement `reachable` and `validateMap` in `src/mapgen/validate.ts`, and `generateMap` and `mapDateRange` in `src/mapgen/generate.ts` (seed, shards needed, `Result` return); add `src/mapgen/index.ts`",
+      "status": "todo",
+      "verify": "npx vitest --run tests/mapgen/validate.test.ts"
+    },
+    {
+      "id": "map-generation-4.2",
+      "phase": 1,
+      "spec": "map-generation",
+      "task": "4.2",
+      "title": "Write `tests/mapgen/validate.test.ts`: hand-built maps missing a start, with no route, and with a duplicate date each return their message; `generateMap` never throws",
+      "status": "todo",
+      "verify": "npx vitest --run tests/mapgen/validate.test.ts"
+    },
+    {
+      "id": "map-generation-5.1",
+      "phase": 1,
+      "spec": "map-generation",
+      "task": "5.1",
+      "title": "Record `tests/fixtures/golden/demo-map.json` by evaluating the prototype's utilities-to-map script section in a Node `vm` context and calling `generateMap(makeDemoSet())` (tiles without `grid`); write `tests/mapgen/golden.test.ts` comparing the port's demo map to it, plus the summary facts (14 cols, seed 722674249, boss index 77, 3 shards, not quiet, the tile counts in design.md)",
+      "status": "todo",
+      "verify": "npx vitest --run tests/mapgen/golden.test.ts"
+    },
+    {
+      "id": "map-generation-5.2",
+      "phase": 1,
+      "spec": "map-generation",
+      "task": "5.2",
+      "title": "Add `tests/arbitraries.ts` (fast-check ContributionSet arbitrary with valid usernames, any last date, 91 consecutive days, plus all-zero and dense variants) and `tests/mapgen/map.prop.test.ts` for P1, P2, P3, P4, P5, P10",
+      "status": "todo",
+      "verify": "npx vitest --run tests/mapgen/map.prop.test.ts"
+    },
+    {
+      "id": "map-generation-5.3",
+      "phase": 1,
+      "spec": "map-generation",
+      "task": "5.3",
+      "title": "Run every fixture profile from `tests/fixtures/profiles.ts` through `generateMap` and assert `ok: true`",
+      "status": "todo",
+      "verify": "npx vitest --run tests/mapgen"
+    },
+    {
+      "id": "map-generation-6.1",
+      "phase": 1,
+      "spec": "map-generation",
+      "task": "6.1",
+      "title": "Implement `revealRadiusSq`, `reveal`, `isVisible`, `checkMove`, `applyMove` in `src/engine/explore.ts`; add `REVEAL_R2 = 5` and `REVEAL_R2_REVIEW = 8` to `balance.ts`",
+      "status": "todo",
+      "verify": "npx vitest --run tests/engine/explore.test.ts"
+    },
+    {
+      "id": "map-generation-6.2",
+      "phase": 1,
+      "spec": "map-generation",
+      "task": "6.2",
+      "title": "Implement `collectShard` and `shardStatus` in `src/engine/explore.ts`",
+      "status": "todo",
+      "verify": "npx vitest --run tests/engine/explore.test.ts"
+    },
+    {
+      "id": "map-generation-6.3",
+      "phase": 1,
+      "spec": "map-generation",
+      "task": "6.3",
+      "title": "Write `tests/engine/explore.test.ts`: reveal at radius 5 and 8 (count of tiles from a known position), start/gate/boss always visible, sealed and warded messages, refused move leaves state unchanged, successful move updates `prev`, `steps`, `visited`; shard log lines, `shattered`, no shard past the need or from tiers 1, 2, 5",
+      "status": "todo",
+      "verify": "npx vitest --run tests/engine/explore.test.ts"
+    },
+    {
+      "id": "map-generation-7.1",
+      "phase": 2,
+      "spec": "map-generation",
+      "task": "7.1",
+      "title": "Add a type-level check in `tests/mapgen/map.prop.test.ts` that `generateMap` has exactly one parameter of type `ContributionSet` (`expectTypeOf(generateMap).parameters.toEqualTypeOf<[ContributionSet]>()`)",
+      "status": "todo",
+      "verify": "npx vitest --run tests/mapgen/map.prop.test.ts"
+    },
+    {
+      "id": "map-generation-7.2",
+      "phase": 2,
+      "spec": "map-generation",
+      "task": "7.2",
+      "title": "Write `tests/engine/map-independence.prop.test.ts`: for any set and any class and race, `newRun(...).map` deep-equals `generateMap(set).value` (needs `newRun` from the progression spec)",
+      "status": "todo",
+      "verify": "npx vitest --run tests/engine/map-independence.prop.test.ts"
+    },
+    {
+      "id": "map-generation-8.1",
+      "phase": 2,
+      "spec": "map-generation",
+      "task": "8.1",
+      "title": "Run the mapgen and explore suites and the type check; confirm `src/mapgen` imports nothing from `src/engine`, `src/render`, `src/audio`, or storage/fetch code in `src/data`",
+      "status": "todo",
+      "verify": "npm run typecheck && npx vitest --run tests/mapgen tests/engine/explore.test.ts && ! grep -rE \"from ['\\\"]\\.\\./(engine|render|audio)|data/(fetch|load|cache|storage|settings)\" src/mapgen"
+    },
+    {
+      "id": "combat-timing-1.1",
+      "phase": 1,
+      "spec": "combat-timing",
+      "task": "1.1",
+      "title": "Add the combat constants to `src/engine/balance.ts`: `QTE` (perfect 70, good 170, auraPerfect 10, calm 1.6, grace 120, counter 0.5, dmgScale 1.25), `ATK_MULT`, `DEF_MULT`, class stat numbers, `DIFFICULTY`, monster formula numbers, pattern numbers (quick 640, flaky 320/220/0.4/0.25, conflict 300/120/1.6, plan chance 0.65, imp ×0.6), phase-2 numbers (speed 0.85, pressure 0.9, damage 0.75), combo cap 120, sidestep ×1.2, charge 0.82 / 2600 / +20, deadline +30, shield +10, assist charge 300, and the relic/race combat numbers (Linter 25, Elf 15, Force 1.25, Pair 1.6, Hotfix 0.06, Vampire 2, trait +2)",
+      "status": "todo",
+      "verify": "npm run typecheck && npx vitest --run tests/engine/balance.test.ts"
+    },
+    {
+      "id": "combat-timing-1.2",
+      "phase": 1,
+      "spec": "combat-timing",
+      "task": "1.2",
+      "title": "Create `src/engine/state.ts` (types in design.md) and `src/engine/rand.ts`",
+      "status": "todo",
+      "verify": "npm run typecheck && npx vitest --run tests/engine/balance.test.ts"
+    },
+    {
+      "id": "combat-timing-1.3",
+      "phase": 1,
+      "spec": "combat-timing",
+      "task": "1.3",
+      "title": "Write `tests/engine/balance.test.ts`, which parses the tables in `.kiro/steering/game-rules.md` and checks every value against `balance.ts`",
+      "status": "todo",
+      "verify": "npm run typecheck && npx vitest --run tests/engine/balance.test.ts"
+    },
+    {
+      "id": "combat-timing-1.4",
+      "phase": 1,
+      "spec": "combat-timing",
+      "task": "1.4",
+      "title": "Add `tests/fixtures/run.ts` with `makeTestRun(options)` (fixture set → `generateMap`, hand-built hero, chosen class, race, relics, level, aura, options)",
+      "status": "todo",
+      "verify": "npm run typecheck"
+    },
+    {
+      "id": "combat-timing-2.1",
+      "phase": 1,
+      "spec": "combat-timing",
+      "task": "2.1",
+      "title": "Implement `src/engine/classes.ts` (`CLASS_INFO` with the prototype's names, modes, `slow`, and `CLASS_HINT` text; `heroClass`; `applyStats`) and `src/engine/mods.ts` (`modsOf`)",
+      "status": "todo",
+      "verify": "npx vitest --run tests/engine/classes.test.ts tests/engine/difficulty.test.ts"
+    },
+    {
+      "id": "combat-timing-2.2",
+      "phase": 1,
+      "spec": "combat-timing",
+      "task": "2.2",
+      "title": "Implement `src/engine/difficulty.ts` (`classDiff`, `pressure`, `timingPercent`, `classCardLine`)",
+      "status": "todo",
+      "verify": "npx vitest --run tests/engine/classes.test.ts tests/engine/difficulty.test.ts"
+    },
+    {
+      "id": "combat-timing-2.3",
+      "phase": 1,
+      "spec": "combat-timing",
+      "task": "2.3",
+      "title": "Write `tests/engine/classes.test.ts` and `tests/engine/difficulty.test.ts`: stats per class with Cold Brew, Stack Overflow, Orc; HP clamp; pressure at 0, 5, and 50 kills per class; phase-2 ×0.9; `timingPercent` and `maxed`; card lines for all four classes",
+      "status": "todo",
+      "verify": "npx vitest --run tests/engine/classes.test.ts tests/engine/difficulty.test.ts"
+    },
+    {
+      "id": "combat-timing-3.1",
+      "phase": 1,
+      "spec": "combat-timing",
+      "task": "3.1",
+      "title": "Implement `src/engine/monsters.ts` (`TIER_NAMES`, `makeMonster`, `sourceLabel`, `fightTreasure`), using `fmtDate` from `src/mapgen/dates.ts`",
+      "status": "todo",
+      "verify": "npx vitest --run tests/engine/monsters.test.ts"
+    },
+    {
+      "id": "combat-timing-3.2",
+      "phase": 1,
+      "spec": "combat-timing",
+      "task": "3.2",
+      "title": "Write `tests/engine/monsters.test.ts`: the PRD worked example at start level 3 (Imp 24 HP, Lich 41 HP, boss 69 HP), damage with curse and each class `dmg`, XP, names, all three source labels, singular \"contribution\", treasure per class",
+      "status": "todo",
+      "verify": "npx vitest --run tests/engine/monsters.test.ts"
+    },
+    {
+      "id": "combat-timing-4.1",
+      "phase": 1,
+      "spec": "combat-timing",
+      "task": "4.1",
+      "title": "Implement `windows` and `createTest` in `src/engine/qte.ts` for all six modes and four patterns, drawing from `rand` in the order listed in design.md",
+      "status": "todo",
+      "verify": "npx vitest --run tests/engine/qte.test.ts"
+    },
+    {
+      "id": "combat-timing-4.2",
+      "phase": 1,
+      "spec": "combat-timing",
+      "task": "4.2",
+      "title": "Write the creation part of `tests/engine/qte.test.ts`: windows for a known hero (aura, Linter, Elf, calm, each class, pressure 1 and 0.6); durations, targets, marks, fill, pause, and decoy for fixed draws; draw counts per mode and pattern",
+      "status": "todo",
+      "verify": "npx vitest --run tests/engine/qte.test.ts"
+    },
+    {
+      "id": "combat-timing-5.1",
+      "phase": 1,
+      "spec": "combat-timing",
+      "task": "5.1",
+      "title": "Implement `grade` and `testDeadline` for bar, ring, and sidestep (single press, grace, early/late reasons, `dur + 30`)",
+      "status": "todo",
+      "verify": "npx vitest --run tests/engine/qte.test.ts"
+    },
+    {
+      "id": "combat-timing-5.2",
+      "phase": 1,
+      "spec": "combat-timing",
+      "task": "5.2",
+      "title": "Add combo grading (skipped marks, three presses, `dur + 30`, \"too late\" when all miss)",
+      "status": "todo",
+      "verify": "npx vitest --run tests/engine/qte.test.ts"
+    },
+    {
+      "id": "combat-timing-5.3",
+      "phase": 1,
+      "spec": "combat-timing",
+      "task": "5.3",
+      "title": "Add charge grading (first press, matching release, too slow at `dur`, too weak, overload on release and at `downAt + fill + 20`)",
+      "status": "todo",
+      "verify": "npx vitest --run tests/engine/qte.test.ts"
+    },
+    {
+      "id": "combat-timing-5.4",
+      "phase": 1,
+      "spec": "combat-timing",
+      "task": "5.4",
+      "title": "Add shield grading (hold state, early release, impact at target, late parry within P, miss at `target + P + 10` with both reasons)",
+      "status": "todo",
+      "verify": "npx vitest --run tests/engine/qte.test.ts"
+    },
+    {
+      "id": "combat-timing-5.5",
+      "phase": 1,
+      "spec": "combat-timing",
+      "task": "5.5",
+      "title": "Add assist (Good at target, charge at 300 ms, events ignored) and `gradeText` with `GRADE_LABELS` and the combo text",
+      "status": "todo",
+      "verify": "npx vitest --run tests/engine/qte.test.ts"
+    },
+    {
+      "id": "combat-timing-5.6",
+      "phase": 1,
+      "spec": "combat-timing",
+      "task": "5.6",
+      "title": "Complete `tests/engine/qte.test.ts` with one case per row of the grading table in design.md, the release-from-another-key case, and every label",
+      "status": "todo",
+      "verify": "npx vitest --run tests/engine/qte.test.ts"
+    },
+    {
+      "id": "combat-timing-5.7",
+      "phase": 1,
+      "spec": "combat-timing",
+      "task": "5.7",
+      "title": "Write `tests/engine/qte.prop.test.ts` for P12, P15 (scoped as in design.md), and P16, plus the v1.4 properties: the flaky target equals base plus pause, and the decoy never lies within G of the target",
+      "status": "todo",
+      "verify": "npx vitest --run tests/engine/qte.prop.test.ts"
+    },
+    {
+      "id": "combat-timing-6.1",
+      "phase": 1,
+      "spec": "combat-timing",
+      "task": "6.1",
+      "title": "Implement `src/engine/patterns.ts` (`strikePlan`, `patternDamageMult`, `checkPhase2`, `STRIKE_LINE`)",
+      "status": "todo",
+      "verify": "npx vitest --run tests/engine/patterns.test.ts"
+    },
+    {
+      "id": "combat-timing-6.2",
+      "phase": 1,
+      "spec": "combat-timing",
+      "task": "6.2",
+      "title": "Write `tests/engine/patterns.test.ts`: plans per tier with fixed draws (0.64 and 0.65 at the threshold), imp and phase-2 multipliers, phase 2 triggers once, at exactly half HP, and not when the hit kills",
+      "status": "todo",
+      "verify": "npx vitest --run tests/engine/patterns.test.ts"
+    },
+    {
+      "id": "combat-timing-7.1",
+      "phase": 1,
+      "spec": "combat-timing",
+      "task": "7.1",
+      "title": "Implement `startFight`, `resolveStrike`, `resolveGuard`, and `applyDuck` in `src/engine/combat.ts`, with the prototype's log lines",
+      "status": "todo",
+      "verify": "npx vitest --run tests/engine/combat.test.ts"
+    },
+    {
+      "id": "combat-timing-7.2",
+      "phase": 1,
+      "spec": "combat-timing",
+      "task": "7.2",
+      "title": "Implement `resolveFlee`, `winFight` (treasure, XP through `gainXp`, pressure message with \"before\" read first, shard through `collectShard`, boss and Gate), and `loseFight`",
+      "status": "todo",
+      "verify": "npx vitest --run tests/engine/combat.test.ts"
+    },
+    {
+      "id": "combat-timing-7.3",
+      "phase": 1,
+      "spec": "combat-timing",
+      "task": "7.3",
+      "title": "Implement `step` and `nextDeadline` in `src/engine/step.ts`: `move` (via `checkMove`/`applyMove`, then monster, boss, and Gate entry), `chooseClass`, `setOptions`, `attack`, `flee`, `press`, `release`, `timeout`, `advance`, `forceGrade`; deep-clone the input first",
+      "status": "todo",
+      "verify": "npx vitest --run tests/engine/combat.test.ts"
+    },
+    {
+      "id": "combat-timing-7.4",
+      "phase": 1,
+      "spec": "combat-timing",
+      "task": "7.4",
+      "title": "Write `tests/engine/combat.test.ts`: damage with fixed RNG for each strike and guard mode, trait bonus on strikes only, every combat relic and race effect, flee HP floor and return to `prev`, win and loss bookkeeping, pressure log on non-boss kills only",
+      "status": "todo",
+      "verify": "npx vitest --run tests/engine/combat.test.ts"
+    },
+    {
+      "id": "combat-timing-7.5",
+      "phase": 1,
+      "spec": "combat-timing",
+      "task": "7.5",
+      "title": "Write `tests/engine/step.test.ts`: input never mutated (deep-frozen), same actions → same states, `nextDeadline` per mode, a scripted fight to a win and to a loss, a boss fight through phase 2, `forceGrade` with Rubber Duck, a restored test resumes at `choose`, class change refused after a step",
+      "status": "todo",
+      "verify": "npx vitest --run tests/engine/step.test.ts"
+    },
+    {
+      "id": "combat-timing-7.6",
+      "phase": 1,
+      "spec": "combat-timing",
+      "task": "7.6",
+      "title": "Write `tests/engine/combat.prop.test.ts` for P7, P13, and P14 (P14 scoped to `floor × 0.9` in phase 2, as in design.md)",
+      "status": "todo",
+      "verify": "npx vitest --run tests/engine/combat.prop.test.ts"
+    },
+    {
+      "id": "combat-timing-7.7",
+      "phase": 1,
+      "spec": "combat-timing",
+      "task": "7.7",
+      "title": "Record `tests/fixtures/golden/demo-fight.json` from the prototype in a browser (`window.__cq.setGrade`, `forcePlan`, `teleport` on the demo run, Wanderer) and write `tests/engine/rng-order.test.ts` checking the port's RNG state and HP values after each action",
+      "status": "todo",
+      "verify": "npx vitest --run tests/engine/rng-order.test.ts"
+    },
+    {
+      "id": "combat-timing-8.1",
+      "phase": 1,
+      "spec": "combat-timing",
+      "task": "8.1",
+      "title": "Implement `combatKey` in `src/engine/input.ts` (Space, Enter, A, J, K → `hit`; F, Escape → `flee`) and test it in `tests/engine/input.test.ts`",
+      "status": "todo",
+      "verify": "npx vitest --run tests/engine/input.test.ts"
+    },
+    {
+      "id": "combat-timing-8.2",
+      "phase": 1,
+      "spec": "combat-timing",
+      "task": "8.2",
+      "title": "In `src/main.ts`, record `testStart` on each new `testId`, send `press`/`release` with `event.timeStamp − testStart` and the key or `\"pointer\"` id, skip `event.repeat`, and schedule `timeout` from `nextDeadline`",
+      "status": "todo",
+      "verify": "npm run build"
+    },
+    {
+      "id": "combat-timing-9.1",
+      "phase": 2,
+      "spec": "combat-timing",
+      "task": "9.1",
+      "title": "Implement `makeSkillBot` and `skillGrade` in `src/engine/skillbot.ts`, ported from `simulateGrade` and `gauss`",
+      "status": "todo",
+      "verify": "npx vitest --run tests/engine/skillbot.test.ts"
+    },
+    {
+      "id": "combat-timing-9.2",
+      "phase": 2,
+      "spec": "combat-timing",
+      "task": "9.2",
+      "title": "Write `tests/engine/skillbot.test.ts`: seeding, combo gives three grades, charge overload limit, conflict and flaky miss rates within ±2 points of `σ/600` and `σ/700` over 10 000 draws, shield rescue near 0.7",
+      "status": "todo",
+      "verify": "npx vitest --run tests/engine/skillbot.test.ts"
+    },
+    {
+      "id": "combat-timing-9.3",
+      "phase": 2,
+      "spec": "combat-timing",
+      "task": "9.3",
+      "title": "Add the `retry` action (needs `newRun` from the progression spec): a lost run restarts on the same `set` and `heroSet` with no fetch; test it in `tests/engine/step.test.ts`",
+      "status": "todo",
+      "verify": "npx vitest --run tests/engine/step.test.ts"
+    },
+    {
+      "id": "combat-timing-10.1",
+      "phase": 2,
+      "spec": "combat-timing",
+      "task": "10.1",
+      "title": "Run the engine suite and the type check; confirm `src/engine` has no `Math.random`, `Date.now`, `performance.now`, `document`, `window`, or `localStorage`, and imports nothing from `src/render`, `src/audio`, or `src/main.ts`",
+      "status": "todo",
+      "verify": "npm run typecheck && npx vitest --run tests/engine && ! grep -rnE \"Math\\.random|Date\\.now|performance\\.now|document\\.|window\\.|localStorage|from ['\\\"]\\.\\./(render|audio|main)\" src/engine"
+    },
+    {
+      "id": "progression-1.1",
+      "phase": 1,
+      "spec": "progression",
+      "task": "1.1",
+      "title": "Add the progression constants from design.md to `src/engine/balance.ts`, and implement `xpForLevel`, `levelFor`, `startingXp`, `auraTier` in `src/engine/progression.ts`",
+      "status": "todo",
+      "verify": "npx vitest --run tests/engine/progression.test.ts tests/engine/trait.test.ts tests/engine/balance.test.ts"
+    },
+    {
+      "id": "progression-1.2",
+      "phase": 1,
+      "spec": "progression",
+      "task": "1.2",
+      "title": "Implement `makeTrait` in `src/engine/trait.ts` using `weekday` from `src/mapgen/dates.ts`",
+      "status": "todo",
+      "verify": "npx vitest --run tests/engine/progression.test.ts tests/engine/trait.test.ts tests/engine/balance.test.ts"
+    },
+    {
+      "id": "progression-1.3",
+      "phase": 1,
+      "spec": "progression",
+      "task": "1.3",
+      "title": "Write `tests/engine/progression.test.ts` (table, cap, PRD examples, aura) and `tests/engine/trait.test.ts`",
+      "status": "todo",
+      "verify": "npx vitest --run tests/engine/progression.test.ts tests/engine/trait.test.ts tests/engine/balance.test.ts"
+    },
+    {
+      "id": "progression-1.4",
+      "phase": 1,
+      "spec": "progression",
+      "task": "1.4",
+      "title": "Write `tests/engine/progression.prop.test.ts` for P6 and P11",
+      "status": "todo",
+      "verify": "npx vitest --run tests/engine/progression.prop.test.ts"
+    },
+    {
+      "id": "progression-2.1",
+      "phase": 1,
+      "spec": "progression",
+      "task": "2.1",
+      "title": "Add `relicOffer`, `relicTitle`, `pendingBlessing`, `newTrophies`, the new actions, and the new events to `src/engine/state.ts`",
+      "status": "todo",
+      "verify": "npm run typecheck"
+    },
+    {
+      "id": "progression-2.2",
+      "phase": 1,
+      "spec": "progression",
+      "task": "2.2",
+      "title": "Implement `makeHero`, `newRun`, and `omenFor` (`src/engine/run.ts`, `src/engine/omen.ts`) with the opening log lines",
+      "status": "todo",
+      "verify": "npx vitest --run tests/engine/run.test.ts tests/engine/map-independence.prop.test.ts"
+    },
+    {
+      "id": "progression-2.3",
+      "phase": 1,
+      "spec": "progression",
+      "task": "2.3",
+      "title": "Write `tests/engine/run.test.ts`; then enable `tests/engine/map-independence.prop.test.ts` (P18, map-generation spec) now that `newRun` exists",
+      "status": "todo",
+      "verify": "npx vitest --run tests/engine/run.test.ts tests/engine/map-independence.prop.test.ts"
+    },
+    {
+      "id": "progression-3.1",
+      "phase": 1,
+      "spec": "progression",
+      "task": "3.1",
+      "title": "Implement `gainXp`, `collectWisp`, `openChest` in `src/engine/progression.ts` (`openChest` calls `offerRelic`; until group 4 exists, a stub that does nothing keeps the order testable)",
+      "status": "todo",
+      "verify": "npx vitest --run tests/engine/progression.test.ts"
+    },
+    {
+      "id": "progression-3.2",
+      "phase": 1,
+      "spec": "progression",
+      "task": "3.2",
+      "title": "Extend `tests/engine/progression.test.ts`: Human rounding, level-up heal and log, two thresholds in one gain, wisp and chest logs, chest heal before XP, `levelUp`, `wisp`, `chest`, and `xp` events",
+      "status": "todo",
+      "verify": "npx vitest --run tests/engine/progression.test.ts"
+    },
+    {
+      "id": "progression-4.1",
+      "phase": 2,
+      "spec": "progression",
+      "task": "4.1",
+      "title": "Implement `RELICS`, `relicById`, `offerRelic`, `pickRelic` in `src/engine/relics.ts`; replace the stub in `openChest`",
+      "status": "todo",
+      "verify": "npx vitest --run tests/engine/relics.test.ts"
+    },
+    {
+      "id": "progression-4.2",
+      "phase": 2,
+      "spec": "progression",
+      "task": "4.2",
+      "title": "Handle `pickRelic` in `step`, and ignore every other gameplay action while `status === \"relic\"`",
+      "status": "todo",
+      "verify": "npx vitest --run tests/engine/relics.test.ts"
+    },
+    {
+      "id": "progression-4.3",
+      "phase": 2,
+      "spec": "progression",
+      "task": "4.3",
+      "title": "Write `tests/engine/relics.test.ts`",
+      "status": "todo",
+      "verify": "npx vitest --run tests/engine/relics.test.ts"
+    },
+    {
+      "id": "progression-4.4",
+      "phase": 2,
+      "spec": "progression",
+      "task": "4.4",
+      "title": "Write `tests/engine/relics.prop.test.ts` for P17 and the v1.4 relic monotonicity property (uses combat-timing's `resolveStrike` and `resolveGuard` with a fixed RNG)",
+      "status": "todo",
+      "verify": "npx vitest --run tests/engine/relics.prop.test.ts"
+    },
+    {
+      "id": "progression-5.1",
+      "phase": 2,
+      "spec": "progression",
+      "task": "5.1",
+      "title": "Implement `RACE_INFO` (names, texts, lines, and the face colours and flags from the prototype's `RACES`) and `chooseRace` in `src/engine/races.ts`; handle `chooseRace` in `step`",
+      "status": "todo",
+      "verify": "npx vitest --run tests/engine/races.test.ts"
+    },
+    {
+      "id": "progression-5.2",
+      "phase": 2,
+      "spec": "progression",
+      "task": "5.2",
+      "title": "Write `tests/engine/races.test.ts`",
+      "status": "todo",
+      "verify": "npx vitest --run tests/engine/races.test.ts"
+    },
+    {
+      "id": "progression-6.1",
+      "phase": 2,
+      "spec": "progression",
+      "task": "6.1",
+      "title": "Implement `enterMap`, `offerBlessing`, `BLESSING_TITLE` in `src/engine/omen.ts`; handle both actions in `step`",
+      "status": "todo",
+      "verify": "npx vitest --run tests/engine/omen.test.ts"
+    },
+    {
+      "id": "progression-6.2",
+      "phase": 2,
+      "spec": "progression",
+      "task": "6.2",
+      "title": "Write `tests/engine/omen.test.ts`",
+      "status": "todo",
+      "verify": "npx vitest --run tests/engine/omen.test.ts"
+    },
+    {
+      "id": "progression-7.1",
+      "phase": 2,
+      "spec": "progression",
+      "task": "7.1",
+      "title": "Add `TrophyHaveSchema` and `ClassWinsSchema` to `src/data/schema.ts`, and implement `src/data/runstore.ts`; write `tests/data/runstore.test.ts`",
+      "status": "todo",
+      "verify": "npx vitest --run tests/data/runstore.test.ts"
+    },
+    {
+      "id": "progression-7.2",
+      "phase": 2,
+      "spec": "progression",
+      "task": "7.2",
+      "title": "Implement `SavedRunSchema`, `serialize`, `restore`, `continueLabel` in `src/engine/save.ts`",
+      "status": "todo",
+      "verify": "npx vitest --run tests/engine/save.test.ts"
+    },
+    {
+      "id": "progression-7.3",
+      "phase": 2,
+      "spec": "progression",
+      "task": "7.3",
+      "title": "Write `tests/engine/save.test.ts`, including a save captured from the prototype (`localStorage[\"cq:v1:run\"]` after a few demo moves, stored in `tests/fixtures/prototype-save.json`) that must be rejected",
+      "status": "todo",
+      "verify": "npx vitest --run tests/engine/save.test.ts"
+    },
+    {
+      "id": "progression-7.4",
+      "phase": 2,
+      "spec": "progression",
+      "task": "7.4",
+      "title": "Write `tests/engine/save.prop.test.ts` for P8 and P19 with the action-sequence arbitrary",
+      "status": "todo",
+      "verify": "npx vitest --run tests/engine/save.prop.test.ts"
+    },
+    {
+      "id": "progression-8.1",
+      "phase": 2,
+      "spec": "progression",
+      "task": "8.1",
+      "title": "Implement `endRun` in `src/engine/run.ts` and hand it to combat-timing's `winFight`, Gate entry, and `loseFight`",
+      "status": "todo",
+      "verify": "npx vitest --run tests/engine/trophies.test.ts"
+    },
+    {
+      "id": "progression-8.2",
+      "phase": 4,
+      "spec": "progression",
+      "task": "8.2",
+      "title": "Implement `TROPHIES`, `trophyFacts`, `awardTrophies`, `trophyList`, `startTrophyLine` in `src/engine/trophies.ts`; handle `trophiesAwarded` in `step`",
+      "status": "todo",
+      "verify": "npx vitest --run tests/engine/trophies.test.ts"
+    },
+    {
+      "id": "progression-8.3",
+      "phase": 4,
+      "spec": "progression",
+      "task": "8.3",
+      "title": "Write `tests/engine/trophies.test.ts`",
+      "status": "todo",
+      "verify": "npx vitest --run tests/engine/trophies.test.ts"
+    },
+    {
+      "id": "progression-9.1",
+      "phase": 2,
+      "spec": "progression",
+      "task": "9.1",
+      "title": "Implement `summaryView` and `resultsView` in `src/engine/views.ts` (normal runs; the social spec adds raid branches)",
+      "status": "todo",
+      "verify": "npx vitest --run tests/engine/views.test.ts"
+    },
+    {
+      "id": "progression-9.2",
+      "phase": 2,
+      "spec": "progression",
+      "task": "9.2",
+      "title": "Write `tests/engine/views.test.ts`",
+      "status": "todo",
+      "verify": "npx vitest --run tests/engine/views.test.ts"
+    },
+    {
+      "id": "progression-10.1",
+      "phase": 3,
+      "spec": "progression",
+      "task": "10.1",
+      "title": "Save after every non-input action; restore on boot and show \"Continue …\"; `runEnded` → trophies → `trophiesAwarded`; `blessingDue` → `offerBlessing` after the delay; `raceChosen` → save `heroRace`",
+      "status": "todo",
+      "verify": "npm run build && npx vitest --run tests/privacy.test.ts"
+    },
+    {
+      "id": "progression-10.2",
+      "phase": 3,
+      "spec": "progression",
+      "task": "10.2",
+      "title": "\"Play this graph again\", \"New username\", and \"Different username\" buttons",
+      "status": "todo",
+      "verify": "npm run build && npx vitest --run tests/privacy.test.ts"
+    },
+    {
+      "id": "progression-10.3",
+      "phase": 3,
+      "spec": "progression",
+      "task": "10.3",
+      "title": "Add `tests/privacy.test.ts`: every `https://` URL in `src/` is `API_BASE` or `https://github.com/`, and `src/` has no `document.cookie`, `sendBeacon`, or analytics import",
+      "status": "todo",
+      "verify": "npm run build && npx vitest --run tests/privacy.test.ts"
+    },
+    {
+      "id": "progression-11.1",
+      "phase": 2,
+      "spec": "progression",
+      "task": "11.1",
+      "title": "Implement `routeAction` in `src/engine/routebot.ts` and write `tests/engine/routebot.test.ts`",
+      "status": "todo",
+      "verify": "npx vitest --run tests/engine/routebot.test.ts"
+    },
+    {
+      "id": "progression-11.2",
+      "phase": 2,
+      "spec": "progression",
+      "task": "11.2",
+      "title": "Write `scripts/simulate.ts` (graphs, cells, 200 seeds, report, exit code, `--seeds` and `--cell` flags) and the `simulate` npm script",
+      "status": "todo",
+      "verify": "npm run simulate -- --seeds 5"
+    },
+    {
+      "id": "progression-11.3",
+      "phase": 2,
+      "spec": "progression",
+      "task": "11.3",
+      "title": "Write `tests/sim/regression.test.ts` for the Wanderer grade policies and print the demo route's steps and fights",
+      "status": "todo",
+      "verify": "npx vitest --run tests/sim/regression.test.ts"
+    },
+    {
+      "id": "progression-11.4",
+      "phase": 2,
+      "spec": "progression",
+      "task": "11.4",
+      "title": "Run the full simulator, record the table in `docs/kiro-journal.md`, and hand any missed target to the `balance-tuner` agent (changes go to `balance.ts` and `game-rules.md` only)",
+      "status": "todo",
+      "verify": "npm run simulate"
+    },
+    {
+      "id": "progression-12.1",
+      "phase": 3,
+      "spec": "progression",
+      "task": "12.1",
+      "title": "Run the engine and data suites and the type check; confirm the progression files obey the engine rules",
+      "status": "todo",
+      "verify": "npm run typecheck && npx vitest --run tests/engine tests/data tests/sim && ! grep -rnE \"Math\\.random|Date\\.now|performance\\.now|document\\.|window\\.|localStorage\" src/engine"
+    },
+    {
+      "id": "presentation-1.1",
+      "phase": 3,
+      "spec": "presentation",
+      "task": "1.1",
+      "title": "Split the prototype's markup and CSS into `index.html` and `src/style.css` (screens, overlays, footer with \"Not affiliated with GitHub.\"), and add `src/render/dom.ts`, `src/render/motion.ts`, `src/render/palette.ts`",
+      "status": "todo",
+      "verify": "npm run build"
+    },
+    {
+      "id": "presentation-1.2",
+      "phase": 3,
+      "spec": "presentation",
+      "task": "1.2",
+      "title": "Implement `src/render/input.ts` and `src/render/layout.ts`; write `tests/render/input.test.ts` and `tests/render/layout.test.ts`",
+      "status": "todo",
+      "verify": "npx vitest --run tests/render/input.test.ts tests/render/layout.test.ts"
+    },
+    {
+      "id": "presentation-1.3",
+      "phase": 1,
+      "spec": "presentation",
+      "task": "1.3",
+      "title": "In `src/main.ts`, add `dispatch` and `schedule` (deadline timer only; `advance` sent at once until group 6), keyboard movement, and the D-pad, so a run can be played with plain DOM output",
+      "status": "todo",
+      "verify": "npm run build"
+    },
+    {
+      "id": "presentation-2.1",
+      "phase": 3,
+      "spec": "presentation",
+      "task": "2.1",
+      "title": "Copy `SPRITES` and `OUTFITS` into `src/render/sprites/grids.ts` and implement `buildSprite`, `outline`, `silhouette`, `drawSprite`, `shadow`, `glow`, `rrect`",
+      "status": "todo",
+      "verify": "npm run typecheck"
+    },
+    {
+      "id": "presentation-2.2",
+      "phase": 3,
+      "spec": "presentation",
+      "task": "2.2",
+      "title": "Implement `heroPixels`, `heroKey`, `heroFrame`, `heroFX` in `src/render/sprites/hero.ts`, using `RACE_INFO` from progression for face colours and features",
+      "status": "todo",
+      "verify": "npx vitest --run tests/render/hero-sprite.test.ts"
+    },
+    {
+      "id": "presentation-2.3",
+      "phase": 3,
+      "spec": "presentation",
+      "task": "2.3",
+      "title": "Write `tests/render/hero-sprite.test.ts`",
+      "status": "todo",
+      "verify": "npx vitest --run tests/render/hero-sprite.test.ts"
+    },
+    {
+      "id": "presentation-3.1",
+      "phase": 3,
+      "spec": "presentation",
+      "task": "3.1",
+      "title": "Implement `tileTex`, `fogTex`, and `drawMap` (labels, tiles, rise, contents, visited border, warded ring, alerts, hero hop and aura) in `src/render/map/`",
+      "status": "todo",
+      "verify": "npx vitest --run tests/render/tooltip.test.ts"
+    },
+    {
+      "id": "presentation-3.2",
+      "phase": 3,
+      "spec": "presentation",
+      "task": "3.2",
+      "title": "Implement `applyLighting` and `drawFogDrift`, and the unseen-tile cover",
+      "status": "todo",
+      "verify": "npx vitest --run tests/render/tooltip.test.ts"
+    },
+    {
+      "id": "presentation-3.3",
+      "phase": 3,
+      "spec": "presentation",
+      "task": "3.3",
+      "title": "Implement `tileInfo` and write `tests/render/tooltip.test.ts`",
+      "status": "todo",
+      "verify": "npx vitest --run tests/render/tooltip.test.ts"
+    },
+    {
+      "id": "presentation-3.4",
+      "phase": 3,
+      "spec": "presentation",
+      "task": "3.4",
+      "title": "Ask combat-timing's `move` handler to emit `moved`, and add the map screen's rAF loop, pointer tap-to-move, hero tap, hover tooltip, and blocked feedback in `src/render/screens/map.ts`",
+      "status": "todo",
+      "verify": "npm run build && npx vitest --run tests/engine/step.test.ts"
+    },
+    {
+      "id": "presentation-4.1",
+      "phase": 3,
+      "spec": "presentation",
+      "task": "4.1",
+      "title": "Implement `hudView`, `renderHud` (bump and level flash), `renderLog`, and the danger overlay in `src/render/hud.ts`; write `tests/render/hud.test.ts`",
+      "status": "todo",
+      "verify": "npx vitest --run tests/render/hud.test.ts"
+    },
+    {
+      "id": "presentation-5.1",
+      "phase": 3,
+      "spec": "presentation",
+      "task": "5.1",
+      "title": "Start screen: teaser loop, error line with the demo link, Continue, trophy line, privacy line; loading screen; `show()` with music modes",
+      "status": "todo",
+      "verify": "npm run build"
+    },
+    {
+      "id": "presentation-5.2",
+      "phase": 3,
+      "spec": "presentation",
+      "task": "5.2",
+      "title": "Summary screen from `summaryView`, race and class cards with lock state, Calm and Auto-timing options, avatar",
+      "status": "todo",
+      "verify": "npm run build"
+    },
+    {
+      "id": "presentation-5.3",
+      "phase": 3,
+      "spec": "presentation",
+      "task": "5.3",
+      "title": "Map entry: `enterMap`, rise, blessing delay, race line after 1900 ms",
+      "status": "todo",
+      "verify": "npm run build"
+    },
+    {
+      "id": "presentation-5.4",
+      "phase": 3,
+      "spec": "presentation",
+      "task": "5.4",
+      "title": "Relic overlay (cards with icons, 380 ms delay, first card focused, keys 1–3) and the results screen from `resultsView` and `trophyList`",
+      "status": "todo",
+      "verify": "npm run build"
+    },
+    {
+      "id": "presentation-6.1",
+      "phase": 3,
+      "spec": "presentation",
+      "task": "6.1",
+      "title": "Implement `Pacer`, `resolvedKind`, and `PACING` in `src/render/pacing.ts`; write `tests/render/pacing.test.ts`",
+      "status": "todo",
+      "verify": "npx vitest --run tests/render/pacing.test.ts"
+    },
+    {
+      "id": "presentation-6.2",
+      "phase": 3,
+      "spec": "presentation",
+      "task": "6.2",
+      "title": "Implement `drawQte` and `gaugeHeadline` in `src/render/qte-gauge.ts`; write `tests/render/gauge.test.ts`",
+      "status": "todo",
+      "verify": "npx vitest --run tests/render/gauge.test.ts"
+    },
+    {
+      "id": "presentation-6.3",
+      "phase": 3,
+      "spec": "presentation",
+      "task": "6.3",
+      "title": "Combat panel in `src/render/screens/combat.ts` (sprites, HP bars with the 110 ms delay, source label, hint, buttons, Now! button, grade line) and the `advance` scheduling in `main.ts`",
+      "status": "todo",
+      "verify": "npm run build"
+    },
+    {
+      "id": "presentation-7.1",
+      "phase": 3,
+      "spec": "presentation",
+      "task": "7.1",
+      "title": "Port the `fx*` particle system to `src/render/fx.ts` and the stage to `src/render/stage.ts` (background, strike and hit effects, hit-stop, slow motion, death, phase 2)",
+      "status": "todo",
+      "verify": "npm run build"
+    },
+    {
+      "id": "presentation-7.2",
+      "phase": 3,
+      "spec": "presentation",
+      "task": "7.2",
+      "title": "Map effects for every event in the design table, white-out, fight flashes, background confetti and ash",
+      "status": "todo",
+      "verify": "npm run build"
+    },
+    {
+      "id": "presentation-7.3",
+      "phase": 3,
+      "spec": "presentation",
+      "task": "7.3",
+      "title": "Reduced motion: gate every item in requirement 13.6 on `REDUCED`, and add the CSS `prefers-reduced-motion` rule",
+      "status": "todo",
+      "verify": "npm run build"
+    },
+    {
+      "id": "presentation-8.1",
+      "phase": 3,
+      "spec": "presentation",
+      "task": "8.1",
+      "title": "Implement `HERO_LINES`, `CLASS_LINES`, `linePool`, `pickLine`, `idleStep` in `src/render/personality.ts`; write `tests/render/personality.test.ts`",
+      "status": "todo",
+      "verify": "npx vitest --run tests/render/personality.test.ts"
+    },
+    {
+      "id": "presentation-8.2",
+      "phase": 3,
+      "spec": "presentation",
+      "task": "8.2",
+      "title": "Summary portrait (6×, breathing, eye follow, flourish, click and key hop) and race and class choice lines",
+      "status": "todo",
+      "verify": "npm run build"
+    },
+    {
+      "id": "presentation-8.3",
+      "phase": 3,
+      "spec": "presentation",
+      "task": "8.3",
+      "title": "Map bubble (2.4 s, fades, clamped), idle fidgets and \"z\", idle reset on any input",
+      "status": "todo",
+      "verify": "npm run build"
+    },
+    {
+      "id": "presentation-9.1",
+      "phase": 3,
+      "spec": "presentation",
+      "task": "9.1",
+      "title": "Port `Sfx` to `src/audio/sfx.ts` (chain, drone, modes, bells, heartbeat, every effect, init on first input, mute ramp, hidden-page pause, all calls caught)",
+      "status": "todo",
+      "verify": "npx vitest --run tests/audio/events.test.ts && npm run build && ! find dist -iregex '.*\\.\\(mp3\\|ogg\\|wav\\|m4a\\|flac\\)' | grep ."
+    },
+    {
+      "id": "presentation-9.2",
+      "phase": 3,
+      "spec": "presentation",
+      "task": "9.2",
+      "title": "Implement `soundsFor` and `musicModeFor` in `src/audio/events.ts`, wire them in `main.ts`, and add the Sound button and M key; write `tests/audio/events.test.ts`",
+      "status": "todo",
+      "verify": "npx vitest --run tests/audio/events.test.ts && npm run build && ! find dist -iregex '.*\\.\\(mp3\\|ogg\\|wav\\|m4a\\|flac\\)' | grep ."
+    },
+    {
+      "id": "presentation-10.1",
+      "phase": 3,
+      "spec": "presentation",
+      "task": "10.1",
+      "title": "Write `tests/perf/mapgen.perf.test.ts` (dense fixture, median of 20 runs under 50 ms)",
+      "status": "todo",
+      "verify": "npx vitest --run tests/perf/mapgen.perf.test.ts"
+    },
+    {
+      "id": "presentation-10.2",
+      "phase": 4,
+      "spec": "presentation",
+      "task": "10.2",
+      "title": "With the Playwright power against `npm run preview`: play `?demo` to victory and to game over by keyboard only, at 1280 px and 360 px, check every screen, no console errors, no audio file requests, `/prototype/` loads; save the script as `tests/e2e/smoke.md`",
+      "status": "todo",
+      "verify": "`npm run build` then the Playwright power run described in `tests/e2e/smoke.md`"
+    },
+    {
+      "id": "presentation-10.3",
+      "phase": 3,
+      "spec": "presentation",
+      "task": "10.3",
+      "title": "Retake every prototype screenshot in `docs/screenshots/` from the new build with the Playwright power, compare side by side in `docs/parity.md`, and fix differences; check text contrast of the palette pairs (4.5:1) in the same file",
+      "status": "todo",
+      "verify": "every row in `docs/parity.md` is ticked"
+    },
+    {
+      "id": "presentation-10.4",
+      "phase": 3,
+      "spec": "presentation",
+      "task": "10.4",
+      "title": "Module check: render and audio decide no outcome and import no storage directly",
+      "status": "todo",
+      "verify": "npm run typecheck && npx vitest --run tests/render tests/audio && ! grep -rnE \"localStorage|from ['\\\"]\\.\\./\\.\\./data/(fetch|cache)\" src/render src/audio"
+    },
+    {
+      "id": "social-1.1",
+      "phase": 4,
+      "spec": "social",
+      "task": "1.1",
+      "title": "Implement `raidNames`, `challengeSearch`, `challengeUrl`, `challengeText` in `src/engine/social.ts`",
+      "status": "todo",
+      "verify": "npx vitest --run tests/engine/social.test.ts"
+    },
+    {
+      "id": "social-1.2",
+      "phase": 4,
+      "spec": "social",
+      "task": "1.2",
+      "title": "Write the link and text part of `tests/engine/social.test.ts`",
+      "status": "todo",
+      "verify": "npx vitest --run tests/engine/social.test.ts"
+    },
+    {
+      "id": "social-2.1",
+      "phase": 4,
+      "spec": "social",
+      "task": "2.1",
+      "title": "Add the raid branches to `newRun`'s first log line, `summaryView`, `resultsView`, and `continueLabel` using `raidNames`",
+      "status": "todo",
+      "verify": "npx vitest --run tests/engine/raid-text.test.ts tests/engine/views.test.ts"
+    },
+    {
+      "id": "social-2.2",
+      "phase": 4,
+      "spec": "social",
+      "task": "2.2",
+      "title": "Write `tests/engine/raid-text.test.ts` with a raid built from two fixture sets",
+      "status": "todo",
+      "verify": "npx vitest --run tests/engine/raid-text.test.ts tests/engine/views.test.ts"
+    },
+    {
+      "id": "social-2.3",
+      "phase": 4,
+      "spec": "social",
+      "task": "2.3",
+      "title": "Start screen: the friend field, validation messages, `?u=&vs=` fill and start, `loadRun` with the raid loading text, errors from either profile shown with the demo link",
+      "status": "todo",
+      "verify": "npm run build && npx vitest --run tests/data/load.test.ts"
+    },
+    {
+      "id": "social-3.1",
+      "phase": 4,
+      "spec": "social",
+      "task": "3.1",
+      "title": "`?vs=` alone: fill the friend field, show `challengePrompt`, focus the username field; write `tests/render/start.test.ts`",
+      "status": "todo",
+      "verify": "npx vitest --run tests/render/start.test.ts"
+    },
+    {
+      "id": "social-3.2",
+      "phase": 4,
+      "spec": "social",
+      "task": "3.2",
+      "title": "\"Copy challenge link\" button in the results screen and the clipboard call with the text fallback in `main.ts`",
+      "status": "todo",
+      "verify": "npm run build"
+    },
+    {
+      "id": "social-4.1",
+      "phase": 4,
+      "spec": "social",
+      "task": "4.1",
+      "title": "Implement `cardTitle`, `cardRows`, `cardLinkLine`, `cardFileName` and finish `tests/engine/social.test.ts`",
+      "status": "todo",
+      "verify": "npx vitest --run tests/engine/social.test.ts"
+    },
+    {
+      "id": "social-4.2",
+      "phase": 4,
+      "spec": "social",
+      "task": "4.2",
+      "title": "Add the `revealAll` option to `drawMap`, and implement `SHARE_CARD` and `drawShareCard` in `src/render/share-card.ts`",
+      "status": "todo",
+      "verify": "npm run build"
+    },
+    {
+      "id": "social-4.3",
+      "phase": 4,
+      "spec": "social",
+      "task": "4.3",
+      "title": "\"Save share card\" button: canvas, PNG data URL, preview image, download with `cardFileName`, note line",
+      "status": "todo",
+      "verify": "npm run build"
+    },
+    {
+      "id": "social-4.4",
+      "phase": 4,
+      "spec": "social",
+      "task": "4.4",
+      "title": "With the Playwright power on `npm run preview`: finish a `?demo` run with Auto-timing, save the card, check it is 1200×630 and compare it with `docs/screenshots/26-share-card.png`; check the copied text; open `?vs=demo-necromancer` and check the prompt; add the steps to `tests/e2e/smoke.md`",
+      "status": "todo",
+      "verify": "the Playwright power run in `tests/e2e/smoke.md` passes"
+    },
+    {
+      "id": "social-5.1",
+      "phase": 4,
+      "spec": "social",
+      "task": "5.1",
+      "title": "Confirm `src/engine/social.ts` reads no `location`, `navigator`, or clock, and that no social code sends a request",
+      "status": "todo",
+      "verify": "npm run typecheck && npx vitest --run tests/engine/social.test.ts tests/engine/raid-text.test.ts && ! grep -nE \"location|navigator|fetch\\(|Date\\.now\" src/engine/social.ts src/render/share-card.ts"
+    }
+  ]
+}

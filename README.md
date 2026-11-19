@@ -16,6 +16,15 @@ This repository currently holds the **design prototype**, created on 16 Nov 2026
 - `docs/PRD.md` is the product requirements document (v1.4).
 - The final build (TypeScript, Vite, Canvas 2D, built from Kiro specs in `/.kiro`) starts in Phase 0 and will replace the prototype at the site root.
 
+## How it's built
+
+The final build is written from Kiro specs, one task at a time. Until Phase 4 the playable game is still the prototype.
+
+- [`.kiro/`](.kiro/): steering, the 6 specs (requirements, design, tasks), hooks, and the `balance-tuner` agent.
+- [`docs/BUILD-PLAN.md`](docs/BUILD-PLAN.md): the phases, dates, and balance targets.
+- [`docs/build-checklist.json`](docs/build-checklist.json): every spec task with its phase, status, and verify command.
+- [`docs/kiro-journal.md`](docs/kiro-journal.md): a day-by-day log of how Kiro was used.
+
 ## How to play
 
 1. Enter a public GitHub username, or press **Play the demo**.
