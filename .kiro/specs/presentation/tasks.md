@@ -67,6 +67,9 @@ These are Phase 3 (Wed 25 – Fri 27 Nov), except task 1.3, which Phase 1 needs 
   - [ ] 6.4 Timing accuracy feedback: colour cue and approach strip in `qte-gauge.ts`, `recordHit` / `offText` and the hit-error meter in `src/render/hit-meter.ts`, offset slider and "Use my average" on the summary; offset subtraction lives in the engine input adapter in `main.ts`
     - _Requirements: 17.1–17.5 (FR-FX-9)_
     - _Verify: `npx vitest --run tests/render/hit-meter.test.ts`_
+  - [ ] 6.5 Battle screen layout: boss bar, nameplate, HERO/FOE tabs, 7-line battle log in `src/render/screens/combat.ts`; graveyard stage background at 2× in `src/render/stage-bg.ts`
+    - _Requirements: 18.1–18.5 (FR-FX-10)_
+    - _Verify: `npm run build` and the Playwright smoke screenshot at 1280 and 390 px_
 
 - [ ] 7. Effects
   - [ ] 7.1 Port the `fx*` particle system to `src/render/fx.ts` and the stage to `src/render/stage.ts` (background, strike and hit effects, hit-stop, slow motion, death, phase 2)
