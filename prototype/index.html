@@ -111,6 +111,9 @@
   #btn-qte { font-size: 13px; padding: 14px 28px; }
   .settings { display: flex; flex-wrap: wrap; gap: 6px 18px; margin-top: 14px; font-size: 13.5px; color: var(--muted); }
   .settings input { accent-color: var(--purple); margin-right: 6px; }
+  .calib { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+  .calib input[type=range] { width: 140px; margin: 0; }
+  .calib b { color: var(--text); min-width: 56px; }
   .shake { animation: shake .25s; }
   @keyframes shake { 25% { transform: translateX(-4px); } 75% { transform: translateX(4px); } }
 
@@ -282,6 +285,8 @@
         <div class="settings">
           <label><input type="checkbox" id="opt-calm">Calm mode: slower timing, wider windows</label>
           <label><input type="checkbox" id="opt-assist">Auto-timing: every timing press counts as Good</label>
+          <span class="calib">Timing offset <input type="range" id="opt-offset" min="-150" max="150" step="5" aria-label="Timing offset in milliseconds"> <b id="opt-offset-v"></b>
+          <button type="button" class="ghost sound-btn" id="btn-calib">Use my average</button> <span id="calib-note"></span></span>
         </div>
         <div class="row" style="justify-content:flex-start;margin-top:16px">
           <button id="btn-enter">Enter the graph</button>
@@ -527,7 +532,7 @@ const QTE = {
   counter: 0.5, dmgScale: 1.25
 };
 const SETTINGS_KEY = 'cq:v1:settings';
-let settings = { calm: false, assist: false, mute: false, heroClass: 'wanderer', heroRace: 'human' };
+let settings = { calm: false, assist: false, mute: false, heroClass: 'wanderer', heroRace: 'human', offset: 0, hist: [] };
 try { settings = { ...settings, ...JSON.parse(localStorage.getItem(SETTINGS_KEY) || '{}') }; } catch (_) {}
 const saveSettings = () => { try { localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings)); } catch (_) {} };
 
@@ -1771,14 +1776,25 @@ function shieldImpact(q) {
   if (q.holding && q.downAt != null) return finishQte(q.target - q.downAt <= q.P ? 'perfect' : 'good');
   q.timer = setTimeout(() => { if (qte === q && !q.over) finishQte('miss', q.downAt == null ? 'no shield' : 'shield down'); }, q.P + 10);
 }
+/* Accuracy feedback. Every graded press records its signed error (negative = early, positive = late),
+   shown after the press, on the hit-error meter, and averaged so the player can calibrate an input offset. */
+const hitLog = [];
+function recordHit(q, off) {
+  q.lastOff = off;
+  hitLog.push({ off, P: q.P, G: q.G, at: performance.now() }); if (hitLog.length > 12) hitLog.shift();
+  settings.hist = [...(settings.hist || []), Math.round(off)].slice(-20); saveSettings();
+}
+const avgOffset = () => { const h = settings.hist || []; return h.length ? h.reduce((a, b) => a + b, 0) / h.length : 0; };
+const offText = (off) => (Math.abs(off) < 8 ? 'ON TIME' : `${Math.abs(Math.round(off))} MS ${off < 0 ? 'EARLY' : 'LATE'}`);
 function qtePress(time, key = 'key') {
   if (!qte || qte.over || settings.assist || testGrade) return;
-  const q = qte, t = time - q.start;
+  const q = qte, t = time - q.start - (settings.offset || 0);
   if (t < QTE.grace) return; // ignore the key press that started the action
   if (q.mode === 'combo') {
     let i = q.hits.length;
     while (i < 3 && t > q.zones[i] + q.G) { q.hits.push('miss'); i++; }
     if (i < 3) {
+      recordHit(q, t - q.zones[i]);
       const off = Math.abs(t - q.zones[i]);
       q.hits.push(off <= q.P ? 'perfect' : off <= q.G ? 'good' : 'miss');
       Sfx.play(q.hits[i] === 'miss' ? 'glance' : q.hits[i] === 'perfect' ? 'crit' : 'hit');
@@ -1794,9 +1810,11 @@ function qtePress(time, key = 'key') {
   }
   if (q.mode === 'shield') {
     q.holding = true; q.holdKey = key;
-    if (t > q.target) { if (t - q.target <= q.P) finishQte('perfect'); return; }
+    if (t > q.target) { if (t - q.target <= q.P) { recordHit(q, t - q.target); finishQte('perfect'); } return; }
+    if (q.target - t <= q.G) recordHit(q, t - q.target); // a parry attempt near impact, not an early hold
     q.downAt = t; Sfx.play('blocked'); return;
   }
+  recordHit(q, t - q.target);
   const off = Math.abs(t - q.target);
   if (off <= q.P) finishQte('perfect');
   else if (off <= q.G) finishQte('good');
@@ -1804,10 +1822,11 @@ function qtePress(time, key = 'key') {
 }
 function qteRelease(time, key = 'key') {
   if (!qte || qte.over || settings.assist || testGrade) return;
-  const q = qte, t = time - q.start;
+  const q = qte, t = time - q.start - (settings.offset || 0);
   if (q.holdKey && key !== q.holdKey) return;
   if (q.mode === 'charge' && q.downAt != null) {
     const held = t - q.downAt, off = Math.abs(held - q.target);
+    if (held < q.fill) recordHit(q, held - q.target);
     if (held >= q.fill) finishQte('miss', 'overload');
     else if (off <= q.P) finishQte('perfect');
     else if (off <= q.G) finishQte('good');
@@ -1836,7 +1855,7 @@ function finishQte(grade, why) {
     text = all ? 'PERFECT COMBO!' : `${n}/3 HITS · ` + grade.map((g) => g[0].toUpperCase()).join(' ');
     cls = all ? 'perfect' : n >= 2 ? 'good' : 'miss';
   } else { text = GRADE_LABELS[q.mode][grade]; cls = grade; }
-  el.textContent = (why ? why.toUpperCase() + ' · ' : '') + text;
+  el.textContent = (why ? why.toUpperCase() + ' · ' : '') + text + (q.lastOff != null && !why ? ' · ' + offText(q.lastOff) : '');
   el.className = 'grade ' + cls; void el.offsetWidth; if (!REDUCED) el.classList.add('pop');
   q.done(grade);
 }
@@ -2183,7 +2202,7 @@ function showSummary() {
     ? `${today.count} contribution${today.count === 1 ? '' : 's'} today. You start the run with a free relic.`
     : 'No contributions yet today, so monsters hit 15% harder. Commit something, then come back for the blessing.';
   $('#sum-xp').innerHTML = 'XP per level: ' + Array.from({ length: 10 }, (_, i) => `<span class="${i + 1 === h.level ? 'on' : ''}">L${i + 1} ${xpForLevel(i + 1)}</span>`).join('');
-  renderRacePick(); renderClassPick();
+  renderRacePick(); renderClassPick(); refreshCalib();
   show('screen-summary'); $('#btn-enter').focus();
 }
 function renderClassPick() {
@@ -2296,6 +2315,15 @@ $('#opt-calm').checked = settings.calm;
 $('#opt-assist').checked = settings.assist;
 $('#opt-calm').onchange = (e) => { settings.calm = e.target.checked; saveSettings(); };
 $('#opt-assist').onchange = (e) => { settings.assist = e.target.checked; saveSettings(); };
+function refreshCalib() {
+  const o = settings.offset || 0, h = settings.hist || [];
+  $('#opt-offset').value = o; $('#opt-offset-v').textContent = `${o > 0 ? '+' : ''}${o} ms`;
+  $('#btn-calib').disabled = h.length < 5;
+  $('#calib-note').textContent = h.length < 5 ? `Press in ${5 - h.length} more fight${5 - h.length === 1 ? '' : 's'} to measure your timing.` : `You press ${offText(avgOffset()).toLowerCase()} on average (${h.length} presses).`;
+}
+$('#opt-offset').oninput = (e) => { settings.offset = Number(e.target.value); saveSettings(); refreshCalib(); };
+$('#btn-calib').onclick = () => { settings.offset = clamp(Math.round(((settings.offset || 0) + avgOffset()) / 5) * 5, -150, 150); settings.hist = []; saveSettings(); refreshCalib(); $('#calib-note').textContent = 'Calibrated. Your presses are now measured against your own timing.'; };
+refreshCalib();
 $('#btn-again').onclick = () => { newRun(state.set, state.heroSet); save(); enterMap(true); };
 $('#btn-new').onclick = () => { localStorage.removeItem(SAVE_KEY); state = null; refreshContinue(); show('screen-start'); $('#username').focus(); };
 $('#btn-share').onclick = async () => {
@@ -2526,12 +2554,31 @@ function frame(now) {
 }
 requestAnimationFrame(frame);
 
-const QW = 320, QH = 110;
+const QW = 320, QH = 150;
 const qteCtx = sizeCanvas($('#qte'), QW, QH);
+/* The hit-error meter: centre = perfect timing, left = early, right = late; gold and green bands are the last test's windows. */
+function drawHitMeter(ctx, now, y) {
+  if (!hitLog.length) return;
+  const last = hitLog[hitLog.length - 1], half = 130, range = 220, X = (ms) => QW / 2 + clamp(ms / range, -1, 1) * half;
+  ctx.fillStyle = '#1b2233'; rrect(ctx, QW / 2 - half - 4, y - 7, half * 2 + 8, 14, 5); ctx.fill();
+  ctx.fillStyle = 'rgba(38,166,65,.75)'; ctx.fillRect(X(-last.G), y - 7, X(last.G) - X(-last.G), 14);
+  ctx.fillStyle = '#ffd257'; ctx.fillRect(X(-last.P), y - 7, X(last.P) - X(-last.P), 14);
+  ctx.fillStyle = '#ffffff'; ctx.fillRect(QW / 2 - 1, y - 9, 2, 18);
+  hitLog.forEach((h, i) => {
+    const latest = i === hitLog.length - 1, age = (hitLog.length - 1 - i) / hitLog.length;
+    ctx.fillStyle = latest ? '#ff5a7a' : `rgba(255,140,170,${0.65 - age * 0.55})`;
+    ctx.fillRect(X(h.off) - (latest ? 2 : 1), y - (latest ? 11 : 6), latest ? 4 : 2, latest ? 22 : 12);
+  });
+  ctx.font = '8px "Press Start 2P", monospace'; ctx.textAlign = 'left'; ctx.fillStyle = '#8b98ab';
+  ctx.fillText('EARLY', QW / 2 - half - 2, y + 18); ctx.textAlign = 'right'; ctx.fillText('LATE', QW / 2 + half + 2, y + 18);
+  ctx.textAlign = 'center'; ctx.fillStyle = '#ff9ab0'; ctx.fillText(offText(last.off), X(last.off), y - 19);
+  const h = settings.hist || [];
+  if (h.length >= 5) { ctx.font = '11px system-ui, sans-serif'; ctx.fillStyle = '#8b98ab'; ctx.fillText(`Average over ${h.length} presses: ${offText(avgOffset()).toLowerCase()}`, QW / 2, y + 34); }
+}
 function drawQte(now) {
   const ctx = qteCtx; ctx.clearRect(0, 0, QW, QH);
   ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-  if (!qte) return;
+  if (!qte) { drawHitMeter(ctx, now, 70); return; }
   const t = now - qte.start;
   ctx.font = '9px "Press Start 2P", monospace';
   if (qte.mode === 'combo') {
@@ -2579,7 +2626,7 @@ function drawQte(now) {
     ctx.fillStyle = '#fff'; ctx.fillRect(px - 2, y - hgt / 2 - 7, 4, hgt + 14);
     ctx.beginPath(); ctx.moveTo(px - 6, y - hgt / 2 - 9); ctx.lineTo(px + 6, y - hgt / 2 - 9); ctx.lineTo(px, y - hgt / 2 - 2); ctx.fill();
   } else {
-    const cx = QW / 2, cy = 64, r0 = 12, R = 44;
+    const cx = QW / 2, cy = 64, r0 = 14, R = 50;
     const flaky = qte.type === 'flaky', base = flaky ? qte.target - qte.pause : qte.target;
     const paused = flaky && t >= qte.pauseAt && t < qte.pauseAt + qte.pause;
     const eff = !flaky || t < qte.pauseAt ? t : paused ? qte.pauseAt : t - qte.pause;
@@ -2596,12 +2643,23 @@ function drawQte(now) {
       ctx.beginPath(); ctx.arc(cx, cy, rd, 0, 7); ctx.stroke(); ctx.restore();
     }
     ctx.fillStyle = 'rgba(38,166,65,.25)'; ctx.beginPath(); ctx.arc(cx, cy, r0 + gr, 0, 7); ctx.fill();
-    if (Math.abs(t - qte.target) <= qte.G) glow(ctx, cx, cy, r0 * 3, 'rgba(255,210,87,A)', 0.35);
+    // colour cue on real time: the ring turns green inside the Good window and gold inside the Perfect window
+    const dt = t - (settings.offset || 0) - qte.target, inP = Math.abs(dt) <= qte.P, inG = Math.abs(dt) <= qte.G;
+    if (inG) glow(ctx, cx, cy, r0 * 3.4, inP ? 'rgba(255,210,87,A)' : 'rgba(57,211,83,A)', inP ? 0.6 : 0.35);
     ctx.strokeStyle = '#ffd257'; ctx.lineWidth = Math.max(3, pr * 2); ctx.beginPath(); ctx.arc(cx, cy, r0, 0, 7); ctx.stroke();
     const jit = paused && !REDUCED ? (Math.random() - 0.5) * 3 : 0;
     const r = Math.max(2, r0 + (R - r0) * (1 - k) + jit);
-    ctx.strokeStyle = k > 1 ? 'rgba(255,107,107,.5)' : paused && Math.floor(now / 70) % 2 ? '#9fe3b0' : '#ff6b6b'; ctx.lineWidth = qte.type === 'quick' ? 4 : 3;
+    ctx.strokeStyle = inP ? '#ffd257' : inG ? '#39d353' : k > 1 ? 'rgba(255,107,107,.5)' : paused && Math.floor(now / 70) % 2 ? '#9fe3b0' : '#ff6b6b';
+    ctx.lineWidth = inP ? 5 : qte.type === 'quick' ? 4 : 3;
     ctx.beginPath(); ctx.arc(cx, cy, r, 0, 7); ctx.stroke();
+    // approach strip: the same picture as the strike bar, so impact time can be read linearly
+    { const x0 = 30, w = QW - 60, y = 134, hh = 10, span = base + qte.G, X = (ms) => x0 + w * clamp(ms / span, 0, 1);
+      ctx.fillStyle = '#1b2233'; rrect(ctx, x0, y - hh / 2, w, hh, 4); ctx.fill();
+      ctx.fillStyle = 'rgba(38,166,65,.85)'; ctx.fillRect(X(base - qte.G), y - hh / 2, X(base + qte.G) - X(base - qte.G), hh);
+      ctx.fillStyle = '#ffd257'; ctx.fillRect(X(base - qte.P), y - hh / 2, X(base + qte.P) - X(base - qte.P), hh);
+      if (qte.decoy && !flaky) { ctx.fillStyle = 'rgba(200,170,255,.9)'; for (let yy = -hh / 2; yy < hh / 2; yy += 3) ctx.fillRect(X(qte.decoy) - 1, y + yy, 2, 2); }
+      const mx = X(eff - (settings.offset || 0));
+      ctx.fillStyle = paused && Math.floor(now / 70) % 2 ? '#9fe3b0' : '#ffffff'; ctx.fillRect(mx - 2, y - hh / 2 - 5, 4, hh + 10); }
     if (qte.mode === 'shield') {
       const up = qte.holding;
       ctx.save(); ctx.translate(cx, cy); ctx.fillStyle = up ? '#9fd8ff' : 'rgba(143,163,191,.35)'; ctx.strokeStyle = up ? '#ffffff' : 'rgba(255,255,255,.4)'; ctx.lineWidth = 2;
@@ -2656,6 +2714,7 @@ window.__cq = {
   setRace(id) { settings.heroRace = id; if (state) { state.hero.race = id; applyStats(state.hero); state.hero.hp = state.hero.maxHp; } },
   setClass(id) { settings.heroClass = id; if (state) { state.hero.cls = id; applyStats(state.hero); state.hero.hp = state.hero.maxHp; } },
   card: () => makeShareCard().toDataURL('image/png'),
+  get hitLog() { return hitLog; },
   get qte() { return qte && { kind: qte.kind, mode: qte.mode, zones: qte.zones, fill: qte.fill, downAt: qte.downAt, holding: qte.holding, type: qte.type, start: qte.start, target: qte.target, P: qte.P, G: qte.G, pauseAt: qte.pauseAt, pause: qte.pause, decoy: qte.decoy }; },
   // Balance bots: 'perfect' | 'good' | 'miss' | 'mixed' (25% perfect, 50% good, 25% miss, seeded) | null for real input
   setGrade(policy) {

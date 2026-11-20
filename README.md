@@ -25,6 +25,7 @@ This repository currently holds the **design prototype**, created on 16 Nov 2026
 5. Monsters start a turn-based fight: **A** to attack, **F** to flee. Every action is a timing test, pressed with **Space**:
    - **Strike:** press while the marker is in the gold zone for a critical hit.
    - **Dodge:** when a monster attacks, press as the red ring meets the gold circle. Only a perfect press dodges completely and lets you counter. A good press blocks most of the hit.
+   - **Accuracy feedback:** the ring turns green inside the Good window and gold inside the Perfect window, a strip under it shows time to impact, and after each press you see how many milliseconds early or late you were, on an early/late meter of your last presses. If you are always late (common with screen or Bluetooth delay), use **Timing offset → Use my average** on the hero screen.
    - Turn on **Calm mode** (slower, wider windows) or **Auto-timing** on the hero screen if you prefer.
    - Each monster attacks its own way:
      - **Bug Imp** hits twice; the second hit is fast.
