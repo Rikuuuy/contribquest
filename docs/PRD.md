@@ -4,8 +4,8 @@
 | --- | --- |
 | Product | ContribQuest: The Haunted Graph |
 | Document type | Product Requirements Document (PRD) |
-| Version | 1.4 — adds monster attack patterns, boss phase 2, and relics; v1.3 added timing tests (QTE) to every combat action; v1.2 added fog of war, soul shards, weekday traits, and challenge links |
-| Status | Ready to start the build on Tue 17 Nov 2026 |
+| Version | 1.5 (19 Nov 2026) — adds hero classes with their own timing tests, class difficulty and rising pressure, races, the daily omen, trophies, raids, the share card, 24×24 hero sprites with idle behaviour, and synthesized audio; v1.4 added monster attack patterns, boss phase 2, and relics; v1.3 added timing tests (QTE) to every combat action; v1.2 added fog of war, soul shards, weekday traits, and challenge links |
+| Status | Phase 0 (foundations) started Thu 19 Nov 2026. The game is rebuilt as a TypeScript project from Kiro specs, using the prototype as the reference design (see `docs/BUILD-PLAN.md`) |
 | Preview | `prototype/index.html`: a single-file vibe-coded prototype used to test the design (not the submission code) |
 | Competition | Kiroween 2026, hosted on Devpost (https://kiroween.devpost.com/) |
 | Category | Frankenstein (one category per submission) |
@@ -16,6 +16,35 @@
 | Eligibility | Built from scratch between 30 Oct and 4 Dec 2026. Frameworks, libraries, and asset packs are allowed; any other pre-existing code must be declared |
 | Team | Solo build (decided 16 Nov 2026) |
 | Platform | Static web application, no backend |
+
+## What changed in v1.5
+
+v1.5 records everything the prototype gained after v1.4, so the rebuild has one written source for every rule. All numbers below are copied from `prototype/index.html` (`CLASSES`, `DIFFICULTY`, `ATK_MULT`, `DEF_MULT`, `QTE`, `RELICS`, `RACES`, `TROPHIES`, `startQte`, `pressure`, `makeMonster`, `applyStats`, `newRun`, `makeShareCard`). The prototype stays the source of truth: if this document and the prototype disagree, the prototype wins and this document is corrected.
+
+| Area | Added after v1.4 | Requirements |
+| --- | --- | --- |
+| Hero classes | Wanderer, Knight, Rogue, and Mage. Each class swaps the strike test, the guard test, or both, and has its own HP and ATK modifiers | FR-CLS-1 to FR-CLS-9 |
+| Timing-test modes | Six modes instead of two: bar, combo, charge (strike) and ring, sidestep, shield (guard) | FR-CLS-3 to FR-CLS-8 |
+| Class difficulty | Easy, Normal, Hard, Nightmare (1–4 stars). Each class scales the timing windows, test speed, monster damage, and treasure | FR-DIF-1 to FR-DIF-5 |
+| Rising pressure | Every monster banished narrows the timing windows and speeds the tests up, down to a class floor | FR-DIF-3, FR-DIF-4 |
+| Races | Human, Elf, Orc, Skeleton, Vampire, each with one passive and a face drawn onto the class outfit | FR-RACE-1 to FR-RACE-4 |
+| Weekday trait | Unchanged from v1.2 | — |
+| Relics | Same 10 relics. Force Push and Pair Programmer are now relative bonuses, so they work with every strike mode | FR-REL-1 to FR-REL-4 |
+| Daily omen | Commit Blessing (a free relic at the start) or Uncommitted Curse (+15% monster damage), from today's tile | FR-OMEN-1 to FR-OMEN-3 |
+| Trophies | 14 trophies saved in the browser across runs | FR-TRO-1 to FR-TRO-3 |
+| Social | Raids (`?u=<you>&vs=<friend>`), challenge links (`?vs=`), and a 1200×630 PNG share card | FR-SOC-1 to FR-SOC-6 |
+| Presentation | 24×24 shaded hero sprites, an interactive portrait, speech bubbles, a tile tooltip, tap-to-move, idle fidgets and sleep, and sound and music synthesized with Web Audio | FR-FX-1 to FR-FX-8 |
+
+Two v1.4 relic texts changed:
+
+| Relic | v1.4 | v1.5 |
+| --- | --- | --- |
+| Force Push | Critical ×2.0 instead of ×1.6 | Critical hits deal 25% more damage (the Perfect multiplier × 1.25; on the bar, 1.6 × 1.25 = 2.0) |
+| Pair Programmer | Glancing blow ×0.8 instead of ×0.5 | Glancing blows deal 60% more damage (the Miss multiplier × 1.6; on the bar, 0.5 × 1.6 = 0.8) |
+
+On the Wanderer's bar test the numbers are the same as in v1.4. The change matters for the Mage's charge and the Rogue's combo, which have their own multipliers.
+
+The class rules replace the "classes" entry in the v1.0 Won't list. New property tests P14–P19 and per-class simulator targets are under "Testing and quality strategy". The timeline is replaced by the one in `docs/BUILD-PLAN.md`.
 
 ## What changed in v1.4
 
@@ -115,7 +144,7 @@ Stage 1 is pass/fail: the project must fit the Frankenstein category and visibly
 | Criterion | What judges look for | How ContribQuest earns it | Where it is proven |
 | --- | --- | --- | --- |
 | Potential Impact | A real problem for real users, shown in the demo; useful, understandable, accessible | Turns a passive habit metric into a reason to return; zero setup; keyboard and touch; demo mode | Start screen, results screen "today's tile" message, video 0:00–0:15 |
-| Technological Implementation | Depth and quality of Kiro use; a deliberate AI-assisted workflow; several Kiro features used well | 4 specs traced to FR IDs, steering with file-match inclusion, hooks that run real checks, PBT, a custom balance agent, Playwright via Kiro powers | `/.kiro`, `docs/kiro-journal.md`, write-up, video 2:25–2:55 |
+| Technological Implementation | Depth and quality of Kiro use; a deliberate AI-assisted workflow; several Kiro features used well | 6 specs traced to FR IDs, steering with file-match inclusion, hooks that run real checks, PBT, a custom balance agent, Playwright via Kiro powers | `/.kiro`, `docs/kiro-journal.md`, write-up, video 2:25–2:55 |
 | Design | A coherent product experience, not a tech demo; clear, polished, intentional | 5 focused screens, haunted pixel-art theme, colorblind-safe tile shapes, fast animations | The hosted app, video throughout |
 | Innovation/Idea | Original; unusual combinations of technology or public data | Each day's real date and count become a specific monster; your best day is the boss; your streak is armor | Combat screen source label, write-up prior-art paragraph |
 | Presentation | The video shows the app working end to end; clear who, what, why; memorable | A scripted 2:55 video with a "graph rises from the dead" moment and a boss fight | YouTube video |
@@ -128,7 +157,7 @@ The Best Demo bonus prize goes to the highest Presentation score among the top 1
 | --- | --- | --- |
 | Bonus Blog Prize (2,000 Kiro credits, 100 winners) | A post on an external blog, published during the submission period, stating it was written for Kiroween 2026 | Publish on dev.to on Wed 2 Dec, built from `docs/kiro-journal.md` |
 | Social Blitz Prize (Kiro Pro+ 3 months, 5 winners) | A social post starting with `#KiroweenHackathon26` about your favorite Kiro feature and how it changed your workflow, with good visuals | Post a 20-second GIF of the graph turning into the map, on Thu 3 Dec |
-| Best Student Project (Frankenstein) | Every team member is a student; LinkedIn, student email, degree, and school required | Enter only if eligible. Confirm in Phase 0 |
+| Best Student Project (Frankenstein) | Every team member is a student; LinkedIn, student email, degree, and school required | Enter (decided 19 Nov 2026: the author is a student). Prepare the student email and LinkedIn before Thu 3 Dec |
 | Best Demo | Automatic, from the Presentation score | Covered by the video plan |
 | Best Kiro Crew App, Best Startup Project, Best Ghost of Kiroween Past | Separate eligibility | Not targeted |
 
@@ -475,6 +504,122 @@ The bot follows the v1.2 route rule: collect shards, heal at chests below 45% HP
 - **FR-DEM-2.** Demo mode is the vehicle for the video backup take, testing, and fallback.
 - **FR-DEM-3.** Demo data is stored in exactly the API's normalized shape and passes the same schema validator as live data.
 
+## Functional requirements — added in v1.5 (port from the prototype)
+
+These requirements describe features the prototype already has. They are in scope for the rebuild. If the 28 Nov checkpoint is missed, the cut list in "Timeline" decides what is dropped.
+
+### Hero classes and timing-test modes
+
+- **FR-CLS-1.** The hero summary offers four classes: Wanderer (default), Knight, Rogue, and Mage. The choice is saved in local storage (`cq:v1:settings`, `heroClass`) and is locked once the hero has taken a step. Changing class recomputes stats and fully heals.
+- **FR-CLS-2.** Each class has a strike test, a guard test, and stat modifiers:
+
+  | Class | Strike test | Guard test | Max HP | ATK | Other |
+  | --- | --- | --- | --- | --- | --- |
+  | Wanderer | bar | ring | ×1 | +0 | — |
+  | Knight | bar | shield | ×1.25 | −1 | Bar sweep 15% slower (`slow: 1.15`) |
+  | Rogue | combo | sidestep | ×0.9 | +0 | A Perfect sidestep counters at 100% ATK |
+  | Mage | charge | ring | ×0.9 | +2 | — |
+
+  Stats: `maxHp = round((30 + 6 × (level − 1) + 5 × auraTier + traitHp + relicHp) × classHp)` and `atk = 5 + 2 × (level − 1) + auraTier + relicAtk + classAtk + raceAtk`.
+- **FR-CLS-3.** Timing windows for every mode: `P = (70 + 10 × auraTier + 25 if Linter) × calm`, plus `15 × calm` for an Elf; then `P = P × pMul × pressure` and `G = max(170 × calm × gMul × pressure, 1.4 × P)`, where `calm` is 1.6 in Calm mode and 1 otherwise. Test speed is `tm = speed × (0.8 + 0.2 × pressure)`. `pMul`, `gMul`, and `speed` come from the class difficulty (FR-DIF-1).
+- **FR-CLS-4. Bar (strike).** One marker sweeps the bar in `(1200 − 40 × tier) × calm × tm × slow` ms. The gold zone sits at a seeded 50–80% of the bar. Damage multipliers: Perfect ×1.6, Good ×1.0, Miss ×0.5.
+- **FR-CLS-5. Combo (strike).** One sweep of `(1500 − 40 × tier) × calm × tm` ms with three gold marks: the first at a seeded 22–28% of the sweep, each next one a seeded 22–27% further. Each press is graded against the next mark on its own; a mark passed by more than G counts as a Miss. The Good window is capped at `120 × calm × gMul × pressure` ms. Each of the three hits deals ×0.55 (Perfect), ×0.35 (Good), or ×0.08 (Miss). Three Perfects show "PERFECT COMBO!"; otherwise "n/3 HITS".
+- **FR-CLS-6. Charge (strike).** Hold to charge, release in the gold. Full charge takes `fill = (1000 − 30 × tier) × calm × tm` ms; the target hold time is `0.82 × fill`, graded on hold duration with the same P and G. Holding to `fill` overloads (Miss). No press within `2600 × calm` ms is a Miss ("too slow"). Multipliers: Perfect ×1.9, Good ×1.1, Miss ×0.4.
+- **FR-CLS-7. Ring and sidestep (guard).** The ring shrinks onto the gold circle as in v1.3 and v1.4, with the monster patterns from v1.4 (normal, quick, flaky, conflict). Ring damage multipliers: Perfect ×0 plus a counter at 50% ATK, Good ×0.4, Miss ×1. Sidestep uses the same ring with a Perfect window ×1.2; Perfect ×0 plus a counter at 100% ATK, Good ×0.8 ("GRAZED"), Miss ×1.
+- **FR-CLS-8. Shield (guard).** Hold to raise the shield before impact. Still holding at impact gives Good (×0.3, "BLOCKED"); if the hold started within P of impact, or the press comes within P after impact, it is a Perfect parry (×0 plus a counter at 50% ATK). Not holding at impact, or releasing early, is a Miss (×1) once P + 10 ms have passed after impact.
+- **FR-CLS-9.** Each class has its own one-line hint in combat and its own grade labels: bar "CRITICAL! / GOOD HIT / GLANCING BLOW", charge "CRITICAL SPELL! / SPELL HIT / FIZZLE", ring "PERFECT DODGE! / BLOCKED / HIT!", sidestep "PERFECT SIDESTEP! / GRAZED / HIT!", shield "PERFECT PARRY! / BLOCKED / HIT!". The hold-based tests accept the same keys and the on-screen button, with key-up or pointer-up as the release; a release only counts for the key or pointer that started the hold.
+
+### Class difficulty and pressure
+
+- **FR-DIF-1.** Each class has a fixed difficulty, shown as 1–4 stars and a label on the class card and in the HUD:
+
+  | Class | Stars | Label | pMul | gMul | speed | ramp | floor | dmg | loot |
+  | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+  | Knight | 1 | Easy | 1.25 | 1.2 | 1.12 | 0.01 | 0.92 | 0.85 | 1 |
+  | Wanderer | 2 | Normal | 0.95 | 0.9 | 0.96 | 0.02 | 0.82 | 1.5 | 1.1 |
+  | Mage | 3 | Hard | 0.72 | 0.62 | 0.9 | 0.03 | 0.72 | 2.4 | 1.25 |
+  | Rogue | 4 | Nightmare | 0.62 | 0.68 | 0.82 | 0.04 | 0.6 | 3.0 | 1.5 |
+
+  `pMul` and `gMul` scale the Perfect and Good windows, `speed` scales test duration (lower is faster), `dmg` scales monster damage, and `loot` scales treasure from fights.
+- **FR-DIF-2.** Monster damage is `round((1 + tier) × f × 1.25 × curse × dmg)`, where `curse` is 1.15 under the Uncommitted Curse and 1 otherwise. Fight treasure is `round((30 for the boss, otherwise 3 × tier) × loot)`.
+- **FR-DIF-3.** Pressure is `max(floor, 1 − ramp × monstersDefeated)`, multiplied by 0.9 while the boss is in phase 2. It scales the windows and test speed as in FR-CLS-3, so each run gets harder the further it goes, and harder classes ramp faster.
+- **FR-DIF-4.** The HUD shows "Timing n%", where n is `round(pressure × pMul × 100)`, styled as maxed once pressure reaches the floor. When a kill (other than the boss) lowers pressure, the log says "The graph grows restless: timing windows n%." and the map shows "TIMING n%".
+- **FR-DIF-5.** Each class card states its window width (`pMul` as a percentage), the shrink per kill (`ramp`), the lowest width (`floor × pMul`), and the treasure multiplier.
+
+### Races
+
+- **FR-RACE-1.** The hero summary offers five races: Human (default), Elf, Orc, Skeleton, and Vampire. The choice is saved (`heroRace`) and locked after the first step, like the class.
+- **FR-RACE-2.** Passives:
+
+  | Race | Passive |
+  | --- | --- |
+  | Human | Adaptable: +10% XP from everything (rounded) |
+  | Elf | Keen Eyes: the Perfect window is 15 ms wider (× calm, before class and pressure scaling) |
+  | Orc | Brute: +2 ATK |
+  | Skeleton | Undying: once per run, a lethal hit leaves the hero at 1 HP |
+  | Vampire | Bloodthirst: every critical hit heals 2 HP (up to max HP) |
+
+- **FR-RACE-3.** Each race changes the hero's face on the class outfit: skin and eye colours, Elf ears, Orc tusks, Skeleton teeth, Vampire fangs, and glowing eyes for Orc, Skeleton, and Vampire.
+- **FR-RACE-4.** Each race has two speech lines, added to the hero's speech pool (FR-FX-4).
+
+### Relics
+
+- **FR-REL-1.** The 10 relics from v1.4 stay, with the effects in that table except Force Push and Pair Programmer (FR-REL-2). Every chest offers three unowned relics shuffled with the run's seeded RNG; the player keeps one by click or by pressing 1–3. No offer is shown once all relics are owned.
+- **FR-REL-2.** Force Push: Perfect strike damage × 1.25. Pair Programmer: Miss strike damage × 1.6. Both apply to each hit of a combo.
+- **FR-REL-3.** Rubber Duck turns the first Miss of each fight into a Good; in a combo, only the first missed hit of the three changes.
+- **FR-REL-4.** Owned relics appear in the HUD, on the results screen, and on the share card, and are saved with the run.
+
+### Daily omen
+
+- **FR-OMEN-1.** At the start of a run, today's tile (the last day of the hero's data) sets the omen: Commit Blessing if it has at least one contribution, otherwise Uncommitted Curse.
+- **FR-OMEN-2.** Commit Blessing: on first entering the map, a free relic offer appears ("Commit Blessing: you contributed today. Choose a relic."). Uncommitted Curse: monster damage × 1.15 for the whole run (FR-DIF-2).
+- **FR-OMEN-3.** The hero summary shows the omen with today's date and what it does, and the run log repeats it. The omen is saved with the run.
+
+### Trophies
+
+- **FR-TRO-1.** Fourteen trophies are awarded when a run ends (win or loss) and stored in local storage (`cq:v1:trophies`, with the date earned). Wins per class are stored in `cq:v1:classwins`.
+
+  | Trophy | Condition |
+  | --- | --- |
+  | First Exorcism | Win a run |
+  | Know Thyself | Win on your own live graph (not a raid, not demo) |
+  | Graph Raider | Win a raid on a friend's graph |
+  | Shipped Today | Win with the Commit Blessing |
+  | Against the Curse | Win under the Uncommitted Curse |
+  | Zero Regressions | Defeat the Phantom without taking damage from it |
+  | Hotfix in Prod | Defeat the Phantom with 5 HP or less |
+  | Untouchable | 10 perfect dodges in one run |
+  | Critical Path | 10 critical hits in one run |
+  | Dependency Hell | Hold 4 relics in one run |
+  | Speedrun | Win in 20 steps or fewer |
+  | No Dependencies | Win without opening a chest |
+  | Nightmare Mode | Win with a Nightmare (4-star) class |
+  | Full Stack | Win with all four classes |
+
+- **FR-TRO-2.** The results screen lists all trophies with earned ones highlighted and new ones marked, under "TROPHIES n/14".
+- **FR-TRO-3.** The start screen shows "Trophies earned in this browser: n of 14" once at least one is earned.
+
+### Social
+
+- **FR-SOC-1. Raids.** `/?u=<you>&vs=<friend>` fetches both profiles in parallel. The map, boss, and GitHub statistics come from the friend; the hero (level, aura, trait, omen) comes from you. If both names are the same (ignoring case), it is a normal run. The start screen has an optional friend field with the same username validation.
+- **FR-SOC-2.** Raid screens name both players: the loading text, the summary title ("<you> raids the graph of <friend>"), the log, the results title, and the results statistics for both 91-day totals. "Continue" names the raid.
+- **FR-SOC-3. Challenge links.** `/?vs=<friend>` alone pre-fills the friend field and asks for your username. The results screen copies a challenge link (`?vs=<map owner>`, or `?demo` for demo runs) plus one line with the outcome, class, level, and perfect dodges.
+- **FR-SOC-4. Share card.** The results screen exports a 1200×630 PNG (`contribquest-<username>.png`) with the title, the outcome and class, the full map with every tile revealed and the hero on it, a statistics column (level, monsters banished, critical hits, perfect dodges, relics, steps, 91-day contributions, streak), the relic icons, and the challenge link.
+- **FR-SOC-5.** The share card is drawn on the client from the run state; nothing is uploaded.
+- **FR-SOC-6.** Raids and challenge links use the same fetch, cache, and error handling as FR-IMP; a failure on either profile shows the error with demo mode.
+
+### Presentation, interaction, and audio
+
+- **FR-FX-1. Hero sprites.** Heroes are 24×24 pixel sprites: one outfit per class with the race's face (FR-RACE-3), auto-shaded, with an animated cape. Frames: idle, sway (alternating every 520 ms), step while moving, blink (130 ms every 3.4 s), and look left/right. Glows are drawn on top: race eye glow, the Wanderer's lantern, the Mage's orb, the Knight's blade glint, and the Rogue's dagger tips.
+- **FR-FX-2. Portrait.** The hero summary shows the hero at 6× scale with the aura glow, a breathing motion, eyes that follow the pointer, and a class flourish every 4 s. Clicking it, or pressing Enter or Space on it, makes the hero hop and speak (FR-FX-4). Choosing a race or class makes the hero say that race's or class's line.
+- **FR-FX-3. Map interaction.** Tapping or clicking a tile next to the hero moves there; tapping the hero makes it hop and speak. Hovering a tile shows a tooltip with the date, the contribution count, and what the tile holds ("Hidden in the fog" for unrevealed tiles, "banished" or "taken" once resolved). The tooltip is hidden during combat.
+- **FR-FX-4. Speech bubbles.** The hero speaks a random line from a shared pool, the race's lines, and the class line. Bubbles last about 2.2 s on the portrait and 2.4 s on the map. On entering the map the hero says the race's first line.
+- **FR-FX-5. Idle behaviour.** After 3.5 s without input on the map, the hero performs a class fidget at most every 4.5 s (Mage sparks, Knight shield glint, Rogue turns around with a hop, Wanderer lantern motes). After 14 s it falls asleep, with a "z" rising every 1.6 s. Any key or pointer input resets the idle timer.
+- **FR-FX-6. Combat effects.** Particles, screen shake, hit-stop, slow motion, floating damage text, the boss phase-2 banner and red tint, and a low-HP danger overlay. `prefers-reduced-motion` turns off screen shake, flashes, idle actions, and frame animation; timing-test animations stay.
+- **FR-FX-7. Sound and music.** Every effect and the music are synthesized with Web Audio at run time; the project ships no audio files. The music is a drone with modes for menu, explore, combat, boss, and boss phase 2, graveyard bells while exploring, and a heartbeat whose pace rises in combat (0.78 s), at the boss (0.5 s), in phase 2 (0.38 s), and at low HP on the map (0.9 s).
+- **FR-FX-8.** Audio starts on the first key or pointer input (browser autoplay rules). A Sound button and the M key toggle mute, saved in local storage. Audio failures never block the game.
+- **FR-FX-9.** Timing accuracy feedback (added 19 Nov 2026 after playtesting: dodges felt unreadable). During ring, sidestep, and shield tests the ring turns green inside the Good window and gold inside the Perfect window, and an approach strip under it shows time to impact with the gold and green zones. Every graded press records its signed error; the grade line adds "N MS EARLY/LATE" (or "ON TIME" under 8 ms); between tests a hit-error meter shows the last 12 presses against the current windows and the average of the last 20. The hero screen has a timing offset (−150 to +150 ms, step 5) that is subtracted from every press, and "Use my average" sets it from the measured average. Window sizes and damage do not change.
+
 ## Scope after the MVP (MoSCoW)
 
 Nothing below starts until every Must is checked against the hosted app. Each item is cut without discussion if it threatens the timeline.
@@ -484,9 +629,9 @@ Nothing below starts until every Must is checked against the hosted app. Each it
 | Should | "Graph rises" intro animation from flat calendar to map | 3 h | The memorable video moment (Presentation, Design) |
 | Should | Pixelated GitHub avatar on the hero summary | 1 h | Proves it's your data |
 | Could | Name elites and the boss after the repository pushed that day (events API) | 4 h | Personalization, Innovation |
-| Could | Self-made chiptune effects (step, hit, chest, victory) with mute | 3 h | Atmosphere. Never copyrighted music |
-| Could | Share card: export the results as a PNG | 3 h | Social Blitz visuals |
-| Won't (this version) | Selectable 30/365-day periods, classes, inventory, login, leaderboards | — | — |
+| Done in the prototype (v1.5) | Synthesized sound and music with mute (FR-FX-7, FR-FX-8) | — | Atmosphere. Never copyrighted music |
+| Done in the prototype (v1.5) | Share card PNG (FR-SOC-4) | — | Social Blitz visuals |
+| Won't (this version) | Selectable 30/365-day periods, inventory, login, leaderboards | — | — |
 
 ## Non-functional requirements
 
@@ -513,7 +658,7 @@ Supporting states: loading, error, game over, and a how-to-play overlay readable
 
 - **Palette.** A near-black background (`#0d1117`); four greens for day levels 1–4 that match the GitHub dark-mode shading; pumpkin orange for treasure and chests; spectral purple for ghosts and the boss; off-white text. The greens double as "ectoplasm", which suits the theme.
 - **Fonts.** "Press Start 2P" (SIL Open Font License) for titles only. A legible sans-serif for statistics and body text.
-- **Sprites.** 16×16 px, drawn at integer scale with image smoothing off. Higher tiers are larger or more detailed. Sources: self-drawn, or a CC0 pack (for example Kenney or 0x72's dungeon tileset), credited in the README and declared in the submission.
+- **Sprites.** Heroes are 24×24 px (FR-FX-1); monsters, chests, and relic icons are 12-pixel-wide grids. All are drawn at integer scale with image smoothing off. Higher tiers are larger or more detailed. Sources: self-drawn, or a CC0 pack (for example Kenney or 0x72's dungeon tileset), credited in the README and declared in the submission.
 - **Trademarks.** No GitHub logo, no Octocat, and no GitHub UI screenshots inside the game or video. "GitHub" appears as plain text only, with a "not affiliated with GitHub" line in the footer and README.
 - **Animation.** Short and fast: a 120 ms step, a hit flash, a chest pop, a level-up glow.
 
@@ -543,8 +688,10 @@ contribquest/
 │   ├── specs/
 │   │   ├── data-import/          requirements.md, design.md, tasks.md
 │   │   ├── map-generation/
-│   │   ├── gameplay/
-│   │   └── combat-progression/
+│   │   ├── combat-timing/
+│   │   ├── progression/
+│   │   ├── presentation/
+│   │   └── social/
 │   ├── steering/
 │   │   ├── product.md            scope limits, non-goals, tone of voice
 │   │   ├── tech.md               stack, commands, coding rules
@@ -633,7 +780,7 @@ Kiro usage is a pass/fail gate and 20% of the score, so the evidence is produced
 | --- | --- | --- |
 | Kiro Web | Planning: this PRD revision and the data-source spike were done in a Kiro Web session on 16 Nov | Journal entry, screenshot |
 | Kiro IDE | Spec authoring and implementation | Specs and commit history |
-| Specs | 4 specs. Each requirement carries the FR ID from this PRD (for example FR-MAP-4) so the chain PRD → spec → task → code → test is traceable | `.kiro/specs/*` |
+| Specs | 6 specs: data-import, map-generation, combat-timing, progression, presentation, social (mapping in `docs/BUILD-PLAN.md`). Each requirement carries the FR ID from this PRD (for example FR-MAP-4) so the chain PRD → spec → task → code → test is traceable | `.kiro/specs/*` |
 | Specs vs vibe coding | The spike and the sprite drawing tool are vibe-coded; the generator and engine are spec-driven. The write-up compares the two with one example each | Journal |
 | Steering | `game-rules.md` and `art-style.md` load automatically through file-match inclusion when Kiro edits the matching folders | Steering files; one before/after example in the write-up |
 | Agent hooks | (1) On save in `src/mapgen/**` or `src/engine/**`: run `vitest --run` for the related tests. (2) On save of `game-rules.md`: ask the agent to check that `balance.ts` and `assign.ts` still match the rules. (3) Manual hook "balance check": run the simulator and summarize win rates | `.kiro/hooks/*`; a screenshot of a hook catching a failure |
@@ -663,6 +810,21 @@ Kiro usage is a pass/fail gate and 20% of the score, so the evidence is produced
 | P11 | Every profile gets exactly one trait, and its rows are valid weekday rows | Weekday trait |
 | P12 | For any press time, the grade is Perfect inside the Perfect window, Good inside the Good window, and Miss outside it; windows never shrink as the aura tier grows or with Calm mode on | FR-COM-5 |
 | P13 | For any fight state, damage taken is ordered Perfect (0) ≤ Good ≤ Miss, and damage dealt is ordered Miss ≤ Good ≤ Perfect | FR-COM-5 |
+| P14 | Pressure never increases during a run and never goes below the class floor | FR-DIF-3 |
+| P15 | At equal pressure, the Perfect and Good windows are ordered Knight ≥ Wanderer ≥ Mage ≥ Rogue | FR-DIF-1, FR-CLS-3 |
+| P16 | For every test mode, an on-target press grades Perfect and a press outside the Good window grades Miss | FR-CLS-4 to FR-CLS-8 |
+| P17 | A relic offer never contains an owned relic or a duplicate | FR-REL-1 |
+| P18 | Choosing a race or class never changes the map | FR-CLS-1, FR-RACE-1 |
+| P19 | `restore(save(state))` equals `state` for any reachable state, including class, race, relics, and pressure | FR-SAV-1, FR-REL-4 |
+
+**Balance targets for the simulator (v1.5).** The simulator ports the prototype's skill bot: each press lands at a random offset from the target with standard deviation σ. It runs 200 seeds per cell on the demo graph and on 6 fixture graphs. These targets replace the grade-policy targets above for class balance; the grade-policy runs stay as a regression check for the Wanderer.
+
+| Class | Target | Prototype measurement (4 seeds) |
+| --- | --- | --- |
+| Knight (Easy) | Casual players (σ 140 ms) win at least 90% | 4/4 |
+| Wanderer (Normal) | Average players (σ 100 ms) win at least 80% | 4/4 |
+| Mage (Hard) | Average players win 15–50%; good players (σ 60 ms) win at least 60% | 1/4 and 3/4 |
+| Rogue (Nightmare) | Good players win at most 40%; expert players (σ 35 ms) win at least 80% | 1/4 and 4/4 |
 
 **Fixture profiles:** demo, all-empty, single active day, very dense, best day on the first day, best day on the last day, a last day with 0 contributions, and the last date on a Saturday and on a Sunday (column-count edge cases).
 
@@ -681,20 +843,32 @@ Kiro usage is a pass/fail gate and 20% of the score, so the evidence is produced
 
 ## Timeline (WIB)
 
-Today is Mon 16 Nov 2026. The data spike is already done, which returns about one day to the later phases.
+This timeline replaces the v1.4 timeline. It is copied from `docs/BUILD-PLAN.md` (written Thu 19 Nov 2026). The game is rebuilt as a TypeScript project from Kiro specs, porting every rule and number from the prototype, which stays online at `/prototype/` until the new build matches it.
 
-| Phase | Dates | Focus | Exit criteria |
+| Phase | Dates | Work | Exit check |
 | --- | --- | --- | --- |
-| 0 — Setup | Tue 17 – Wed 18 Nov | **Submit the credit form on day 1.** Create the Devpost draft. Repo, MIT license, Vite + TS scaffold, steering files, 4 specs written and reviewed, hooks, frozen demo data, decision log | Public repo with `/.kiro`; specs approved; `?demo` loads data |
-| 1 — Map first | Thu 19 – Sun 22 Nov | Data module, map generator with P1–P5, renderer, movement, HUD, GitHub Pages deploy | An explorable demo map **live on the hosted URL** |
-| 2 — Real data | Mon 23 – Tue 24 Nov | Live fetch, errors, cache, `?u=`, hero summary | Your own map loads on the hosted URL |
-| 3 — Complete game | Wed 25 – Sat 28 Nov | Combat, progression, chests, wisps, boss, Gate, results, game over, persistence, simulator, P6–P9 | A full run wins and loses correctly on every fixture |
-| 4 — Polish | Sun 29 Nov – Tue 1 Dec | Theme art, intro animation, D-pad, accessibility pass, README, screenshots via Playwright, comprehension test with 2–3 people | **Feature freeze at the end of Tue 1 Dec** |
-| 5 — Submission | Wed 2 – Thu 3 Dec | Wed: record and edit the video, upload to YouTube, publish the blog post. Thu: write-up, social post, full checklist, submit by 21:00 | Submitted on Devpost |
-| Buffer | Fri 4 Dec – Sat 5 Dec 05:00 | Emergency fixes only | — |
-| After | 5 Dec – 30 Jan 2027 | Tag `v1.0-submission`. No pushes to the deployed branch during judging | App stays live |
+| 0. Foundations | Thu 19 – Fri 20 Nov | PRD v1.5 (adds everything built since v1.4), steering, 6 specs, Vite + TS + Vitest + fast-check scaffold, Pages deploy workflow, hooks, journal | You approve the specs; `npm test` passes; the prototype still loads at `/prototype/` |
+| 1. Core rules | Sat 21 – Sun 22 | data, mapgen, engine core: movement, encounters, all test modes, monster patterns, boss phase 2; P1–P13, P16 | Property tests pass; a headless run can be played to the end |
+| 2. Hero systems | Mon 23 – Tue 24 | Classes, difficulty and pressure, races, relics, traits, omen, shards, save and continue; simulator; P14, P15, P17–P19 | Simulator meets the balance targets |
+| 3. Presentation | Wed 25 – Fri 27 | Screens, map rendering, lighting and fog, 24×24 sprites, combat stage and effects, audio, idle behaviour | Side-by-side screenshots match the prototype |
+| 4. Social and parity | Sat 28 | Raids, challenge links, share card, trophies; parity checklist; site root switches to the new build | Every prototype feature checked on the hosted build |
+| 5. Polish | Sun 29 – Mon 30 | First-fight tutorial, accessibility pass, phone testing (you), Playwright smoke test, bug fixes | A friend can finish the demo without help |
+| Freeze | Tue 1 Dec | Feature freeze. README, screenshots, journal. **Submit the credit form today if not done** | No more feature PRs |
+| 6. Submission | Wed 2 – Thu 3 | Wed: record the video, upload to YouTube, publish the dev.to post. Thu: write-up, Devpost form, `#KiroweenHackathon26` post, submit by 21:00 | Submitted |
+| Buffer | Fri 4 – Sat 5, 05:00 | Emergency fixes only | |
+| Judging | 16 Dec – 29 Jan | Tag `v1.0-submission`; no pushes to the deployed branch | Site stays up and unchanged |
 
-If a phase overruns, cut from the MoSCoW list first, then from polish. Never cut demo mode, the boss, the results screen, or Phase 5.
+The first-fight tutorial is the only new gameplay work in this plan. Everything else is a port. New feature ideas wait until after 3 Dec.
+
+**If we fall behind.** Checkpoint on Sat 28 Nov. If parity is not reached, cut in this order and keep the cut features in the prototype:
+
+1. Share card
+2. Idle behaviour and speech bubbles
+3. Trophies
+4. Races (keep Human)
+5. Raids
+
+Never cut: demo mode, the timing tests and classes, difficulty, the boss and phase 2, the results screen, sound, the tutorial, and Phase 6.
 
 ## Kiroween submission checklist
 
@@ -710,7 +884,8 @@ If a phase overruns, cut from the MoSCoW list first, then from polish. Never cut
 - [ ] Kiro usage write-up answering the official prompts (see the outline below).
 - [ ] All materials in English.
 - [ ] Blog post URL and social post URL included.
-- [ ] Credit form submitted (target 17 Nov, hard limit 2 Dec 03:00 WIB) and any code redeemed by 4 Dec PT.
+- [x] Credit form submitted (confirmed 19 Nov 2026).
+- [ ] Any credit code redeemed by 4 Dec PT.
 - [ ] Submitted by Thu 3 Dec 21:00 WIB; final deadline Sat 5 Dec 05:00 WIB.
 
 ## Demo video plan (target 2:55)
@@ -756,8 +931,9 @@ Exploration footage is cut first if the rehearsal overruns. The problem statemen
 
 ## Open questions (Phase 0)
 
-- **Student status.** The build is solo. If the author is a student, enter Best Student Project and prepare student emails and LinkedIn profiles.
-- **Art source.** Self-drawn sprites or a CC0 pack? Decide by Wed 18 Nov.
+- **Student status.** Resolved on 19 Nov 2026: the author is a student (see the decision log).
+- **Art source.** The prototype's sprites are self-drawn pixel grids in code; the rebuild ports them. Confirm no CC0 pack is needed.
+- **Kiro IDE.** Optional: opening the repo in Kiro IDE locally and running a few spec tasks there adds evidence for the "which Kiro clients" write-up question.
 
 ## Decision log
 
@@ -771,6 +947,12 @@ Exploration footage is cut first if the rehearsal overruns. The problem statemen
 | 16 Nov 2026 | Streak grants ATK and HP, not levels; chests and level-ups heal; no inventory | Streak levels; item system | Simpler to explain, test, and finish |
 | 16 Nov 2026 | Solo build | Solo, or up to three | Decided by the author |
 | — | Art source | Self-drawn or CC0 pack | Phase 0 |
+| 19 Nov 2026 | Solo build, confirmed | Solo, or up to three | Decided by the author |
+| 19 Nov 2026 | Enter Best Student Project (Frankenstein); prepare the author's student email and LinkedIn for the Devpost form | Enter or skip | The author is a student, so the team (one person) is eligible |
+| 19 Nov 2026 | Kiro credit form submitted | Submit now or by the 2 Dec 03:00 WIB limit | Done; the plan does not depend on the credits arriving |
+| 19 Nov 2026 | Port every prototype feature to the rebuild; use the cut list only if the 28 Nov checkpoint is missed | Port everything, or trim now | Every rule and number already exists and was tested in the prototype; the cut list keeps the deadline safe |
+| 19 Nov 2026 | Deploy GitHub Pages through a GitHub Actions workflow | Branch deploy, or Actions | The Vite build output must be built in CI. After the workflow PR is merged, the author switches Settings → Pages → Source to "GitHub Actions" once |
+| 19 Nov 2026 | Rebuild as a TypeScript project from 6 Kiro specs, with the prototype as the reference design | Add `/.kiro` around the prototype, or rebuild from specs | Traceable PRD → spec → task → code → test history, a pure testable engine, and a fast headless simulator (see `docs/BUILD-PLAN.md`) |
 
 ## Sources
 
