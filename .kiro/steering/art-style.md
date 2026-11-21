@@ -102,3 +102,11 @@ When `prefers-reduced-motion: reduce` is set:
 - The face sits toward the facing side: the far eye is nearer the middle, the near eye nearer the edge, and the back of the hood, helmet, or hat bulges on the far side. Elf ears go on the far side of the face.
 - Each hero outfit lists its face points (`eyes`, `mouth`, `ear`, `tusks`, `nose`) so race features, blink, and look frames work on every outfit.
 - Heroes and monsters share one shading function (light from the top left). In the 2× combat stage, sprite scales are multiples of 0.5 so pixels stay square.
+
+## Procedural rigs (added 21 Nov 2026)
+
+- Characters move with per-row rigs instead of extra hand-drawn frames. A rig gives each sprite row a whole-pixel `[dx, dy]` offset; `dx` points the way the sprite faces. The shifted rows are rebuilt from the shaded sprite, outlined again, and cached by their offsets.
+- `dy` only pushes rows down and never grows toward the feet, so rows overlap instead of leaving gaps. `dx` stays within ±4 px and `dy` within 0–3 px.
+- Hero rig: the feet (rows 22–23) stay planted and the body leans from the ankles up. Idle sway, a 1 px head drop when breathing, a forward lean when walking, a lean back and crouch on the attack wind-up, a crouch to brace for a hit, a lunge forward, a recoil when hurt, and a hem ripple on robes and capes (none on the Rogue, half on the Knight).
+- Monster rigs, one motion each: the ghost's tail waves, the imp skitters and hops, the ghoul shambles and reaches, the lich's robe hem ripples, the phantom's wisps curl. All of them lean back on the wind-up, lunge forward, and recoil when hit.
+- Glow points (`heroFX`) follow the rig offset of their row. Rigs are off under reduced motion.
