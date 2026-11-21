@@ -191,6 +191,22 @@ Requirements with no PRD FR ID are tagged with the PRD section they come from, f
 
 12.4 WHEN a relic offer is made THE SYSTEM SHALL show it 380 ms later with the `chest` sound, focus the first card, and hide it on pick. [FR-REL-1]
 
+### Requirement 18: Battle screen layout
+
+**User story:** As a player, I want fights to feel like a proper RPG battle screen, so the foe, my hero, and what is happening are all readable at a glance.
+
+#### Acceptance criteria
+
+18.1 WHEN a fight starts THE SYSTEM SHALL show a full-width battle screen (max 1100 px) with a top bar holding the foe's portrait, name plate, HP bar with 10% ticks, HP numbers, and chips for the source day and current timing %; for the boss it SHALL also show a Phase 2 marker at 50% and a PHASE 1 / PHASE 2 chip. [FR-FX-10, FR-COM-3]
+
+18.2 WHILE in a fight THE SYSTEM SHALL draw an 880×330 stage at 2× logical scale with a seeded graveyard background whose ground uses the source day's green, falling petals (not with reduced motion), the hero on the left and the foe on the right, and a hero nameplate above the hero with name, HP, a timing bar, and relic icons. [FR-FX-10]
+
+18.3 WHILE in a fight THE SYSTEM SHALL keep a battle log of the last 7 lines prefixed with ">" and the newest in bold, starting with the foe's arrival and source, the hero's entry with race and class, and the class hint. [FR-FX-10]
+
+18.4 WHILE in a fight THE SYSTEM SHALL show HERO and FOE tabs (FOE selected at the start) with HP bars, HP numbers, attack, the foe's pattern description, and the hero's class, race, difficulty, timing %, and relics, above the Attack/Flee or Now! buttons. [FR-FX-10]
+
+18.5 WHILE the viewport is under 760 px wide THE SYSTEM SHALL move the timing test and grade line below the stage and stack the log and side panel. [FR-FX-10, NFR Responsiveness]
+
 ### Requirement 17: Timing accuracy feedback
 
 **User story:** As a player, I want to see how early or late each press was, so I can learn the timing instead of guessing.

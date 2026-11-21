@@ -151,6 +151,68 @@
   #whiteout.go { animation: flashOut .9s ease-out; }
   .grade.miss.pop { animation: pop .35s ease-out, shake .25s .1s; }
 
+  /* ---------- battle screen ---------- */
+  .fight { width: min(1100px, 100%, calc((100vh - 300px) * 2.667)); min-width: min(100%, 340px); padding: 0; background: #0b0f1a; border: 3px solid #2a3148; border-radius: 10px; box-shadow: 0 0 60px rgba(0,0,0,.6); }
+  .fight.boss { border-color: #8a5fd0; }
+  .bossbar { display: flex; align-items: center; gap: 12px; padding: 10px 16px 8px; background: linear-gradient(#171d30, #0e1220); border-bottom: 2px solid #2a3148; }
+  .bb-port { width: 58px; height: 58px; flex: none; border: 3px solid #c9a64a; border-radius: 6px; background: radial-gradient(#3a1f45, #140b1c); box-shadow: 0 0 0 2px #000; }
+  .bb-main { flex: 1; min-width: 0; }
+  .bb-name { display: flex; align-items: center; gap: 8px; width: fit-content; max-width: 100%; margin: 0 auto 5px; padding: 4px 14px; background: #1a1f2e; border: 2px solid #c9a64a; border-radius: 4px; box-shadow: 0 0 0 2px #000; }
+  .bb-name h3 { margin: 0; font-size: 11px; color: #ffe0b0; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .skull { width: 14px; height: 14px; flex: none; background: center / contain no-repeat url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 7 7' shape-rendering='crispEdges'%3E%3Cpath fill='%23f4efe0' d='M1 0h5v1h1v3H6v1H5v2H2V5H1V4H0V1h1z'/%3E%3Cpath fill='%231a1020' d='M1 2h2v2H1zM4 2h2v2H4zM3 4h1v1H3z'/%3E%3C/svg%3E"); }
+  #c-mon-hp .bar { display: block; width: 100%; height: 20px; background: #3a1218; border: 2px solid #000; border-radius: 3px; box-shadow: 0 0 0 2px #c9a64a; overflow: visible; }
+  #c-mon-hp .bar i { border-radius: 1px; }
+  #c-mon-hp .bar i.fill { background: linear-gradient(#ff7466, #d4283c 60%, #9a1a2c); }
+  .ticks { position: absolute; inset: 0; pointer-events: none; background: repeating-linear-gradient(90deg, transparent 0 calc(10% - 2px), rgba(0,0,0,.5) calc(10% - 2px) 10%); }
+  .bb-mark { position: absolute; left: calc(50% - 2px); top: -6px; bottom: -6px; width: 4px; background: #ffd257; box-shadow: 0 0 6px rgba(255,210,87,.8); }
+  .bb-row { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-top: 6px; flex-wrap: wrap; }
+  .bb-row .hpnum { font-size: 12px; color: #c8d0e0; font-variant-numeric: tabular-nums; }
+  .chip { display: inline-block; font-family: var(--pixel); font-size: 8px; line-height: 1.4; padding: 3px 6px; margin-right: 4px; border-radius: 3px; background: #1d2436; color: #cfd6e4; border: 1px solid #2f3852; }
+  .chip.csrc { color: var(--g4); } .chip.time { color: #ffb38a; } .chip.p2 { color: #ff7a9a; border-color: #ff7a9a; }
+  .stage-wrap { position: relative; background: #000; }
+  .stage-inner { position: relative; }
+  #c-stage { display: block; width: 100% !important; height: auto !important; max-width: none; margin: 0; border-radius: 0; }
+  .plate { position: absolute; left: 26%; bottom: 50%; transform: translateX(-50%); width: 168px; background: rgba(12,16,28,.93); border: 2px solid #3a4560; border-radius: 5px; padding: 4px 7px 5px; pointer-events: none; box-shadow: 0 2px 0 #000; }
+  .plate .pn { display: flex; align-items: center; gap: 5px; font-family: var(--pixel); font-size: 8px; color: #e6edf3; }
+  .plate .pn .nm { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .plate .hpnum { font-family: var(--sans); font-size: 10px; color: #c8d0e0; }
+  .plate .heart { width: 11px; height: 10px; flex: none; }
+  .plate .bar { display: block; width: 100%; height: 9px; margin-top: 3px; background: #14301c; }
+  .plate .bar i.fill { background: linear-gradient(#7dff96, #2fae4f); }
+  .plate .tm { display: flex; align-items: center; gap: 4px; margin-top: 3px; font-family: var(--pixel); font-size: 7px; color: #9fd8ff; }
+  .plate .tb { flex: 1; height: 5px; background: #10233a; border: 1px solid #000; } .plate .tb i { display: block; height: 100%; background: #4fb8ff; }
+  .plate .rl { display: flex; gap: 2px; margin-top: 3px; } .plate .rl img { width: 14px; height: 14px; image-rendering: pixelated; }
+  .stage-wrap #qte-grade { position: absolute; left: 0; right: 0; top: 7%; margin: 0; pointer-events: none; text-shadow: 0 2px 0 #000, 0 0 12px rgba(0,0,0,.8); }
+  .stage-wrap #qte { position: absolute; left: 50%; top: 56%; transform: translate(-50%, -50%); margin: 0; }
+  .fight-bottom { display: grid; grid-template-columns: 1.7fr 1fr; gap: 10px; padding: 10px; background: #0d111c; border-top: 3px solid #3a3020; }
+  .panel { background: #121726; border: 2px solid #2a3148; border-radius: 6px; padding: 10px 12px; min-height: 160px; }
+  .panel h4 { margin: 0 0 8px; font-family: var(--pixel); font-size: 10px; font-weight: 400; color: #ffd257; }
+  .log-panel .clog { text-align: left; margin: 0; min-height: 0; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 12.5px; line-height: 1.6; color: #a7b1c2; }
+  .log-panel .clog div:last-child { color: #fff; font-weight: 700; }
+  .tabs { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; margin-bottom: 8px; }
+  .tabs button { font-size: 9px; padding: 7px 4px; box-shadow: none; background: #1a2033; color: #c8d0e0; border: 2px solid #2a3148; border-radius: 4px; }
+  .tabs button[aria-selected="true"][data-tab="foe"] { background: #b8303c; border-color: #ff6a6a; color: #fff; }
+  .tabs button[aria-selected="true"][data-tab="hero"] { background: #1f7a3a; border-color: #39d353; color: #fff; }
+  #tab-body { font-size: 12.5px; color: #c8d0e0; }
+  #tab-body .tl { display: flex; justify-content: space-between; align-items: baseline; gap: 6px; }
+  #tab-body .tl b { font-family: var(--pixel); font-size: 9px; color: #fff; font-weight: 400; display: flex; align-items: center; gap: 6px; }
+  #tab-body .tl b::before { content: ''; border: 5px solid transparent; border-left: 7px solid #ff5a6a; border-right: 0; }
+  #tab-body .mini { display: block; width: 100%; height: 9px; margin: 5px 0 6px; background: #3a1218; border: 1px solid #000; border-radius: 2px; overflow: hidden; }
+  #tab-body .mini i { display: block; height: 100%; background: linear-gradient(#ff7466, #c8283a); }
+  #tab-body .mini.g { background: #14301c; } #tab-body .mini.g i { background: linear-gradient(#7dff96, #2fae4f); }
+  #tab-body .sub { color: var(--muted); font-size: 12px; line-height: 1.45; }
+  #tab-body img { width: 18px; height: 18px; image-rendering: pixelated; vertical-align: middle; }
+  .row.cmd { margin-top: 10px; }
+  .row.cmd button { flex: 1; }
+  @media (max-width: 760px) {
+    .fight-bottom { grid-template-columns: 1fr; }
+    .stage-wrap #qte, .stage-wrap #qte-grade { position: static; transform: none; }
+    .stage-wrap #qte { margin: 6px auto; } .stage-wrap #qte-grade { background: #0b0f1a; padding: 8px 6px 0; font-size: 11px; line-height: 1.5; }
+    .plate { width: 112px; bottom: 50%; padding: 3px 5px; } .plate .tm, .plate .rl { display: none; }
+    .bb-port { width: 44px; height: 44px; } .bossbar { padding: 8px 10px; }
+    .panel { min-height: 0; }
+  }
+
   /* relics */
   #relic { position: fixed; inset: 0; z-index: 4; display: flex; align-items: center; justify-content: center; background: rgba(4,5,10,.78); padding: 12px; overflow: auto; }
   .relic-box { width: min(660px, 100%); background: #0f1320; border: 2px solid #ffb13c; border-radius: 12px; padding: 16px; box-shadow: 0 0 50px rgba(255,177,60,.25); animation: fightIn .3s cubic-bezier(.2,1.4,.4,1); margin: auto; }
@@ -304,19 +366,37 @@
       <div id="map-tip" hidden></div>
       <div id="combat" hidden>
         <div class="fight" role="dialog" aria-labelledby="m-name">
-          <h3 id="m-name"></h3>
-          <div class="src" id="m-src"></div>
-          <canvas id="c-stage" aria-hidden="true"></canvas>
-          <div class="hprow"><div id="c-hero-hp"></div><div id="c-mon-hp"></div></div>
-          <div class="clog" id="clog" aria-live="polite"></div>
-          <div class="grade" id="qte-grade" aria-live="assertive"></div>
-          <canvas id="qte" aria-hidden="true"></canvas>
-          <div class="row" id="choose-row">
-            <button id="btn-attack">Attack (A)</button>
-            <button id="btn-flee" class="ghost">Flee (F)</button>
+          <div class="bossbar">
+            <canvas id="m-portrait" class="bb-port" aria-hidden="true"></canvas>
+            <div class="bb-main">
+              <div class="bb-name"><span class="skull" aria-hidden="true"></span><h3 id="m-name"></h3><span class="skull" aria-hidden="true"></span></div>
+              <div id="c-mon-hp"></div>
+            </div>
           </div>
-          <div class="row" id="qte-row" hidden>
-            <button id="btn-qte" class="alt">Now! (Space)</button>
+          <div class="stage-wrap">
+            <div class="stage-inner"><canvas id="c-stage" aria-hidden="true"></canvas><div class="plate" id="c-hero-hp"></div></div>
+            <div class="grade" id="qte-grade" aria-live="assertive"></div>
+            <canvas id="qte" aria-hidden="true"></canvas>
+          </div>
+          <div class="fight-bottom">
+            <div class="panel log-panel">
+              <h4>BATTLE LOG</h4>
+              <div class="clog" id="clog" aria-live="polite"></div>
+            </div>
+            <div class="panel side-panel">
+              <div class="tabs" role="tablist">
+                <button type="button" role="tab" data-tab="hero" id="tab-hero">HERO</button>
+                <button type="button" role="tab" data-tab="foe" id="tab-foe">FOE 1</button>
+              </div>
+              <div id="tab-body"></div>
+              <div class="row cmd" id="choose-row">
+                <button id="btn-attack">Attack (A)</button>
+                <button id="btn-flee" class="ghost">Flee (F)</button>
+              </div>
+              <div class="row cmd" id="qte-row" hidden>
+                <button id="btn-qte" class="alt">Now! (Space)</button>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -1143,7 +1223,7 @@ function fxDraw(fx, ctx) {
   for (const t of fx.txt) {
     const k = t.life / t.max, pop = t.life < 0.12 ? 1 + (1 - t.life / 0.12) * 0.9 : 1;
     ctx.globalAlpha = k > 0.7 ? (1 - k) / 0.3 : 1;
-    ctx.font = `${Math.round(t.size * pop)}px "Press Start 2P", monospace`;
+    ctx.font = `${Math.round(t.size * pop * (fx.textScale || 1))}px "Press Start 2P", monospace`;
     ctx.lineWidth = 4; ctx.strokeStyle = 'rgba(0,0,0,.9)'; ctx.strokeText(t.text, t.x, t.y);
     ctx.fillStyle = t.color; ctx.fillText(t.text, t.x, t.y);
   }
@@ -1380,37 +1460,95 @@ function whiteout() { if (REDUCED) return; const w = $('#whiteout'); w.classList
 function flashFight(kind) { if (REDUCED) return; const f = $('.fight'); f.classList.remove('flash-gold', 'flash-red'); void f.offsetWidth; f.classList.add('flash-' + kind); }
 
 /* ---------- juice: the combat stage ---------- */
-const SW = 440, SH = 190, GROUND = 152, HX = 118, MX = 322;
+const SW = 440, SH = 165, GROUND = 131, HX = 115, MX = 320, STAGE_ZOOM = 2; // logical units; the canvas is 880x330
 let stageCtx = null;
 const stage = { fx: makeFx(), q: [], hero: {}, mon: {}, slowUntil: 0, freezeUntil: 0, last: 0, intro: 0, tier: 1, bg: null };
-const MON_SCALE = (tier) => (tier === 5 ? 7 : tier === 4 ? 6 : 5.5);
-const heroY = () => GROUND - 39;
+const MON_SCALE = (tier) => (tier === 5 ? 8 : tier === 4 ? 5 : tier === 3 ? 4.5 : 4);
+const HERO_SCALE = 1.7;
+const heroY = () => GROUND - 13 * HERO_SCALE;
 const monY = (tier) => GROUND - 7 * MON_SCALE(tier);
 const lunge = (dt, out = 110, back = 220) => (dt < 0 || dt > out + back ? 0 : dt < out ? easeOutCubic(dt / out) : 1 - (dt - out) / back);
 function stageBg(level, boss) {
-  const dpr = window.devicePixelRatio || 1, c = document.createElement('canvas');
-  c.width = Math.round(SW * dpr); c.height = Math.round(SH * dpr);
+  const W = SW * STAGE_ZOOM, H = SH * STAGE_ZOOM, G = GROUND * STAGE_ZOOM, dpr = window.devicePixelRatio || 1, c = document.createElement('canvas');
+  c.width = Math.round(W * dpr); c.height = Math.round(H * dpr);
   const x = c.getContext('2d'); x.setTransform(dpr, 0, 0, dpr, 0, 0); x.imageSmoothingEnabled = false;
   const r = makeRng(level * 31 + (boss ? 7 : 0));
-  const sky = x.createLinearGradient(0, 0, 0, GROUND); sky.addColorStop(0, boss ? '#22103d' : '#121831'); sky.addColorStop(1, boss ? '#0c0714' : '#0a0c15');
-  x.fillStyle = sky; x.fillRect(0, 0, SW, SH);
-  for (let i = 0; i < 46; i++) { x.fillStyle = `rgba(255,255,255,${0.2 + r.next() * 0.6})`; x.fillRect(Math.floor(r.next() * SW), Math.floor(r.next() * (GROUND - 40)), r.next() < 0.15 ? 2 : 1, 1); }
-  const [mx, my, mr, mc] = boss ? [220, 54, 36, '#d9c6ff'] : [384, 40, 20, '#f2ecd0'];
-  glow(x, mx, my, mr * 3, boss ? 'rgba(180,140,255,A)' : 'rgba(255,245,200,A)', 0.35);
-  x.fillStyle = mc; x.beginPath(); x.arc(mx, my, mr, 0, 7); x.fill();
-  x.fillStyle = 'rgba(0,0,0,.12)'; [[-0.3, -0.2, 0.25], [0.3, 0.25, 0.18], [0.1, -0.45, 0.12]].forEach(([dx, dy, rr]) => { x.beginPath(); x.arc(mx + dx * mr, my + dy * mr, rr * mr, 0, 7); x.fill(); });
-  x.fillStyle = '#080a12';
-  for (let i = 0; i < 10; i++) { const gx = i * 48 + r.next() * 24, gh = 12 + r.next() * 16, gw = 12 + r.next() * 6; x.fillRect(gx, GROUND - gh, gw, gh); x.beginPath(); x.arc(gx + gw / 2, GROUND - gh, gw / 2, Math.PI, 0); x.fill(); }
-  x.fillStyle = LEVEL_COLORS[level]; x.fillRect(0, GROUND, SW, SH - GROUND);
-  for (let yy = GROUND; yy < SH; yy += 4) for (let xx = 0; xx < SW; xx += 4) { const q = r.next(); if (q < 0.15) { x.fillStyle = 'rgba(255,255,255,.07)'; x.fillRect(xx, yy, 4, 4); } else if (q < 0.3) { x.fillStyle = 'rgba(0,0,0,.2)'; x.fillRect(xx, yy, 4, 4); } }
-  x.fillStyle = LEVEL_HI[level]; x.fillRect(0, GROUND, SW, 3);
-  for (let i = 0; i < 26; i++) { const tx = Math.floor(r.next() * SW / 4) * 4; x.fillRect(tx, GROUND - 4, 4, 4); }
-  const mist = x.createLinearGradient(0, GROUND - 30, 0, GROUND + 10); mist.addColorStop(0, 'rgba(180,190,230,0)'); mist.addColorStop(1, 'rgba(180,190,230,.12)');
-  x.fillStyle = mist; x.fillRect(0, GROUND - 30, SW, 40);
+  const B = (px, py, w, h, col) => { x.fillStyle = col; x.fillRect(Math.round(px / 2) * 2, Math.round(py / 2) * 2, Math.max(2, Math.round(w / 2) * 2), Math.max(2, Math.round(h / 2) * 2)); };
+  const disc = (cx, cy, rr, col) => { for (let yy = -rr; yy <= rr; yy += 2) { const hw = Math.sqrt(Math.max(0, rr * rr - yy * yy)); B(cx - hw, cy + yy, hw * 2, 2, col); } };
+  // sky and stars
+  const sky = x.createLinearGradient(0, 0, 0, G);
+  (boss ? ['#170926', '#3a1648', '#6a2446'] : ['#0c1130', '#24285a', '#4c3a6c']).forEach((col, i) => sky.addColorStop(i / 2, col));
+  x.fillStyle = sky; x.fillRect(0, 0, W, H);
+  for (let i = 0; i < 90; i++) B(r.next() * W, r.next() * G * 0.55, 2, 2, `rgba(255,255,255,${0.2 + r.next() * 0.6})`);
+  // moon
+  const mx = W * 0.35, my = 92, mr = boss ? 62 : 54;
+  glow(x, mx, my, mr * 3.2, boss ? 'rgba(200,150,255,A)' : 'rgba(255,240,200,A)', 0.4);
+  disc(mx, my, mr, boss ? '#e6d2ff' : '#f6efd2');
+  [[-0.35, -0.2, 0.22], [0.3, 0.28, 0.16], [0.12, -0.45, 0.1], [-0.1, 0.4, 0.12]].forEach(([dx, dy, k]) => disc(mx + dx * mr, my + dy * mr, mr * k, boss ? '#c9b0ec' : '#e2d8b6'));
+  // far mountain with a pale cap
+  const peak = G - 214, base = G - 40, pcx = W * 0.36;
+  for (let y = peak; y < base; y += 2) {
+    const k = (y - peak) / (base - peak), hw = 18 + k * 300 + Math.sin(k * 9) * 6;
+    B(pcx - hw, y, hw * 2, 2, boss ? '#3a1d48' : '#2c2b56');
+    if (k < 0.22) B(pcx - hw, y, hw * 2, 2, k < 0.18 - 0.03 * Math.sin(y) ? (boss ? '#a888c8' : '#9a98c8') : (boss ? '#5a3a70' : '#4a4880'));
+  }
+  const mist = x.createLinearGradient(0, G - 120, 0, G - 40); mist.addColorStop(0, 'rgba(160,150,210,0)'); mist.addColorStop(1, 'rgba(160,150,210,.22)');
+  x.fillStyle = mist; x.fillRect(0, G - 120, W, 80);
+  // tower on the right
+  const tx = W * 0.88;
+  B(tx - 34, G - 230, 68, 200, '#2a2742'); B(tx - 34, G - 230, 6, 200, '#3c3858');
+  for (let y = G - 300; y < G - 228; y += 2) { const hw = ((y - (G - 300)) / 72) * 44; B(tx - hw, y, hw * 2, 2, '#221f38'); }
+  B(tx - 2, G - 316, 4, 18, '#221f38'); B(tx - 8, G - 310, 16, 4, '#221f38');
+  [[G - 200], [G - 150]].forEach(([wy]) => { B(tx - 8, wy, 16, 22, '#ffb347'); B(tx - 8, wy, 16, 6, '#ffd27a'); glow(x, tx, wy + 11, 30, 'rgba(255,170,80,A)', 0.3); });
+  for (let y = G - 236; y < G - 228; y += 4) for (let xx = tx - 40; xx < tx + 40; xx += 10) B(xx, y, 6, 4, '#2a2742');
+  // back wall with iron spikes
+  for (let row = 0; row < 3; row++) for (let bx = (row % 2) * -14; bx < W; bx += 28) B(bx + 1, G - 62 + row * 11, 26, 10, row % 2 ? '#47445f' : '#4f4c6a');
+  B(0, G - 66, W, 6, '#625e80'); B(0, G - 30, W, 4, '#2a283c');
+  for (let sx = 6; sx < W; sx += 16) { B(sx, G - 82, 2, 16, '#17151f'); B(sx - 2, G - 84, 6, 4, '#17151f'); }
+  // cemetery gate
+  const gx = W * 0.6, gw = 118, gt = G - 196;
+  for (const px of [gx - gw / 2 - 26, gx + gw / 2]) { B(px, gt, 26, G - 30 - gt, '#5a5674'); B(px, gt, 6, G - 30 - gt, '#77739a'); B(px - 4, gt - 10, 34, 12, '#6e6a90'); B(px + 4, gt - 22, 18, 12, '#5a5674'); }
+  for (let a = Math.PI; a <= Math.PI * 2 + 0.01; a += 0.05) B(gx + Math.cos(a) * (gw / 2), gt + 18 + Math.sin(a) * 46, 4, 4, '#1c1a2a');
+  B(gx - gw / 2, gt + 16, gw, 4, '#1c1a2a');
+  for (let bx = gx - gw / 2 + 6; bx < gx + gw / 2 - 4; bx += 10) { if (Math.abs(bx - gx) < 10) continue; B(bx, gt + 20, 3, G - 50 - gt, '#1c1a2a'); B(bx - 1, gt + 18, 5, 4, '#1c1a2a'); }
+  B(gx - 1, gt + 20, 2, 26, '#1c1a2a'); B(gx - 7, gt + 44, 14, 16, '#3a2a1a'); B(gx - 5, gt + 47, 10, 10, '#ffb347');
+  glow(x, gx, gt + 52, 44, 'rgba(255,170,80,A)', 0.45);
+  // gravestones
+  for (let i = 0; i < 7; i++) {
+    const sx = 40 + r.next() * (W - 80), sh = 18 + r.next() * 14, sw = 14 + r.next() * 6;
+    if (Math.abs(sx - gx) < gw) continue;
+    B(sx, G - 30 - sh, sw, sh, '#56536e'); B(sx + 2, G - 34 - sh, sw - 4, 4, '#56536e'); B(sx, G - 30 - sh, 3, sh, '#6e6a8a');
+    B(sx + sw / 2 - 1, G - 26 - sh, 2, 8, '#2e2c40'); B(sx + sw / 2 - 4, G - 23 - sh, 8, 2, '#2e2c40');
+  }
+  // ghost-willow trees
+  const canopy = boss ? ['#4a1830', '#7a2a4f', '#b54a76', '#e07aa0'] : ['#3a2456', '#5e3c86', '#8a62b6', '#b994dc'];
+  const tree = (bx, scale) => {
+    const ends = [];
+    const branch = (sx, sy, ang, len, w, d) => {
+      const ex = sx + Math.cos(ang) * len, ey = sy + Math.sin(ang) * len, steps = Math.ceil(len / 2);
+      for (let i = 0; i <= steps; i++) { const k = i / steps; B(sx + (ex - sx) * k - w / 2, sy + (ey - sy) * k - w / 2, w, w, '#22172a'); }
+      if (d > 0) { branch(ex, ey, ang - 0.5 - r.next() * 0.3, len * 0.7, Math.max(2, w - 4), d - 1); branch(ex, ey, ang + 0.45 + r.next() * 0.3, len * 0.68, Math.max(2, w - 4), d - 1); }
+      else ends.push([ex, ey]);
+    };
+    branch(bx, G - 20, -Math.PI / 2 + (r.next() - 0.5) * 0.2, 84 * scale, 14, 3);
+    for (const [k, col] of canopy.entries()) for (const [ex, ey] of ends) disc(ex - k * 3, ey - k * 4, (22 - k * 5) * scale, col);
+    for (const [ex, ey] of ends) if (r.next() < 0.5) { B(ex, ey + 12, 2, 18, '#5e3c86'); B(ex - 2, ey + 30, 6, 6, '#8dffa0'); glow(x, ex + 1, ey + 33, 10, 'rgba(141,255,160,A)', 0.5); }
+  };
+  tree(70, 1.05); tree(W - 12, 0.95);
+  // ground: grass in the day's green, a stone path, grass in front
+  B(0, G - 30, W, 22, LEVEL_COLORS[level]);
+  for (let i = 0; i < 80; i++) B(r.next() * W, G - 34 + r.next() * 4, 2, 4 + r.next() * 4, LEVEL_HI[level]);
+  B(0, G - 10, W, 44, '#3e4254');
+  for (let row = 0; row < 3; row++) for (let bx = (row % 2) * -22; bx < W; bx += 44) {
+    const y = G - 8 + row * 14; B(bx + 2, y, 40, 12, row === 0 ? '#8c91a6' : '#7a7f94'); B(bx + 2, y, 40, 2, '#a6abc0'); B(bx + 2, y + 10, 40, 2, '#5c6074');
+  }
+  B(0, G + 34, W, H - G - 34, LEVEL_COLORS[level]);
+  for (let yy = G + 34; yy < H; yy += 4) for (let xx = 0; xx < W; xx += 4) { const q = r.next(); if (q < 0.14) B(xx, yy, 4, 4, 'rgba(255,255,255,.07)'); else if (q < 0.28) B(xx, yy, 4, 4, 'rgba(0,0,0,.22)'); }
+  B(0, G + 34, W, 2, LEVEL_HI[level]);
   return c;
 }
 function stageReset(t, m) {
-  stage.fx = makeFx(); stage.q = [];
+  stage.fx = makeFx(); stage.fx.textScale = 0.75; stage.q = [];
   stage.hero = { atk: -1e9, dodge: -1e9, hurt: -1e9, block: -1e9, dead: null, run: null };
   stage.mon = { atk: -1e9, hurt: -1e9, die: null, crit: false };
   stage.intro = performance.now(); stage.tier = m.tier; stage.bg = stageBg(t.day.level, m.tier === 5);
@@ -1420,7 +1558,7 @@ function stageAt(ms, fn) { stage.q.push({ at: performance.now() + ms, fn }); sta
 function stageHeroStrike(grade, dmg, killed, mode) {
   stage.hero.atk = performance.now();
   stageAt(100, () => {
-    const fx = stage.fx, x = MX - 8, y = monY(stage.tier);
+    const fx = stage.fx, x = MX - 8, y = monY(stage.tier), ty = y - 7 * MON_SCALE(stage.tier) * 0.75;
     stage.mon.hurt = performance.now(); stage.mon.crit = grade === 'perfect';
     if (mode === 'charge') {
       const col = grade === 'perfect' ? ['#ff7a3c', '#ffd257', '#ffffff'] : ['#ff9a5c', '#ffcf9a'];
@@ -1432,19 +1570,19 @@ function stageHeroStrike(grade, dmg, killed, mode) {
       fxSlash(fx, x, y, { r: 48, color: '#ffe27a', w: 10, rot: 0.2 }); fxSlash(fx, x, y, { r: 34, color: '#ffffff', w: 4, rot: 0.9, life: 0.3 });
       fxBurst(fx, x, y, 30, { color: ['#ffd257', '#fff3b0', '#ff9a3c'], speed: 280, grav: 380, life: 0.65, size: 4, glow: true });
       fxRing(fx, x, y, { color: '#ffd257', vr: 320, w: 5 });
-      fxText(fx, x, y - 52, 'CRIT ' + dmg, { color: '#ffd257', size: 16 });
+      fxText(fx, x, ty, 'CRIT ' + dmg, { color: '#ffd257', size: 16 });
       fxShake(fx, 9); flashFight('gold'); Sfx.play('crit');
     } else if (grade === 'counter') {
       fxSlash(fx, x, y, { r: 40, color: '#ffe27a', w: 6, rot: -0.4 });
       fxBurst(fx, x, y, 14, { color: ['#ffd257', '#fff'], speed: 200, life: 0.45, size: 3, glow: true });
-      fxText(fx, x, y - 48, 'COUNTER ' + dmg, { color: '#ffd257', size: 11 }); fxShake(fx, 5); Sfx.play('hit');
+      fxText(fx, x, ty, 'COUNTER ' + dmg, { color: '#ffd257', size: 11 }); fxShake(fx, 5); Sfx.play('hit');
     } else if (grade === 'good') {
       fxSlash(fx, x, y, { r: 42, color: '#ffffff', w: 6, rot: 0.3 });
       fxBurst(fx, x, y, 12, { color: ['#ffffff', '#cfe3ff'], speed: 190, life: 0.45, size: 3 });
-      fxText(fx, x, y - 46, String(dmg), { color: '#ffffff', size: 12 }); fxShake(fx, 4); Sfx.play('hit');
+      fxText(fx, x, ty, String(dmg), { color: '#ffffff', size: 12 }); fxShake(fx, 4); Sfx.play('hit');
     } else {
       fxBurst(fx, x, y + 12, 8, { color: 'rgba(200,200,210,.7)', speed: 70, grav: -30, life: 0.5, size: 4 });
-      fxText(fx, x, y - 40, String(dmg), { color: '#9aa3b2', size: 9 }); Sfx.play('glance');
+      fxText(fx, x, ty, String(dmg), { color: '#9aa3b2', size: 9 }); Sfx.play('glance');
     }
     if (killed) stageAt(150, stageMonDeath);
   });
@@ -1453,20 +1591,20 @@ function stageMonStrike(grade, dmg, lethal) {
   const now = performance.now(); stage.mon.atk = now;
   if (grade === 'perfect') stage.hero.dodge = now + 40;
   stageAt(110, () => {
-    const fx = stage.fx, x = HX + 10, y = heroY();
+    const fx = stage.fx, x = HX + 10, y = heroY(), ty = y - 13 * HERO_SCALE - 6;
     if (grade === 'perfect') {
       if (!REDUCED) stage.slowUntil = performance.now() + 340;
       fxRing(fx, x, y, { color: '#ffd257', vr: 230, w: 4, life: 0.55 }); fxRing(fx, x, y, { color: '#ffffff', vr: 120, w: 2, life: 0.4 });
       fxBurst(fx, x, y, 16, { color: ['#ffd257', '#fff'], speed: 160, grav: 0, drag: 3, life: 0.6, size: 3, glow: true });
-      fxText(fx, x, y - 56, 'PERFECT!', { color: '#ffd257', size: 13 }); flashFight('gold'); Sfx.play('dodge');
+      fxText(fx, x, ty, 'PERFECT!', { color: '#ffd257', size: 13 }); flashFight('gold'); Sfx.play('dodge');
     } else if (grade === 'good') {
       stage.hero.block = performance.now();
       fxBurst(fx, x + 30, y, 14, { color: ['#9fd8ff', '#ffffff'], speed: 210, angle: 0, spread: 1.8, life: 0.4, size: 3, glow: true });
-      fxText(fx, x, y - 52, '-' + dmg, { color: '#9fd8ff', size: 11 }); fxShake(fx, 3); Sfx.play('block');
+      fxText(fx, x, ty, '-' + dmg, { color: '#9fd8ff', size: 11 }); fxShake(fx, 3); Sfx.play('block');
     } else {
       stage.hero.hurt = performance.now();
       fxBurst(fx, x, y, 20, { color: ['#ff5050', '#ff9a9a', '#ffffff'], speed: 230, angle: Math.PI, spread: 2.2, life: 0.5, size: 4 });
-      fxText(fx, x, y - 52, '-' + dmg, { color: '#ff6b6b', size: 15 }); fxShake(fx, 10); flashFight('red'); Sfx.play('hurt');
+      fxText(fx, x, ty, '-' + dmg, { color: '#ff6b6b', size: 15 }); fxShake(fx, 10); flashFight('red'); Sfx.play('hurt');
       if (lethal) stage.hero.dead = performance.now() + 100;
     }
   });
@@ -1484,7 +1622,11 @@ function drawStage(now) {
   const dt = Math.min(0.05, (now - (stage.last || now)) / 1000); stage.last = now;
   while (stage.q.length && stage.q[0].at <= now) stage.q.shift().fn();
   if (now >= stage.freezeUntil) fxUpdate(stage.fx, dt * (now < stage.slowUntil ? 0.3 : 1));
-  const ctx = stageCtx; ctx.save(); ctx.clearRect(0, 0, SW, SH);
+  const ctx = stageCtx; ctx.save(); ctx.clearRect(0, 0, SW * STAGE_ZOOM, SH * STAGE_ZOOM); ctx.scale(STAGE_ZOOM, STAGE_ZOOM);
+  if (!REDUCED && stage.fx.p.filter((p) => p.amb).length < 22 && Math.random() < 0.18) {
+    const petal = stage.tier === 5 ? ['#e07aa0', '#b54a76', '#ffd0e0'] : ['#b994dc', '#8a62b6', '#e2ccf4'];
+    fxBurst(stage.fx, Math.random() * (SW + 60) - 30, -4, 1, { color: petal[Math.floor(Math.random() * 3)], speed: 14, angle: Math.PI * 0.6, grav: 6, drag: 0.05, life: 7, size: 1.6, amb: true });
+  }
   const [sx, sy] = fxShakeOffset(stage.fx); ctx.translate(sx, sy);
   ctx.drawImage(stage.bg, -8, -8, SW + 16, SH + 16);
   if (stage.phase2 != null && now >= stage.phase2) { ctx.fillStyle = `rgba(255,30,70,${0.13 + (REDUCED ? 0 : 0.06 * Math.sin(now / 180))})`; ctx.fillRect(-10, -10, SW + 20, SH + 20); }
@@ -1506,21 +1648,21 @@ function drawStage(now) {
     drawSprite(ctx, MONSTER_SPRITE[tier], mx, my, ms, alpha, { flip: true, sy: sy2, white, red });
   }
   // hero
-  let hx = HX + lunge(now - stage.hero.atk) * 150, hy = heroY();
+  let hx = HX + lunge(now - stage.hero.atk) * 140, hy = heroY();
   if (q && q.kind === 'attack') hx -= 16 * qk;
   const dK = (now - stage.hero.dodge) / 420;
   if (dK >= 0 && dK < 1) {
-    for (let i = 3; i >= 1; i--) { const s2 = Math.sin(Math.PI * Math.max(0, dK - i * 0.08)); drawSprite(ctx, heroKey(state.hero.cls, state.hero.race), HX - s2 * 62, hy - s2 * 34, 3, 0.16 * i, { gold: true }); }
+    for (let i = 3; i >= 1; i--) { const s2 = Math.sin(Math.PI * Math.max(0, dK - i * 0.08)); drawSprite(ctx, heroKey(state.hero.cls, state.hero.race), HX - s2 * 62, hy - s2 * 34, HERO_SCALE, 0.16 * i, { gold: true }); }
     const s = Math.sin(Math.PI * dK); hx -= s * 62; hy -= s * 34;
   }
   const hK = (now - stage.hero.hurt) / 260; if (hK >= 0 && hK < 1) hx -= (1 - hK) * 18;
   const runK = stage.hero.run == null ? -1 : (now - stage.hero.run) / 450; if (runK >= 0) hx -= runK * 320;
   const deadK = stage.hero.dead == null ? 0 : clamp((now - stage.hero.dead) / 400, 0, 1);
-  shadow(ctx, HX, GROUND + 2, 72);
+  shadow(ctx, HX, GROUND + 2, 44);
   if (state && state.hero.aura) glow(ctx, hx, hy, 62, 'rgba(180,140,255,A)', 0.15 + 0.06 * state.hero.aura);
   if (!REDUCED && !q && deadK === 0) hy += Math.sin(now / 320) * 1.5;
-  drawSprite(ctx, heroSpriteAt(now, { moving: runK >= 0, seed: 700 }), hx, hy + deadK * 30, 3, 1, { white: hK >= 0 && hK < 0.3, rot: -1.4 * deadK, flip: runK >= 0 });
-  if (deadK === 0) heroFX(ctx, state.hero, hx, hy, 3, now, runK >= 0);
+  drawSprite(ctx, heroSpriteAt(now, { moving: runK >= 0, seed: 700 }), hx, hy + deadK * 30, HERO_SCALE, 1, { white: hK >= 0 && hK < 0.3, rot: -1.4 * deadK, flip: runK >= 0 });
+  if (deadK === 0) heroFX(ctx, state.hero, hx, hy, HERO_SCALE, now, runK >= 0);
   const bK = (now - stage.hero.block) / 260;
   if (bK >= 0 && bK < 1) { ctx.save(); ctx.globalAlpha = 1 - bK; ctx.strokeStyle = '#9fd8ff'; ctx.lineWidth = 5; ctx.beginPath(); ctx.arc(hx + 8, hy, 52, -0.9, 0.9); ctx.stroke(); ctx.restore(); }
   fxDraw(stage.fx, ctx);
@@ -1539,11 +1681,44 @@ function drawStage(now) {
   v.addColorStop(0, 'rgba(0,0,0,0)'); v.addColorStop(1, 'rgba(0,0,0,.55)'); ctx.fillStyle = v; ctx.fillRect(-10, -10, SW + 20, SH + 20);
   ctx.restore();
 }
+const HEART_SVG = '<svg class="heart" viewBox="0 0 7 6" shape-rendering="crispEdges" aria-hidden="true"><path fill="#ff5a6a" d="M1 0h2v1h1V0h2v1h1v2H6v1H5v1H4v1H3V5H2V4H1V3H0V1h1z"/><path fill="#ffb3bc" d="M1 1h1v1H1z"/></svg>';
+let combatTab = 'foe';
+const FOE_PATTERN = {
+  1: 'One plain strike per turn.',
+  2: 'Strikes twice. The second hit comes fast.',
+  3: 'Flaky: its strike can freeze mid-swing. Do not press at the old pace.',
+  4: 'Merge conflict: a dashed decoy ring comes with the real one. Dodge the solid ring.',
+  5: 'Two strikes per turn. Below half HP it enters Phase 2: three fast strikes that mix every pattern.'
+};
 function buildBars(m) {
-  const bar = (who) => `<b>${who}</b><br><span class="bar"><i class="ghost"></i><i class="fill"></i></span> <span class="hpnum"></span>`;
-  $('#c-hero-hp').innerHTML = bar('You');
-  $('#c-mon-hp').innerHTML = bar(esc(m.name.length > 22 ? 'The Phantom' : m.name));
+  $('#c-mon-hp').innerHTML = `<span class="bar"><i class="ghost"></i><i class="fill"></i><span class="ticks"></span>${m.tier === 5 ? '<span class="bb-mark" title="Phase 2 at half HP"></span>' : ''}</span>
+    <div class="bb-row"><span id="m-chips"></span><span class="hpnum"></span></div>`;
+  const h = state.hero;
+  $('#c-hero-hp').innerHTML = `<div class="pn">${HEART_SVG}<span class="nm">${esc(h.name)}</span><span class="hpnum"></span></div>
+    <span class="bar"><i class="ghost"></i><i class="fill"></i></span>
+    <div class="tm">TIMING<span class="tb"><i></i></span><b></b></div><div class="rl"></div>`;
+  const pc = sizeCanvas($('#m-portrait'), 58, 58); pc.clearRect(0, 0, 58, 58);
+  drawSprite(pc, MONSTER_SPRITE[m.tier], 29, 31, 3, 1, { flip: true });
 }
+function renderTabs() {
+  const c = state.combat; if (!c) return;
+  const m = c.m, h = state.hero, t = tileAt(c), body = $('#tab-body');
+  $('#tab-hero').setAttribute('aria-selected', String(combatTab === 'hero'));
+  $('#tab-foe').setAttribute('aria-selected', String(combatTab === 'foe'));
+  const pct = (a, b) => clamp((a / b) * 100, 0, 100);
+  if (combatTab === 'foe') {
+    const pattern = m.tier === 5 && m.phase2 ? FOE_PATTERN[5].split('. ').slice(1).join('. ') : FOE_PATTERN[m.tier];
+    body.innerHTML = `<div class="tl"><b>${esc(m.name.length > 24 ? 'The Phantom' : m.name)}</b><span>${m.tier === 5 ? 'BOSS' : 'TIER ' + m.tier}</span></div>
+      <span class="mini"><i style="width:${pct(m.hp, m.maxHp)}%"></i></span>
+      <div class="sub">${m.hp}/${m.maxHp} HP · hits for about ${m.dmg}<br>${esc(pattern)}</div>`;
+  } else {
+    const relics = (h.relics || []).map((id) => { const r = relicById(id); return `<img src="${relicIcon(id)}" alt="${esc(r.name)}" title="${esc(r.name)}: ${esc(r.text)}">`; }).join('');
+    body.innerHTML = `<div class="tl"><b>${esc(h.name)}</b><span>LV ${h.level}</span></div>
+      <span class="mini g"><i style="width:${pct(h.hp, h.maxHp)}%"></i></span>
+      <div class="sub">${h.hp}/${h.maxHp} HP · ATK ${h.atk} · ${esc(heroRace(h).name)} ${esc(heroClass(h).name)} (${classDiff(h).label})<br>Timing windows ${Math.round(pressure() * classDiff(h).pMul * 100)}%${relics ? '<br>' + relics : ''}</div>`;
+  }
+}
+document.querySelectorAll('.tabs button').forEach((b) => b.addEventListener('click', () => { combatTab = b.dataset.tab; renderTabs(); }));
 function setBar(el, hp, max) {
   const pct = clamp((hp / max) * 100, 0, 100) + '%';
   el.querySelector('.fill').style.width = pct; el.querySelector('.ghost').style.width = pct;
@@ -1649,7 +1824,11 @@ function startCombat(t) {
   state.status = 'combat';
   const m = makeMonster(t, state.hero, state.map), boss = m.tier === 5;
   state.combat = { col: t.col, row: t.row, m, lines: [], phase: 'choose' };
-  if (boss) state.combat.lines.push('The air turns cold. Your best day has come back for you.');
+  const h = state.hero;
+  state.combat.lines.push(boss ? `The air turns cold. ${m.name} rises from your best day!` : `A ${m.name} appears. ${sourceLabel(t, state.map)}.`);
+  state.combat.lines.push(`${h.name} steps into the battle as a ${heroRace(h).name} ${heroClass(h).name}.`);
+  state.combat.lines.push(CLASS_HINT[h.cls] || CLASS_HINT.wanderer);
+  combatTab = 'foe';
   $('#qte-grade').textContent = '';
   stageReset(t, m); buildBars(m);
   $('.fight').classList.toggle('boss', boss);
@@ -1658,7 +1837,7 @@ function startCombat(t) {
   stageAt(300, () => { fxBurst(stage.fx, MX, GROUND, 16, { color: 'rgba(200,200,220,.6)', speed: 130, angle: -Math.PI / 2, spread: 3, grav: 260, life: 0.5, size: 4 }); fxShake(stage.fx, boss ? 12 : 5); });
   renderCombat(true);
 }
-function clog(msg) { state.combat.lines.push(msg); state.combat.lines = state.combat.lines.slice(-2); }
+function clog(msg) { state.combat.lines.push(msg); state.combat.lines = state.combat.lines.slice(-7); }
 
 /* ---------- relics ---------- */
 const RELIC_ICON = {};
@@ -2161,12 +2340,18 @@ function renderCombat(first) {
   $('#choose-row').hidden = c.phase !== 'choose';
   $('#qte-row').hidden = c.phase !== 'qte' || settings.assist;
   $('#m-name').textContent = m.name;
-  $('#m-src').textContent = `${sourceLabel(t, state.map)} · timing ${Math.round(pressure() * classDiff(h).pMul * 100)}%`;
   if (!$('#c-hero-hp .fill')) buildBars(m);
+  const timing = Math.round(pressure() * classDiff(h).pMul * 100);
+  $('#m-chips').innerHTML = `<span class="chip csrc">${esc(sourceLabel(t, state.map))}</span><span class="chip time">TIMING ${timing}%</span>`
+    + (m.tier === 5 ? `<span class="chip ${m.phase2 ? 'p2' : ''}">${m.phase2 ? 'PHASE 2' : 'PHASE 1'}</span>` : '');
+  const plate = $('#c-hero-hp');
+  plate.querySelector('.tb i').style.width = clamp(timing / 1.25, 0, 100) + '%';
+  plate.querySelector('.tm b').textContent = timing + '%';
+  plate.querySelector('.rl').innerHTML = (h.relics || []).map((id) => `<img src="${relicIcon(id)}" alt="">`).join('');
   // HP bars drop when the hit lands on the stage, not when the timing test resolves
   const hp = h.hp, mhp = m.hp;
-  setTimeout(() => { if (state && state.combat === c) { setBar($('#c-hero-hp'), hp, h.maxHp); setBar($('#c-mon-hp'), mhp, m.maxHp); } }, c.phase === 'wait' ? 110 : 0);
-  $('#clog').innerHTML = c.lines.map(esc).join('<br>') || `Level ${t.day.level} day. It hits for about ${m.dmg}. ${CLASS_HINT[h.cls] || CLASS_HINT.wanderer}`;
+  setTimeout(() => { if (state && state.combat === c) { setBar($('#c-hero-hp'), hp, h.maxHp); setBar($('#c-mon-hp'), mhp, m.maxHp); renderTabs(); } }, c.phase === 'wait' ? 110 : 0);
+  $('#clog').innerHTML = c.lines.map((l) => `<div>&gt; ${esc(l)}</div>`).join('');
   if (first && c.phase === 'choose') $('#btn-attack').focus();
   if (c.phase === 'qte' && !settings.assist) $('#btn-qte').focus();
 }
@@ -2578,6 +2763,7 @@ function drawHitMeter(ctx, now, y) {
 function drawQte(now) {
   const ctx = qteCtx; ctx.clearRect(0, 0, QW, QH);
   ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  if (qte || hitLog.length) { ctx.fillStyle = 'rgba(6,8,16,.66)'; rrect(ctx, 1, 1, QW - 2, QH - 2, 10); ctx.fill(); ctx.strokeStyle = 'rgba(255,255,255,.08)'; ctx.lineWidth = 1; ctx.stroke(); }
   if (!qte) { drawHitMeter(ctx, now, 70); return; }
   const t = now - qte.start;
   ctx.font = '9px "Press Start 2P", monospace';
@@ -2668,7 +2854,7 @@ function drawQte(now) {
     }
   }
 }
-stageCtx = sizeCanvas($('#c-stage'), SW, SH);
+stageCtx = sizeCanvas($('#c-stage'), SW * STAGE_ZOOM, SH * STAGE_ZOOM);
 (function qteLoop(now) {
   requestAnimationFrame(qteLoop);
   if (state && !$('#combat').hidden) { if (state.combat) drawQte(now); drawStage(now); }

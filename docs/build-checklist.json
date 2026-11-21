@@ -1249,6 +1249,15 @@
       "verify": "npx vitest --run tests/render/hit-meter.test.ts"
     },
     {
+      "id": "presentation-6.5",
+      "phase": 3,
+      "spec": "presentation",
+      "task": "6.5",
+      "title": "Battle screen layout: boss bar, graveyard stage, nameplate, battle log, HERO/FOE tabs (FR-FX-10)",
+      "status": "todo",
+      "verify": "npm run build"
+    },
+    {
       "id": "presentation-7.1",
       "phase": 3,
       "spec": "presentation",
