@@ -45,14 +45,14 @@ Text meets 4.5:1 contrast. Tile types differ by shape and icon, never by colour 
 
 - One outfit grid per class (`OUTFITS` in the prototype) with the race drawn onto the face block (rows 6–9, columns 9–14).
 - Outfit palette keys: `A` main cloth, `B` accent, `C` cape, `G` gold trim, `L` boots, `M` metal, `k` dark line, `x` glow, `W` wood. Race keys: `s` skin, `S` skin shadow, `e` eyes, `m` mouth, `u` bone white `#f4efe0`.
-- Race features: Elf ears (`s` at [7][8], [6][7], [7][15], [6][16]); Orc tusks (`u` at [9][10], [9][13]); Skeleton teeth; Vampire fangs (`u` at [9][11], [9][12]); glowing eyes for Orc, Skeleton, and Vampire. Masked outfits (Rogue) skip mouth features.
+- Face points come from the art: `e` pixels are the eyes, `m` pixels the mouth, the nose sits above the first mouth pixel, and tusks flank the mouth. Ear pixels are listed per outfit, on the far side of the face. Race features: Elf ears, Orc tusks, Skeleton teeth, Vampire fangs, and glowing eyes for Orc, Skeleton, and Vampire. Masked outfits (Rogue) skip mouth features.
 - **Auto-shading, light from the top left.** Keys `e`, `k`, `m`, `u`, `x` are flat. For every other pixel:
   - transparent on the right or below: mix 38% toward black;
   - else transparent above or on the left: mix 30% toward white (rim light);
   - else transparent two pixels right or one down-right: mix 18% toward black;
   - else on `A` or `C` where `(x + y) % 7 === 0`: mix 10% toward black (cloth texture).
-- **Frames:** `idle`; `sway` (alternates with idle every 520 ms; the cape gains a pixel on the left and loses one on the right on odd rows 17–21); `step` while moving (sway plus feet apart on rows 22–23); `blink` for 130 ms every 3,400 ms; `lookL` / `lookR` (eyes shift one pixel).
-- **Glows on top** (additive): race eye glow; Wanderer lantern at (20.5, 16.5); Mage orb at (19.5, 0.8); Knight blade glint sweeping rows 3–10 every 2.6 s; Rogue dagger tips at (0, 15) and (21, 15) every 3 s.
+- **Frames:** `idle`; `sway` (alternates with idle every 520 ms; odd rows 13–19 grow one cape pixel at the back); `step` while moving (sway plus the back foot one pixel back and the front foot one pixel forward on rows 22–23); `blink` for 130 ms every 3,400 ms; `lookL` / `lookR` (eyes shift one pixel).
+- **Glows on top** (additive): race eye glow; Wanderer lantern at (20, 15.5); Mage orb at (16.5, 0.8); Knight blade glint on column 19 sweeping rows 1–8 every 2.6 s; Rogue dagger tips at (4, 16) and (21, 13) every 3 s.
 - Scale: 1× on the map (2× when tiles are ≥ 40 px), 6× on the summary portrait.
 
 ## Map
@@ -110,3 +110,10 @@ When `prefers-reduced-motion: reduce` is set:
 - Hero rig: the feet (rows 22–23) stay planted and the body leans from the ankles up. Idle sway, a 1 px head drop when breathing, a forward lean when walking, a lean back and crouch on the attack wind-up, a crouch to brace for a hit, a lunge forward, a recoil when hurt, and a hem ripple on robes and capes (none on the Rogue, half on the Knight).
 - Monster rigs, one motion each: the ghost's tail waves, the imp skitters and hops, the ghoul shambles and reaches, the lich's robe hem ripples, the phantom's wisps curl. All of them lean back on the wind-up, lunge forward, and recoil when hit.
 - Glow points (`heroFX`) follow the rig offset of their row. Rigs are off under reduced motion.
+
+## Slim proportions (added 21 Nov 2026)
+
+- Characters are slim and taller than they are wide. Hero bodies are about 7 px wide (head about 9 px with hood or helmet) inside the 24×24 grid, with separate legs, a gap between the legs, and weapons held away from the body. Avoid filled blobs: leave transparent space between limbs and torso.
+- Monsters stay 16 px wide with lanky limbs (imp, ghoul) or a tapering shape (ghost, lich). The boss (the Phantom) is 16×24: a tall hooded figure whose robe is the night sky (`q` night robe, `Z` void, `z` stars; `z` and `Z` are flat).
+- The boss has an ember rim light: a second `#ff8a3d` outline outside the dark one (`sprFrom(canvas, rim)`). Its stars twinkle and its eyes burn (`bossFX`); the glow points follow the rig.
+- Combat stage scales: hero 2, monsters 3 / 3.5 / 4 by tier, boss 4.5. Vertical placement comes from the sprite height (`monHalf`).

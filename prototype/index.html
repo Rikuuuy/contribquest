@@ -172,7 +172,7 @@
   .stage-wrap { position: relative; background: #000; }
   .stage-inner { position: relative; }
   #c-stage { display: block; width: 100% !important; height: auto !important; max-width: none; margin: 0; border-radius: 0; }
-  .plate { position: absolute; left: 26%; bottom: 50%; transform: translateX(-50%); width: 168px; background: rgba(12,16,28,.93); border: 2px solid #3a4560; border-radius: 5px; padding: 4px 7px 5px; pointer-events: none; box-shadow: 0 2px 0 #000; }
+  .plate { position: absolute; left: 26%; bottom: 56%; transform: translateX(-50%); width: 168px; background: rgba(12,16,28,.93); border: 2px solid #3a4560; border-radius: 5px; padding: 4px 7px 5px; pointer-events: none; box-shadow: 0 2px 0 #000; }
   .plate .pn { display: flex; align-items: center; gap: 5px; font-family: var(--pixel); font-size: 8px; color: #e6edf3; }
   .plate .pn .nm { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .plate .hpnum { font-family: var(--sans); font-size: 10px; color: #c8d0e0; }
@@ -208,7 +208,7 @@
     .fight-bottom { grid-template-columns: 1fr; }
     .stage-wrap #qte, .stage-wrap #qte-grade { position: static; transform: none; }
     .stage-wrap #qte { margin: 6px auto; } .stage-wrap #qte-grade { background: #0b0f1a; padding: 8px 6px 0; font-size: 11px; line-height: 1.5; }
-    .plate { width: 112px; bottom: 50%; padding: 3px 5px; } .plate .tm, .plate .rl { display: none; }
+    .plate { width: 112px; bottom: 56%; padding: 3px 5px; } .plate .tm, .plate .rl { display: none; }
     .bb-port { width: 44px; height: 44px; } .bossbar { padding: 8px 10px; }
     .panel { min-height: 0; }
   }
@@ -750,29 +750,29 @@ const OUTFITS = {
  "wanderer": {
   "rows": [
    "........................",
-   "......AAAAAA............",
-   "....AAAAAAAAAA..........",
-   "...AAAAAAAAAAAAA........",
-   "...AAAAAAAAAAAAAAA......",
-   "...AAAAAAAAkkkkkkA......",
-   "...AAAAAAAAksssssA......",
-   "...AAAAAAAAksesesA......",
-   "...AAAAAAAAkSssssA......",
-   "...AAAAAAAAAkSmmSA......",
-   "....AAAABBBBBBBBBBA.....",
-   "...AAAAABBBBBBBBBBBA....",
-   "...AAAAAAAAAAAAAAAAss...",
-   "..AAAAAAAAAAAAAAAAA.L...",
-   "..AAAAAAAAAAAAAAAAAMMMM.",
-   "..AAAAAAAkkGGkkAAA.MxxM.",
-   "..CAAAAAAAAAAAAAAA.MxxM.",
-   "..CCAAAAAAAAAAAAAA..MM..",
-   ".CCCAAAAAAAAAAAAA.......",
-   ".CCCCAAAAAAAAAAAA.......",
-   ".CCCCAAAAABAAAAAA.......",
-   "..CCCCAAAABAAAAA........",
-   ".....LLLL...LLLLL.......",
-   "....LLLLL...LLLLLL......"
+   "..........AAAAA.........",
+   ".........AAAAAAA........",
+   "........AAAAAAAAA.......",
+   "........AAAAAkkkkA......",
+   "........AAAAksssssA.....",
+   "........AAAAksesesA.....",
+   "........AAAAkSsssSA.....",
+   ".........AAAAkSmmA......",
+   "..........BBBBBBB.......",
+   ".........CBBBBBBBBB.....",
+   "........CCAAAAAAABB.....",
+   "........CCAAAAAAAAAs....",
+   "........CCAAAAAAA..sL...",
+   ".......CCCAAkGGkA..MMM..",
+   ".......CCCAAAAAAA..MxM..",
+   ".......CCCAAAAAAA..MxM..",
+   "......CCCCAAAAAAA...M...",
+   "......CCC.AAAAAAA.......",
+   "......CC..AAAABAA.......",
+   "..........AAA.AAA.......",
+   "...........LL..LL.......",
+   "...........LL..LLL......",
+   "..........LLL..LLLL....."
   ],
   "pal": {
    "A": "#5b3fa8",
@@ -787,84 +787,84 @@ const OUTFITS = {
   "face": {
    "eyes": [
     [
-     13,
-     7
+     14,
+     6
     ],
     [
-     15,
-     7
+     16,
+     6
     ]
    ],
    "mouth": [
     [
-     14,
-     9
+     15,
+     8
     ],
     [
-     15,
-     9
+     16,
+     8
     ]
    ],
    "ear": [
     [
      11,
-     7
+     6
     ],
     [
      10,
-     6
+     5
     ]
    ],
    "tusks": [
     [
-     13,
-     9
+     14,
+     8
     ],
     [
-     16,
-     9
+     17,
+     8
     ]
    ],
    "nose": [
     [
-     14,
-     8
+     15,
+     7
     ]
    ]
   },
   "fx": {
    "lantern": [
-    20.5,
+    20,
     15.5
    ]
   }
  },
  "knight": {
   "rows": [
-   "..........BB............",
-   ".........BBBB...........",
-   "........MMMMMM..........",
-   ".......MMMMMMMM....M....",
-   "......MMMMMMMMMM...M....",
-   "......MMMMGGGGGGM..M....",
-   "......MMMMssssssM..M....",
-   "......MMMMssesesM..M....",
-   "......MMMMSssssSM..M....",
-   "......MMMMMSsmmSM..M....",
-   ".....CMMMMMMMMMMMC.M....",
-   "..GGGGCAAAAAAAAAAC.M....",
-   ".GMMMMGAAAAAAAAAAMGGG...",
-   ".GMBBMGAAAAAAAAAAMsL....",
-   ".GMBBMGAAkkGGkkAAMML....",
-   ".GMMBMGAAAAAAAAAAM......",
-   "..GMMGCAAAAAAAAAAC......",
-   "...GG.CCAAAAAAAACC......",
-   "......CCAAAAAAAACC......",
-   ".....CCCMMMAAMMMCCC.....",
-   ".....CCCMMM..MMMCCC.....",
-   ".....CCCMMM..MMMCCC.....",
-   "......MMMMM...MMMMMM....",
-   ".....LLLLLL...LLLLLLL..."
+   "...........BB...........",
+   "..........BBB......M....",
+   ".........MMMMM.....M....",
+   "........MMMMMMM....M....",
+   "........MMMGGGGM...M....",
+   "........MMMssssM...M....",
+   "........MMMsesesM..M....",
+   "........MMMSsssSM..M....",
+   ".........MMMSmmM...M....",
+   "..........MMMMM...GGG...",
+   "......GG.MMAAAAMM..s....",
+   ".....GBBGMAAAAAAAMsL....",
+   ".....GBBGMAAAAAAAM.L....",
+   ".....GBBGMAAGGAAA.......",
+   ".....GBBGMAAAAAAA.......",
+   "......GG.MkkGGkkA.......",
+   ".........AAAAAAAA.......",
+   ".........AAAA.AAA.......",
+   ".........MMM..MMM.......",
+   ".........MMM..MMM.......",
+   ".........MM....MM.......",
+   ".........MM....MM.......",
+   "........LLL....LLL......",
+   "........LLL....LLLL....."
   ],
   "pal": {
    "A": "#2f5fa8",
@@ -879,80 +879,80 @@ const OUTFITS = {
    "eyes": [
     [
      12,
-     7
+     6
     ],
     [
      14,
-     7
+     6
     ]
    ],
    "mouth": [
     [
      13,
-     9
+     8
     ],
     [
      14,
-     9
+     8
     ]
    ],
    "ear": [
     [
-     9,
-     7
+     10,
+     6
     ]
    ],
    "tusks": [
     [
      12,
-     9
+     8
     ],
     [
      15,
-     9
+     8
     ]
    ],
    "nose": [
     [
      13,
-     8
+     7
     ]
    ]
   },
   "fx": {
    "blade": [
     19,
-    3,
-    10
+    1,
+    8
    ]
   }
  },
  "rogue": {
   "rows": [
    "........................",
-   "........AAAAA...........",
-   "......AAAAAAAAA.........",
-   ".....AAAAAAAAAAA........",
-   "....AAAAAAAAAAAAA.......",
-   "....AAAAAAAkkkkkkA......",
-   "....AAAAAAAksssssA......",
-   "....AAAAAAAksesesA......",
-   "....AAAAAAABBBBBBBA.....",
-   "....AAAAAAABBBBBBBAC....",
-   "...AAAAAAAAABBBBBAAACC..",
-   "..AAAAAAAAAAAAAAAAA.CCC.",
-   ".sAAAAAAAAAAAAAAAAAs.CC.",
-   "MLAAAAAAAAAAAAAAAAALM...",
-   "M.AAAkkkGGkkkAAAAA..M...",
-   "..AAAAAAAAAAAAAAAA...M..",
-   "..AAAAAAAAAAAAAAAA......",
-   "..AAAAAAA..AAAAAAA......",
-   "..AAAAAA....AAAAAA......",
-   "..LLLL.......LLLLL......",
-   "..LLLL.......LLLLL......",
-   "..LLLL........LLLLL.....",
-   "..LLLLL.......LLLLLL....",
-   ".LLLLLL.......LLLLLLL..."
+   "..........AAAA..........",
+   ".........AAAAAA.........",
+   "........AAAAAAAA........",
+   "........AAAAkkkkA.......",
+   "........AAAksssssA......",
+   "........AAAksesesA......",
+   "........AAAkBBBBBA......",
+   "........AAAABBBBAA.CC...",
+   ".........AAAAAAACCCCC...",
+   "..........AAAACC....C...",
+   ".........AAAAAAAA.......",
+   "........AAAAAAAAAAs.....",
+   ".......sAAAAAAAAA..MMM..",
+   "......M.AAkGGkAA........",
+   ".....M..AAAAAAAA........",
+   "....M...AAAAAAAA........",
+   ".........AAAAAA.........",
+   ".........LLL.LLL........",
+   ".........LL...LL........",
+   "........LL.....LL.......",
+   "........LL.....LL.......",
+   ".......LLL......LL......",
+   "......LLLL......LLL....."
   ],
   "pal": {
    "A": "#2c5a3e",
@@ -968,22 +968,22 @@ const OUTFITS = {
    "eyes": [
     [
      13,
-     7
+     6
     ],
     [
      15,
-     7
+     6
     ]
    ],
    "mouth": [],
    "ear": [
     [
-     11,
-     7
-    ],
-    [
      10,
      6
+    ],
+    [
+     9,
+     5
     ]
    ],
    "tusks": [],
@@ -992,42 +992,42 @@ const OUTFITS = {
   "fx": {
    "tips": [
     [
-     0,
-     14
+     4,
+     16
     ],
     [
      21,
-     15
+     13
     ]
    ]
   }
  },
  "mage": {
   "rows": [
-   "......A..........xx.....",
-   ".....AA.........xxxx....",
-   ".....AAAA........GG.....",
-   "......AAAAA.......W.....",
-   "......AAAAAAA.....W.....",
-   "...BBBBBBBBBBBBBB.W.....",
-   "......AAAAssssssA.W.....",
-   "......AAAAssesesA.W.....",
-   "......AAAASssssSA.W.....",
-   "......AAAAASsmmSA.W.....",
-   ".....AAAAAAAkkAAAsW.....",
-   "....AAAAAAAAAAAAAsW.....",
-   "....AABAAAAAAAAAAAW.....",
-   "...AAABAAAxAAAAAAAW.....",
-   "...AAABGGGGGGGGGGAW.....",
-   "...AAABAAAAAAAAAAAW.....",
-   "..AAAABAAAAAxAAAAAW.....",
-   "..AAAABAAAAAAAAAAAW.....",
-   ".AAAAABAAAxAAAAAAAW.....",
-   ".AAAAABAAAAAAAAAAAW.....",
-   ".AABBBBBBBBBBBBBBBW.....",
-   "..AAAAAAAAAAAAAAA.W.....",
-   ".....LLLL...LLLLL.W.....",
-   "....LLLLL...LLLLLLW....."
+   "......A.........xx......",
+   "......AA.......xxxx.....",
+   ".......AAA......GG......",
+   "........AAA......W......",
+   "........AAAA.....W......",
+   "........AAAAA....W......",
+   ".....BBBBBBBBBBB.W......",
+   "........AksssssA.W......",
+   "........AkseseSA.W......",
+   "........AASsssSA.W......",
+   ".........AASmmA.sW......",
+   ".........AAAkkAAAW......",
+   "........AAAAAAAA.W......",
+   "........AAABAAAA.W......",
+   "........AAABGGGGGW......",
+   "........AAABAAAA.W......",
+   ".......AAAABAxAA.W......",
+   ".......AAAABAAAA.W......",
+   "......AAAAABAAxAAW......",
+   "......AAAAABAAAAAW......",
+   "......ABBBBBBBBBBW......",
+   ".......AAAAAAAAA.W......",
+   "..........LL.LL..W......",
+   ".........LLL.LLL.W......"
   ],
   "pal": {
    "A": "#8e2236",
@@ -1041,50 +1041,50 @@ const OUTFITS = {
   "face": {
    "eyes": [
     [
-     12,
-     7
+     11,
+     8
     ],
     [
-     14,
-     7
+     13,
+     8
     ]
    ],
    "mouth": [
     [
-     13,
-     9
+     12,
+     10
     ],
     [
-     14,
-     9
+     13,
+     10
     ]
    ],
    "ear": [
     [
      9,
-     7
+     8
     ]
    ],
    "tusks": [
     [
-     12,
-     9
+     11,
+     10
     ],
     [
-     15,
-     9
+     14,
+     10
     ]
    ],
    "nose": [
     [
-     13,
-     8
+     12,
+     9
     ]
    ]
   },
   "fx": {
    "orb": [
-    17.5,
+    16.5,
     0.8
    ]
   }
@@ -1104,7 +1104,7 @@ function mixHex(hex, to, k) {
   const c = [(n >> 16) & 255, (n >> 8) & 255, n & 255].map((v) => Math.round(v + (t - v) * k));
   return '#' + c.map((v) => v.toString(16).padStart(2, '0')).join('');
 }
-const FLAT = new Set(['e', 'k', 'm', 'u', 'x']); // never auto-shaded
+const FLAT = new Set(['e', 'k', 'm', 'u', 'x', 'z', 'Z']); // never auto-shaded
 /* Shading shared by heroes and monsters: light from the top left, shade on right/bottom edges, cloth texture. */
 function shadeCanvas(g, pal) {
   const H = g.length, W = g[0].length;
@@ -1124,7 +1124,7 @@ function shadeCanvas(g, pal) {
   }
   return c;
 }
-function sprFrom(c) { const base = outlineSprite(c, '#05060a'); return { flat: c, base, white: silhouette(base, '#ffffff'), red: silhouette(base, '#ff4040'), gold: silhouette(base, '#ffd257') }; }
+function sprFrom(c, rim) { let base = outlineSprite(c, '#05060a'); if (rim) base = outlineSprite(base, rim); return { flat: c, rim, base, white: silhouette(base, '#ffffff'), red: silhouette(base, '#ff4040'), gold: silhouette(base, '#ffd257') }; }
 /* Heroes are drawn in three-quarter view facing right. Each outfit lists where its eyes, mouth, back ear, tusks, and nose sit,
    so races and blink/look frames work on every outfit. */
 function heroKey(cls, race, frame = 'idle') {
@@ -1142,16 +1142,19 @@ function heroKey(cls, race, frame = 'idle') {
   if (frame === 'blink') put(F.eyes, 'S');
   if (frame === 'lookL' || frame === 'lookR') { const d = frame === 'lookL' ? -1 : 1; put(F.eyes, 's'); F.eyes.forEach(([x, y]) => { g[y][x + d] = 'e'; }); }
   if (frame === 'sway' || frame === 'step') {
-    // the cape flutters: rows 17-21 grow one cape pixel at the back and lose one at the front every other row
-    for (let y = 17; y < 22; y++) {
-      const row = g[y], l = row.indexOf('C'), r = row.lastIndexOf('C');
-      if (l > 0) row[l - 1] = 'C';
-      if (r > l && y % 2) row[r] = '.';
-    }
+    // the cape flutters: every other row from 12 to 20 grows one cape pixel at the back
+    for (let y = 12; y < 21; y++) { const row = g[y], l = row.indexOf('C'); if (l > 0 && y % 2) row[l - 1] = 'C'; }
   }
   if (frame === 'step') {
     // mid-stride: the back foot slides back, the front foot reaches forward
-    for (const y of [22, 23]) { const left = g[y].slice(0, 12), right = g[y].slice(12); left.push(left.shift()); right.unshift(right.pop()); g[y] = left.concat(right); }
+    for (const y of [22, 23]) {
+      const row = g[y], runs = []; let a = -1;
+      for (let x = 0; x <= row.length; x++) { const on = x < row.length && row[x] !== '.'; if (on && a < 0) a = x; if (!on && a >= 0) { runs.push([a, x - 1]); a = -1; } }
+      if (runs.length < 2) continue;
+      const [b0, b1] = runs[0], [f0, f1] = runs[runs.length - 1];
+      if (b0 > 0) { row[b0 - 1] = row[b0]; row[b1] = '.'; }
+      if (f1 < row.length - 1) { row[f1 + 1] = row[f1]; row[f0] = '.'; }
+    }
   }
   const pal = { ...O.pal, s: R.skin[0], S: R.skin[1], e: R.eye, m: R.mouth, u: '#f4efe0' };
   SPR[key] = sprFrom(shadeCanvas(g, pal));
@@ -1255,7 +1258,7 @@ const COLORS = {
   k:'#0b0b10', w:'#e8e6f0', p:'#7b4bc9', P:'#4b2a85', f:'#f2c79b', y:'#ffd257', o:'#c8641e', d:'#7a3f12',
   r:'#e2483d', a:'#8c2620', g:'#86b86f', G:'#4e7d3f', c:'#5b4a3a', s:'#8b93a3', S:'#545a69', v:'#a58bff', V:'#5d3fb0', e:'#ff7b29', b:'#2a1d14'
 };
-Object.assign(COLORS, { u: '#5fb4ff', n: '#39d353' });
+Object.assign(COLORS, { u: '#5fb4ff', n: '#39d353', z: '#cdbcff', Z: '#0c0820', q: '#241a52' });
 const SPRITES = {
   hero:   ['....PPPP....','...PppppP...','..PppppppP..','..PpffffpP..','..PfkffkfP..','..PpffffpP..','...PppppP.y.','..PppppppPyy','.fPppppppPy.','..PppppppP..','...pp..pp...','...kk..kk...'],
   ghost:  ['....wwww....','..wwwwwwww..','.wwwwwwwwww.','.wwkkwwkkww.','.wwkkwwkkww.','.wwwwwwwwww.','.wwwwkkwwww.','.wwwwwwwwww.','.wwwwwwwwww.','.wwwwwwwwww.','.ww.www.www.','.w...w...w..'],
@@ -1319,95 +1322,104 @@ const MONSTERS34 = {
  "ghost": [
   "................",
   "......wwwww.....",
+  ".....wwwwwww....",
   "....wwwwwwwww...",
+  "....wwwwwkwwkw..",
+  "....wwwwwkwwkw..",
+  "....wwwwwwwwww..",
+  "....wwwwwwkkww..",
+  "....wwwwwwwwww..",
   "...wwwwwwwwwww..",
-  "...wwwwwwkkwwkw.",
-  "..wwwwwwwkkwwkw.",
-  "..wwwwwwwwwwwwww",
-  "..wwwwwwwwwkkwww",
-  ".wwwwwwwwwwwwww.",
-  ".wwwwwwwwwwwww..",
-  "wwwwwwwwwwwwww..",
-  "wwwwwwwwwwwww...",
-  ".wwwwwwwwwwww...",
-  "..wwww.wwww.ww..",
-  "..ww....ww......",
-  "................"
+  "...wwwwwwwwww...",
+  "...wwwwwwwww....",
+  "....wwwwwwww....",
+  ".....wwwwww.....",
+  "......ww.www....",
+  ".......w..w....."
  ],
  "imp": [
-  "..........a...a.",
-  "...........a.a..",
-  ".......rrrrrr...",
-  ".....rrrrrrrrr..",
-  "....rrrrryrrryr.",
-  "....rrrrrrrrrrrr",
-  "..a.rrrrrrrkkkr.",
-  "...arrrrrrrrrrr.",
-  "..rrrrkrrkrrrr..",
-  ".arrrrrrrrrrrra.",
-  "..rrrkrrkrrrrr..",
-  ".a.rrrrrrrrrr.a.",
-  "....rrrrrrrr....",
-  "...a..a...a..a..",
-  "..a..a.....a..a.",
+  "........a...a...",
+  ".........a.a....",
+  "........rrrrr...",
+  ".......rrrrrrr..",
+  ".......rryrryr..",
+  ".......rrrrrrr..",
+  "........rkkkr...",
+  ".........rrr....",
+  "......arrrrrra..",
+  ".....a.rrrrr..a.",
+  ".a.....rrrrr....",
+  "..a....rrrrr....",
+  "...aa.rr...rr...",
+  "......rr....rr..",
+  ".....aa.....aa..",
   "................"
  ],
  "ghoul": [
   "................",
-  ".....GGGGGG.....",
-  "....GggggggG....",
-  "....GggegggegG..",
-  "....GggggggggG..",
-  "....GgggkwkwgG..",
-  ".....GggggggG...",
-  "....cccccccc....",
-  "...cccccccccggg.",
-  "...gccccccccc.gg",
-  "...g.cccccccc...",
-  ".....cccccccc...",
-  ".....cc...cc....",
-  ".....cc....cc...",
-  "....GGG....GGG..",
+  "........GGGGG...",
+  ".......GgggggG..",
+  ".......GggeggeG.",
+  ".......GgggggG..",
+  ".......GggkwkwG.",
+  "........GgggG...",
+  "......ccccccc...",
+  ".....ccccccccggg",
+  ".....gcccccc..gg",
+  ".....g.cccccc...",
+  ".......ccccc....",
+  ".......cc..cc...",
+  ".......cc...cc..",
+  "......GGG...GGG.",
   "................"
  ],
  "lich": [
-  ".....y.y.y.y....",
-  ".....yyyyyyy....",
-  ".....wwwwwww....",
-  "....wwkwwwkkw...",
-  "....wwkwwwkew...",
-  "....wwwwwkkww...",
-  ".....wkwkwkw....",
-  "....PppppppP....",
-  "...PppwwwwpppP..",
-  "..PppPppppppPpP.",
-  "..PpPpppppppPppw",
-  "..PpPppppppppP..",
-  ".PppPppppppppP..",
-  ".PppppppppppppP.",
-  "PPPPPPPPPPPPPPP.",
+  "......y.y.y.....",
+  "......yyyyy.....",
+  "......wwwww...s.",
+  ".....wwkwkkw..s.",
+  ".....wwkwkew..s.",
+  "......wwkkw...s.",
+  "......wkwkw..ws.",
+  ".....PpppppP.ws.",
+  "....PppwwwppPPs.",
+  "....PpPpppppPws.",
+  "....PpPppppP..s.",
+  "....PpPppppP..s.",
+  "...PppPpppppP.s.",
+  "...PpppppppppPs.",
+  "..PPPPPPPPPPPPP.",
   "................"
  ],
  "phantom": [
-  "......VVVVV.....",
-  "....VVvvvvvVV...",
-  "...VvvvvvvvvvvV.",
-  "..VvvvvwwwwwwvV.",
-  "..VvvvwkkwwkkwV.",
-  "..VvvvwkewwkewV.",
-  "..VvvvwwwwkwwwV.",
-  "..VvvvvwkwkwkvV.",
-  "...VvvvvvvvvvV..",
-  "..VvvvvvvvvvvV..",
-  ".VvvVvvvvvvvvvVw",
-  ".VvVvvvvvvvvvVww",
-  "VvvVvvvvvvvvvV..",
-  "Vv..VvvvvvV.vV..",
-  "V....VVvvVV..V..",
-  "................"
+  "w...............",
+  ".w.....VVVV.....",
+  ".ww...VvvvvV....",
+  "..V..VvZZZZvV...",
+  "..Vv.VZZeZZeV...",
+  "..VvVVZZZZZZV...",
+  "...VvVvZZzZvV...",
+  "...VqvVvvvvVqV..",
+  "....VqqqqqqqqqVw",
+  "....VqzqqqqqVVww",
+  ".....VqqqqqV...w",
+  ".....VqqqzqV....",
+  ".....VqqqqqV....",
+  "....VqqqqqqqV...",
+  "....VqzqqqqqV...",
+  "...VqqqqqqzqqV..",
+  "...VqqqqqqqqqV..",
+  "..VqqqzqqqqqqqV.",
+  "..VqqqqqqqqzqqV.",
+  ".VqqzqqqqqqqqqqV",
+  ".VqqqqqqqzqqqqqV",
+  "VqqVqqqqqqqVqqqV",
+  "Vq..VqqVqqV..VqV",
+  "V....VV..VV...V."
  ]
 };
-for (const [name, rows] of Object.entries(MONSTERS34)) SPR[name] = sprFrom(shadeCanvas(rows.map((r) => r.split('')), COLORS));
+const MON_RIM = { phantom: '#ff8a3d' };
+for (const [name, rows] of Object.entries(MONSTERS34)) SPR[name] = sprFrom(shadeCanvas(rows.map((r) => r.split('')), COLORS), MON_RIM[name]);
 /* Procedural rigs: a rig gives every sprite row an [dx, dy] offset in sprite pixels (dx points the way the sprite faces),
    so bodies lean, breathe, crouch, and ripple without hand-drawn frames. The shifted rows are rebuilt on a small canvas,
    outlined again, and cached by their offsets. Offsets are whole pixels so the art stays crisp; dy only pushes rows down
@@ -1428,12 +1440,12 @@ function riggedSpr(name, s, offs) {
   c.width = W + RIG_PAD * 2; c.height = H; const x = c.getContext('2d');
   for (let y = H - 1; y >= 0; y--) { const dy = offs[y * 2 + 1]; if (y + dy < H) x.drawImage(src, 0, y, W, 1, RIG_PAD + offs[y * 2], y + dy, W, 1); }
   if (RIG_CACHE.size > 2500) RIG_CACHE.clear();
-  r = sprFrom(c); RIG_CACHE.set(key, r); return r;
+  r = sprFrom(c, s.rim); RIG_CACHE.set(key, r); return r;
 }
 const rigAt = (rig, py) => { if (!rig) return [0, 0]; const o = rig(clamp(Math.round(py), 0, 23)); return [clamp(Math.round(o[0] || 0), -RIG_PAD, RIG_PAD), clamp(Math.round(o[1] || 0), 0, 3)]; };
 /* Hero rig (24 rows: head 0-11, torso 12-21, feet 22-23). Feet stay planted; the body leans from the ankles up.
    o: moving, look (-1/1), windup (0-1, attack test charging), brace (0-1, bracing for a hit), lunge, hurt, dodge, land, seed, cls. */
-const HEM = { wanderer: 1, mage: 1, knight: 0.5, rogue: 0 };
+const HEM = { wanderer: 1, mage: 0, knight: 0, rogue: 0 }; // only the wanderer's cape ripples; whole-row shifts would bend staffs and legs
 function heroRig(now, o = {}) {
   if (REDUCED) return null;
   const t = (now + (o.seed || 0)) / 1000, hem = HEM[o.cls] != null ? HEM[o.cls] : 1;
@@ -1466,15 +1478,32 @@ function monRig(tier, now, o = {}) {
   if (o.lunge) lean = 3.5 * o.lunge;
   if (o.hurt) lean = -3 * o.hurt;
   const hop = Math.sin(t * 11) > 0.55 ? 1 : 0, shamble = Math.sin(t * 2.3), nod = Math.sin(t * 4.6) > 0.5 ? 1 : 0;
+  const H = tier === 5 ? 24 : 16;
   return (r) => {
-    let dx = lean * (15 - r) / 15, dy = r < 8 ? crouch : 0;
+    let dx = lean * (H - 1 - r) / (H - 1), dy = r < H / 2 ? crouch : 0;
     if (tier === 1) dx += r >= 9 ? Math.sin(t * 4.2 - r * 0.85) * (r - 8) / 6 * 1.7 : 0.7 * Math.sin(t * 1.6);
     else if (tier === 2) { if (r >= 12) dx += (r % 2 ? 1 : -1) * Math.sin(t * 11) * 1.2; else { dx += 0.6 * Math.sin(t * 3); dy += hop; } }
     else if (tier === 3) { dx += 1.4 * shamble * (14 - r) / 14 + (r >= 8 && r <= 9 && Math.sin(t * 2.3 + 1) > 0.2 ? 1 : 0); if (r <= 6) dy += nod; }
     else if (tier === 4) { if (r >= 10) dx += Math.sin(t * 3.5 - r * 1.1) * 1.3 * (r - 9) / 5; else dx += 0.6 * Math.sin(t * 1.4); }
-    else if (tier === 5) { if (r >= 9) dx += Math.sin(t * 3 - r) * 1.9 * (r - 8) / 6; else dx += 0.8 * Math.sin(t * 1.3); }
+    else if (tier === 5) { if (r >= 15) dx += Math.sin(t * 3 - r * 0.8) * 1.8 * (r - 14) / 9; else dx += 0.9 * Math.sin(t * 1.3) * (15 - r) / 15; if (r >= 8 && r <= 10) dx += Math.sin(t * 2.1) > 0.3 ? 1 : 0; }
     return [dx, dy];
   };
+}
+const BOSS_STARS = [], BOSS_EYES = [];
+MONSTERS34.phantom.forEach((row, y) => [...row].forEach((ch, x) => { if (ch === 'z') BOSS_STARS.push([x, y]); if (ch === 'e') BOSS_EYES.push([x, y]); }));
+function bossFX(ctx, cx, cy, sc, now, flip = false, alpha = 1, rig = null, sy = 1) {
+  if (alpha <= 0) return;
+  const img = SPR.phantom.base, ox = (img.width - 16) / 2, oy = (img.height - 24) / 2;
+  const P = (px, py) => { const o = rig ? rig(py) : [0, 0], x = px + Math.round(o[0] || 0) + ox + 0.5 - img.width / 2, y = py + Math.round(o[1] || 0) + oy + 0.5 - img.height / 2; return [cx + (flip ? -x : x) * sc, cy + (img.height / 2) * sc - (img.height / 2 - y) * sc * sy]; };
+  ctx.save(); ctx.globalAlpha *= alpha; ctx.globalCompositeOperation = 'lighter';
+  const t = REDUCED ? 0 : now;
+  for (const [ex, ey] of BOSS_EYES) { const [x, y] = P(ex, ey); glow(ctx, x, y, sc * 2.4, 'rgba(255,138,61,A)', 0.7 + 0.2 * Math.sin(t / 240)); }
+  BOSS_STARS.forEach(([sx2, sy2], i) => {
+    const k = REDUCED ? 0.6 : Math.max(0, Math.sin(t / 380 + i * 1.9)), [x, y] = P(sx2, sy2);
+    glow(ctx, x, y, sc * 1.8, 'rgba(255,244,208,A)', 0.25 + 0.55 * k);
+    if (k > 0.85) { ctx.fillStyle = `rgba(255,250,230,${(k - 0.85) * 6})`; ctx.fillRect(x - sc * 1.5, y - sc * 0.25, sc * 3, sc * 0.5); ctx.fillRect(x - sc * 0.25, y - sc * 1.5, sc * 0.5, sc * 3); }
+  });
+  ctx.restore();
 }
 // opt: { white, red, gold, flip, sx, sy (squash, anchored at the feet), rot, rig (row offsets, see heroRig/monRig) }
 function drawSprite(ctx, name, cx, cy, scale, alpha = 1, opt = {}) {
@@ -1689,14 +1718,14 @@ function drawMap(ctx, map, L, o) {
     const near = hp0 && Math.abs(hp0.col - t.col) + Math.abs(hp0.row - t.row) === 1;
     if (t.kind === 'start') { shadow(ctx, cx, cy + T * 0.32, T * 0.5); drawSprite(ctx, 'coffin', cx, cy, ss, a); }
     else if (t.kind === 'gate') {
-      if (t.boss && !t.resolved) { glow(ctx, cx, cy, T * 0.7, 'rgba(157,123,255,A)', 0.5); shadow(ctx, cx, cy + T * 0.36, T * 0.6); drawSprite(ctx, 'phantom', cx, cy + bob, mss, a, { sy: breathe, rig: monRig(5, now, { seed: t.idx * 397 }) }); }
+      if (t.boss && !t.resolved) { glow(ctx, cx, cy, T * 0.7, 'rgba(157,123,255,A)', 0.5); shadow(ctx, cx, cy + T * 0.36, T * 0.6); { const br = monRig(5, now, { seed: t.idx * 397 }); drawSprite(ctx, 'phantom', cx, cy + bob - mss * 2, mss, a, { sy: breathe, rig: br }); bossFX(ctx, cx, cy + bob - mss * 2, mss, now, false, a, br, breathe); } }
       else drawGate(ctx, cx, cy, T, o.bossDown, now);
     }
     else if (t.kind === 'boss') {
       if (!t.resolved) {
         glow(ctx, cx, cy, T * 0.8, 'rgba(157,123,255,A)', 0.45 + 0.15 * Math.sin(now / 400));
         shadow(ctx, cx, cy + T * 0.36, T * 0.6);
-        drawSprite(ctx, 'phantom', cx, cy + bob, mss, a, { sy: breathe, rig: monRig(5, now, { seed: t.idx * 397 }) });
+        { const br = monRig(5, now, { seed: t.idx * 397 }); drawSprite(ctx, 'phantom', cx, cy + bob - mss * 2, mss, a, { sy: breathe, rig: br }); bossFX(ctx, cx, cy + bob - mss * 2, mss, now, false, a, br, breathe); }
         if (o.warded) {
           ctx.strokeStyle = `rgba(210,185,255,${0.8 + 0.2 * Math.sin(now / 200)})`; ctx.lineWidth = 3; ctx.setLineDash([5, 4]); ctx.lineDashOffset = -now / 60;
           ctx.beginPath(); ctx.arc(cx, cy, T * 0.46, 0, 7); ctx.stroke(); ctx.setLineDash([]);
@@ -1794,10 +1823,11 @@ function flashFight(kind) { if (REDUCED) return; const f = $('.fight'); f.classL
 const SW = 440, SH = 165, GROUND = 131, HX = 115, MX = 320, STAGE_ZOOM = 2; // logical units; the canvas is 880x330
 let stageCtx = null;
 const stage = { fx: makeFx(), q: [], hero: {}, mon: {}, slowUntil: 0, freezeUntil: 0, last: 0, intro: 0, tier: 1, bg: null };
-const MON_SCALE = (tier) => (tier === 5 ? 6 : tier === 4 ? 4 : tier === 3 ? 3.5 : 3);
-const HERO_SCALE = 1.7;
+const MON_SCALE = (tier) => (tier === 5 ? 4.5 : tier === 4 ? 4 : tier === 3 ? 3.5 : 3);
+const monHalf = (tier) => ((SPR[MONSTER_SPRITE[tier]] || { base: { height: 18 } }).base.height / 2) * MON_SCALE(tier);
+const HERO_SCALE = 2;
 const heroY = () => GROUND - 13 * HERO_SCALE;
-const monY = (tier) => GROUND - 9 * MON_SCALE(tier);
+const monY = (tier) => GROUND - monHalf(tier);
 const lunge = (dt, out = 110, back = 220) => (dt < 0 || dt > out + back ? 0 : dt < out ? easeOutCubic(dt / out) : 1 - (dt - out) / back);
 function stageBg(level, boss) {
   const W = SW * STAGE_ZOOM, H = SH * STAGE_ZOOM, G = GROUND * STAGE_ZOOM, dpr = window.devicePixelRatio || 1, c = document.createElement('canvas');
@@ -1889,7 +1919,7 @@ function stageAt(ms, fn) { stage.q.push({ at: performance.now() + ms, fn }); sta
 function stageHeroStrike(grade, dmg, killed, mode) {
   stage.hero.atk = performance.now();
   stageAt(100, () => {
-    const fx = stage.fx, x = MX - 8, y = monY(stage.tier), ty = y - 9 * MON_SCALE(stage.tier) * 0.75;
+    const fx = stage.fx, x = MX - 8, y = monY(stage.tier), ty = y - monHalf(stage.tier) * 0.75;
     stage.mon.hurt = performance.now(); stage.mon.crit = grade === 'perfect';
     if (mode === 'charge') {
       const col = grade === 'perfect' ? ['#ff7a3c', '#ffd257', '#ffffff'] : ['#ff9a5c', '#ffcf9a'];
@@ -1978,6 +2008,7 @@ function drawStage(now) {
     const red = !white && q && q.kind === 'defend' && qk > 0.8 && Math.floor(now / 60) % 2 === 0;
     const mrig = dieK >= 0 ? null : monRig(tier, now, { windup: q && q.kind === 'defend' ? qk : 0, lunge: lunge(now - stage.mon.atk), hurt: hurtK >= 0 && hurtK < 1 ? 1 - hurtK : 0 });
     drawSprite(ctx, MONSTER_SPRITE[tier], mx, my, ms, alpha, { flip: true, sy: sy2, white, red, rig: mrig });
+    if (tier === 5 && !white && !red && dieK < 0) bossFX(ctx, mx, my, ms, now, true, alpha, mrig, sy2);
   }
   // hero
   let hx = HX + lunge(now - stage.hero.atk) * 140, hy = heroY();
@@ -2036,7 +2067,8 @@ function buildBars(m) {
     <span class="bar"><i class="ghost"></i><i class="fill"></i></span>
     <div class="tm">TIMING<span class="tb"><i></i></span><b></b></div><div class="rl"></div>`;
   const pc = sizeCanvas($('#m-portrait'), 58, 58); pc.clearRect(0, 0, 58, 58);
-  drawSprite(pc, MONSTER_SPRITE[m.tier], 29, 31, 3, 1, { flip: true });
+  const ph = SPR[MONSTER_SPRITE[m.tier]].base.height * 3;
+  drawSprite(pc, MONSTER_SPRITE[m.tier], 29, ph > 58 ? 2 + ph / 2 : 31, 3, 1, { flip: true });
 }
 function renderTabs() {
   const c = state.combat; if (!c) return;
@@ -3236,7 +3268,7 @@ window.__cq = {
   idle,
   heroKey: (c, r, f) => heroKey(c, r, f),
   draw: (ctx, k, x, y, sc, opt) => drawSprite(ctx, k, x, y, sc, 1, opt || {}),
-  heroRig, monRig, rigCache: () => RIG_CACHE.size,
+  heroRig, monRig, bossFX, rigCache: () => RIG_CACHE.size,
   setRace(id) { settings.heroRace = id; if (state) { state.hero.race = id; applyStats(state.hero); state.hero.hp = state.hero.maxHp; } },
   setClass(id) { settings.heroClass = id; if (state) { state.hero.cls = id; applyStats(state.hero); state.hero.hp = state.hero.maxHp; } },
   card: () => makeShareCard().toDataURL('image/png'),
