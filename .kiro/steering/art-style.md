@@ -95,3 +95,10 @@ When `prefers-reduced-motion: reduce` is set:
 - **Heartbeat:** every 0.78 s in combat, 0.5 s at the boss, 0.38 s in phase 2, 0.9 s on the map at low HP.
 - Effects include ui, step, blocked, wisp, chest, encounter, boss, windup, warn, stutter, charge, hit, crit, glance, block, dodge, hurt, death, levelup, shard, ward, gate, relic, phase, rise, win, and lose.
 - Audio starts on the first key or pointer input. The Sound button and the M key toggle mute, saved in settings. The scheduler pauses while the page is hidden. Audio failures are caught and never block the game.
+
+## Three-quarter view (added 21 Nov 2026)
+
+- Every character is drawn in three-quarter view, never flat to the front. Heroes are 24×24 and face right; monsters are 16×16 and face right. The renderer flips sprites so the hero faces its movement direction and monsters face the hero.
+- The face sits toward the facing side: the far eye is nearer the middle, the near eye nearer the edge, and the back of the hood, helmet, or hat bulges on the far side. Elf ears go on the far side of the face.
+- Each hero outfit lists its face points (`eyes`, `mouth`, `ear`, `tusks`, `nose`) so race features, blink, and look frames work on every outfit.
+- Heroes and monsters share one shading function (light from the top left). In the 2× combat stage, sprite scales are multiples of 0.5 so pixels stay square.
