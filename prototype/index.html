@@ -1124,7 +1124,7 @@ function shadeCanvas(g, pal) {
   }
   return c;
 }
-function sprFrom(c) { const base = outlineSprite(c, '#05060a'); return { base, white: silhouette(base, '#ffffff'), red: silhouette(base, '#ff4040'), gold: silhouette(base, '#ffd257') }; }
+function sprFrom(c) { const base = outlineSprite(c, '#05060a'); return { flat: c, base, white: silhouette(base, '#ffffff'), red: silhouette(base, '#ff4040'), gold: silhouette(base, '#ffd257') }; }
 /* Heroes are drawn in three-quarter view facing right. Each outfit lists where its eyes, mouth, back ear, tusks, and nose sit,
    so races and blink/look frames work on every outfit. */
 function heroKey(cls, race, frame = 'idle') {
@@ -1167,10 +1167,10 @@ function heroSpriteAt(now, o = {}) {
   return heroKey(h.cls || 'wanderer', h.race || 'human', frame);
 }
 /* Glows drawn on top of the sprite: glowing eyes, the lantern, the blade glint, dagger shine, the staff orb. */
-function heroFX(ctx, h, cx, cy, sc, now, flip = false, alpha = 1) {
+function heroFX(ctx, h, cx, cy, sc, now, flip = false, alpha = 1, rig = null) {
   if (!h || alpha <= 0) return;
   const O = OUTFITS[h.cls || 'wanderer'] || OUTFITS.wanderer, R = heroRace(h), f = O.fx || {};
-  const P = (px, py) => [flip ? cx + 13 * sc - (px + 1.5) * sc : cx - 13 * sc + (px + 1.5) * sc, cy - 13 * sc + (py + 1.5) * sc];
+  const P = (px, py) => { const [dx, dy] = rigAt(rig, py), x = px + dx; return [flip ? cx + 13 * sc - (x + 1.5) * sc : cx - 13 * sc + (x + 1.5) * sc, cy - 13 * sc + (py + dy + 1.5) * sc]; };
   const t = REDUCED ? 0 : now;
   ctx.save(); ctx.globalAlpha *= alpha; ctx.globalCompositeOperation = 'lighter';
   if (R.glow) for (const [ex, ey] of O.face.eyes) { const [x, y] = P(ex, ey); glow(ctx, x, y, sc * 2.2, R.glow, 0.55 + 0.25 * Math.sin(t / 300)); }
@@ -1408,9 +1408,78 @@ const MONSTERS34 = {
  ]
 };
 for (const [name, rows] of Object.entries(MONSTERS34)) SPR[name] = sprFrom(shadeCanvas(rows.map((r) => r.split('')), COLORS));
-// opt: { white, red, gold, flip, sx, sy (squash, anchored at the feet), rot }
+/* Procedural rigs: a rig gives every sprite row an [dx, dy] offset in sprite pixels (dx points the way the sprite faces),
+   so bodies lean, breathe, crouch, and ripple without hand-drawn frames. The shifted rows are rebuilt on a small canvas,
+   outlined again, and cached by their offsets. Offsets are whole pixels so the art stays crisp; dy only pushes rows down
+   and never grows toward the feet, so rows overlap instead of leaving gaps. */
+const RIG_PAD = 4, RIG_CACHE = new Map();
+function rigOffsets(rig, H) {
+  const offs = []; let any = false;
+  for (let r = 0; r < H; r++) {
+    const o = rig(r), dx = clamp(Math.round(o[0] || 0), -RIG_PAD, RIG_PAD), dy = clamp(Math.round(o[1] || 0), 0, 3);
+    offs.push(dx, dy); if (dx || dy) any = true;
+  }
+  return any ? offs : null;
+}
+function riggedSpr(name, s, offs) {
+  const key = name + '|' + offs.join(',');
+  let r = RIG_CACHE.get(key); if (r) return r;
+  const src = s.flat, W = src.width, H = src.height, c = document.createElement('canvas');
+  c.width = W + RIG_PAD * 2; c.height = H; const x = c.getContext('2d');
+  for (let y = H - 1; y >= 0; y--) { const dy = offs[y * 2 + 1]; if (y + dy < H) x.drawImage(src, 0, y, W, 1, RIG_PAD + offs[y * 2], y + dy, W, 1); }
+  if (RIG_CACHE.size > 2500) RIG_CACHE.clear();
+  r = sprFrom(c); RIG_CACHE.set(key, r); return r;
+}
+const rigAt = (rig, py) => { if (!rig) return [0, 0]; const o = rig(clamp(Math.round(py), 0, 23)); return [clamp(Math.round(o[0] || 0), -RIG_PAD, RIG_PAD), clamp(Math.round(o[1] || 0), 0, 3)]; };
+/* Hero rig (24 rows: head 0-11, torso 12-21, feet 22-23). Feet stay planted; the body leans from the ankles up.
+   o: moving, look (-1/1), windup (0-1, attack test charging), brace (0-1, bracing for a hit), lunge, hurt, dodge, land, seed, cls. */
+const HEM = { wanderer: 1, mage: 1, knight: 0.5, rogue: 0 };
+function heroRig(now, o = {}) {
+  if (REDUCED) return null;
+  const t = (now + (o.seed || 0)) / 1000, hem = HEM[o.cls] != null ? HEM[o.cls] : 1;
+  let lean = 0.75 * Math.sin(t * 1.9), crouch = 0, lag = 0, flow = 1;
+  const breath = Math.sin(t * 3.3) > 0.4 ? 1 : 0;
+  if (o.moving) { lean = 1.6 + 0.6 * Math.sin(t * 14); lag = -1; flow = 1.8; }
+  if (o.look) lean = o.look * 1.6;
+  if (o.brace) { lean = -1.4 * o.brace; crouch = 1.6 * o.brace; }
+  if (o.windup) { lean = -3 * o.windup; crouch = 2 * o.windup; }
+  if (o.lunge) { lean = 4 * o.lunge; lag = -2 * o.lunge; flow = 2; }
+  if (o.hurt) { lean = -3.5 * o.hurt; lag = 1.5 * o.hurt; flow = 2; }
+  if (o.dodge) { lean = -2.5 * o.dodge; flow = 2; }
+  if (o.land) crouch = Math.max(crouch, 2 * o.land);
+  crouch = Math.round(crouch);
+  return (r) => {
+    if (r >= 22) return [0, 0];
+    let dx = lean * (22 - r) / 22 + (r < 5 ? lag * (5 - r) / 5 : 0);
+    if (r >= 16) dx += hem * 0.7 * flow * Math.sin(t * 5 - r * 0.9);
+    const dy = r <= 11 ? breath + crouch : r <= 14 ? crouch : r <= 17 ? Math.round(crouch / 2) : 0;
+    return [dx, Math.min(dy, 3)];
+  };
+}
+/* Monster rigs (16 rows), one motion per kind: the ghost's tail waves, the imp skitters and hops, the ghoul shambles and
+   reaches, the lich's robe hem ripples, the phantom's wisps curl. o: windup (0-1), lunge, hurt, seed. */
+function monRig(tier, now, o = {}) {
+  if (REDUCED) return null;
+  const t = (now + (o.seed || 0)) / 1000;
+  let lean = 0, crouch = 0;
+  if (o.windup) { lean = -2.5 * o.windup; crouch = Math.round(1.5 * o.windup); }
+  if (o.lunge) lean = 3.5 * o.lunge;
+  if (o.hurt) lean = -3 * o.hurt;
+  const hop = Math.sin(t * 11) > 0.55 ? 1 : 0, shamble = Math.sin(t * 2.3), nod = Math.sin(t * 4.6) > 0.5 ? 1 : 0;
+  return (r) => {
+    let dx = lean * (15 - r) / 15, dy = r < 8 ? crouch : 0;
+    if (tier === 1) dx += r >= 9 ? Math.sin(t * 4.2 - r * 0.85) * (r - 8) / 6 * 1.7 : 0.7 * Math.sin(t * 1.6);
+    else if (tier === 2) { if (r >= 12) dx += (r % 2 ? 1 : -1) * Math.sin(t * 11) * 1.2; else { dx += 0.6 * Math.sin(t * 3); dy += hop; } }
+    else if (tier === 3) { dx += 1.4 * shamble * (14 - r) / 14 + (r >= 8 && r <= 9 && Math.sin(t * 2.3 + 1) > 0.2 ? 1 : 0); if (r <= 6) dy += nod; }
+    else if (tier === 4) { if (r >= 10) dx += Math.sin(t * 3.5 - r * 1.1) * 1.3 * (r - 9) / 5; else dx += 0.6 * Math.sin(t * 1.4); }
+    else if (tier === 5) { if (r >= 9) dx += Math.sin(t * 3 - r) * 1.9 * (r - 8) / 6; else dx += 0.8 * Math.sin(t * 1.3); }
+    return [dx, dy];
+  };
+}
+// opt: { white, red, gold, flip, sx, sy (squash, anchored at the feet), rot, rig (row offsets, see heroRig/monRig) }
 function drawSprite(ctx, name, cx, cy, scale, alpha = 1, opt = {}) {
-  const s = SPR[name]; if (!s) return;
+  let s = SPR[name]; if (!s) return;
+  if (opt.rig && s.flat) { const offs = rigOffsets(opt.rig, s.flat.height); if (offs) s = riggedSpr(name, s, offs); }
   const img = opt.white ? s.white : opt.red ? s.red : opt.gold ? s.gold : s.base;
   const bw = img.width * scale, bh = img.height * scale, w = bw * (opt.sx || 1), h = bh * (opt.sy || 1);
   ctx.save(); ctx.globalAlpha *= alpha; ctx.imageSmoothingEnabled = false;
@@ -1620,14 +1689,14 @@ function drawMap(ctx, map, L, o) {
     const near = hp0 && Math.abs(hp0.col - t.col) + Math.abs(hp0.row - t.row) === 1;
     if (t.kind === 'start') { shadow(ctx, cx, cy + T * 0.32, T * 0.5); drawSprite(ctx, 'coffin', cx, cy, ss, a); }
     else if (t.kind === 'gate') {
-      if (t.boss && !t.resolved) { glow(ctx, cx, cy, T * 0.7, 'rgba(157,123,255,A)', 0.5); shadow(ctx, cx, cy + T * 0.36, T * 0.6); drawSprite(ctx, 'phantom', cx, cy + bob, mss, a, { sy: breathe }); }
+      if (t.boss && !t.resolved) { glow(ctx, cx, cy, T * 0.7, 'rgba(157,123,255,A)', 0.5); shadow(ctx, cx, cy + T * 0.36, T * 0.6); drawSprite(ctx, 'phantom', cx, cy + bob, mss, a, { sy: breathe, rig: monRig(5, now, { seed: t.idx * 397 }) }); }
       else drawGate(ctx, cx, cy, T, o.bossDown, now);
     }
     else if (t.kind === 'boss') {
       if (!t.resolved) {
         glow(ctx, cx, cy, T * 0.8, 'rgba(157,123,255,A)', 0.45 + 0.15 * Math.sin(now / 400));
         shadow(ctx, cx, cy + T * 0.36, T * 0.6);
-        drawSprite(ctx, 'phantom', cx, cy + bob, mss, a, { sy: breathe });
+        drawSprite(ctx, 'phantom', cx, cy + bob, mss, a, { sy: breathe, rig: monRig(5, now, { seed: t.idx * 397 }) });
         if (o.warded) {
           ctx.strokeStyle = `rgba(210,185,255,${0.8 + 0.2 * Math.sin(now / 200)})`; ctx.lineWidth = 3; ctx.setLineDash([5, 4]); ctx.lineDashOffset = -now / 60;
           ctx.beginPath(); ctx.arc(cx, cy, T * 0.46, 0, 7); ctx.stroke(); ctx.setLineDash([]);
@@ -1640,7 +1709,7 @@ function drawMap(ctx, map, L, o) {
     else if (t.kind === 'monster') {
       if (!t.resolved) {
         shadow(ctx, cx, cy + T * 0.34, T * 0.5);
-        drawSprite(ctx, MONSTER_SPRITE[t.tier], cx, cy + bob, mss, a * (t.tier === 1 ? 0.85 : 1), { sy: breathe, flip: hp0 && hp0.col < t.col });
+        drawSprite(ctx, MONSTER_SPRITE[t.tier], cx, cy + bob, mss, a * (t.tier === 1 ? 0.85 : 1), { sy: breathe, flip: hp0 && hp0.col < t.col, rig: monRig(t.tier, now, { seed: t.idx * 397 }) });
         if (near && o.fog) drawAlert(ctx, cx + T * 0.32, y + 2, now, '#ff6b6b');
       } else drawBones(ctx, cx, cy, T);
     }
@@ -1670,8 +1739,9 @@ function drawMap(ctx, map, L, o) {
     if (h.aura > 0) glow(ctx, cx, cy, T * (0.55 + 0.08 * h.aura), 'rgba(180,140,255,A)', 0.25 + 0.12 * h.aura + 0.08 * Math.sin(now / 250));
     shadow(ctx, cx, cy + T * 0.34, T * (0.5 - hop / T * 0.6));
     const hyy = cy - hop - T * 0.12 + (REDUCED ? 0 : Math.sin(now / 300) * 1);
-    drawSprite(ctx, heroSpriteAt(now, { moving: k < 1, hero: h.hero }), cx, hyy, hss, 1, { flip: h.face < 0, sy: squash * (REDUCED ? 1 : 1 + 0.02 * Math.sin(now / 420)), sx: 2 - squash });
-    heroFX(ctx, h.hero, cx, hyy, hss, now, h.face < 0);
+    const hrig = heroRig(now, { moving: k < 1 || ik < 1, land: squash < 1 ? 1 : 0, cls: h.hero && h.hero.cls });
+    drawSprite(ctx, heroSpriteAt(now, { moving: k < 1, hero: h.hero }), cx, hyy, hss, 1, { flip: h.face < 0, sy: squash * (REDUCED ? 1 : 1 + 0.02 * Math.sin(now / 420)), sx: 2 - squash, rig: hrig });
+    heroFX(ctx, h.hero, cx, hyy, hss, now, h.face < 0, 1, hrig);
     for (let i = 0; i < h.aura * 2; i++) {
       const an = now / 600 + (i * Math.PI * 2) / (h.aura * 2), rr = T * 0.48;
       ctx.fillStyle = 'rgba(210,180,255,.85)'; ctx.fillRect(cx + Math.cos(an) * rr - 1.5, cy - hop + Math.sin(an) * rr * 0.5 - 1.5, 3, 3);
@@ -1906,14 +1976,16 @@ function drawStage(now) {
     if (q && q.kind === 'defend') glow(ctx, mx, my, 76, 'rgba(255,60,60,A)', 0.5 * qk);
     const white = (hurtK >= 0 && hurtK < 0.35) || (dieK >= 0 && Math.floor(now / 50) % 2 === 0);
     const red = !white && q && q.kind === 'defend' && qk > 0.8 && Math.floor(now / 60) % 2 === 0;
-    drawSprite(ctx, MONSTER_SPRITE[tier], mx, my, ms, alpha, { flip: true, sy: sy2, white, red });
+    const mrig = dieK >= 0 ? null : monRig(tier, now, { windup: q && q.kind === 'defend' ? qk : 0, lunge: lunge(now - stage.mon.atk), hurt: hurtK >= 0 && hurtK < 1 ? 1 - hurtK : 0 });
+    drawSprite(ctx, MONSTER_SPRITE[tier], mx, my, ms, alpha, { flip: true, sy: sy2, white, red, rig: mrig });
   }
   // hero
   let hx = HX + lunge(now - stage.hero.atk) * 140, hy = heroY();
   if (q && q.kind === 'attack') hx -= 16 * qk;
   const dK = (now - stage.hero.dodge) / 420;
   if (dK >= 0 && dK < 1) {
-    for (let i = 3; i >= 1; i--) { const s2 = Math.sin(Math.PI * Math.max(0, dK - i * 0.08)); drawSprite(ctx, heroKey(state.hero.cls, state.hero.race), HX - s2 * 62, hy - s2 * 34, HERO_SCALE, 0.16 * i, { gold: true }); }
+    const trail = heroRig(now, { dodge: 1, cls: state.hero.cls });
+    for (let i = 3; i >= 1; i--) { const s2 = Math.sin(Math.PI * Math.max(0, dK - i * 0.08)); drawSprite(ctx, heroKey(state.hero.cls, state.hero.race), HX - s2 * 62, hy - s2 * 34, HERO_SCALE, 0.16 * i, { gold: true, rig: trail }); }
     const s = Math.sin(Math.PI * dK); hx -= s * 62; hy -= s * 34;
   }
   const hK = (now - stage.hero.hurt) / 260; if (hK >= 0 && hK < 1) hx -= (1 - hK) * 18;
@@ -1922,8 +1994,13 @@ function drawStage(now) {
   shadow(ctx, HX, GROUND + 2, 44);
   if (state && state.hero.aura) glow(ctx, hx, hy, 62, 'rgba(180,140,255,A)', 0.15 + 0.06 * state.hero.aura);
   if (!REDUCED && !q && deadK === 0) hy += Math.sin(now / 320) * 1.5;
-  drawSprite(ctx, heroSpriteAt(now, { moving: runK >= 0, seed: 700 }), hx, hy + deadK * 30, HERO_SCALE, 1, { white: hK >= 0 && hK < 0.3, rot: -1.4 * deadK, flip: runK >= 0 });
-  if (deadK === 0) heroFX(ctx, state.hero, hx, hy, HERO_SCALE, now, runK >= 0);
+  const hrig = deadK > 0 ? null : heroRig(now, {
+    seed: 700, cls: state.hero.cls, moving: runK >= 0,
+    windup: q && q.kind === 'attack' ? qk : 0, brace: q && q.kind === 'defend' ? qk : 0,
+    lunge: lunge(now - stage.hero.atk), hurt: hK >= 0 && hK < 1 ? 1 - hK : 0, dodge: dK >= 0 && dK < 1 ? Math.sin(Math.PI * dK) : 0
+  });
+  drawSprite(ctx, heroSpriteAt(now, { moving: runK >= 0, seed: 700 }), hx, hy + deadK * 30, HERO_SCALE, 1, { white: hK >= 0 && hK < 0.3, rot: -1.4 * deadK, flip: runK >= 0, rig: hrig });
+  if (deadK === 0) heroFX(ctx, state.hero, hx, hy, HERO_SCALE, now, runK >= 0, 1, hrig);
   const bK = (now - stage.hero.block) / 260;
   if (bK >= 0 && bK < 1) { ctx.save(); ctx.globalAlpha = 1 - bK; ctx.strokeStyle = '#9fd8ff'; ctx.lineWidth = 5; ctx.beginPath(); ctx.arc(hx + 8, hy, 52, -0.9, 0.9); ctx.stroke(); ctx.restore(); }
   fxDraw(stage.fx, ctx);
@@ -2891,8 +2968,9 @@ function drawPortrait(now) {
   const hk = clamp((now - portrait.hop) / 380, 0, 1), hop = REDUCED ? 0 : Math.sin(Math.PI * hk) * 18;
   const breathe = REDUCED ? 1 : 1 + 0.025 * Math.sin(now / 450);
   shadow(ctx, 85, 160, 90 - hop, 0.4);
-  drawSprite(ctx, heroSpriteAt(now, { look }), 85, 86 - hop, 6, 1, { sy: breathe });
-  heroFX(ctx, h, 85, 86 - hop, 6, now);
+  const prig = heroRig(now, { look, land: hk > 0.8 && hk < 1 ? 1 : 0, cls: h.cls });
+  drawSprite(ctx, heroSpriteAt(now, { look }), 85, 86 - hop, 6, 1, { sy: breathe, rig: prig });
+  heroFX(ctx, h, 85, 86 - hop, 6, now, false, 1, prig);
   if (!REDUCED) {
     const C = h.cls, ph = (now / 1000) % 4;
     if (C === 'mage' && ph < 1.2) { ctx.fillStyle = `rgba(159,231,255,${0.8 - ph * 0.6})`; for (let i = 0; i < 3; i++) ctx.fillRect(140 + Math.sin(now / 200 + i) * 6, 20 - ph * 20 - i * 6 + 20, 3, 3); }
@@ -3157,7 +3235,8 @@ window.__cq = {
   layout: () => mapLayout,
   idle,
   heroKey: (c, r, f) => heroKey(c, r, f),
-  draw: (ctx, k, x, y, sc) => drawSprite(ctx, k, x, y, sc),
+  draw: (ctx, k, x, y, sc, opt) => drawSprite(ctx, k, x, y, sc, 1, opt || {}),
+  heroRig, monRig, rigCache: () => RIG_CACHE.size,
   setRace(id) { settings.heroRace = id; if (state) { state.hero.race = id; applyStats(state.hero); state.hero.hp = state.hero.maxHp; } },
   setClass(id) { settings.heroClass = id; if (state) { state.hero.cls = id; applyStats(state.hero); state.hero.hp = state.hero.maxHp; } },
   card: () => makeShareCard().toDataURL('image/png'),
