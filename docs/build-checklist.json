@@ -777,7 +777,7 @@
       "spec": "progression",
       "task": "1.1",
       "title": "Add the progression constants from design.md to `src/engine/balance.ts`, and implement `xpForLevel`, `levelFor`, `startingXp`, `auraTier` in `src/engine/progression.ts`",
-      "status": "todo",
+      "status": "done",
       "verify": "npx vitest --run tests/engine/progression.test.ts tests/engine/trait.test.ts tests/engine/balance.test.ts"
     },
     {
@@ -786,7 +786,7 @@
       "spec": "progression",
       "task": "1.2",
       "title": "Implement `makeTrait` in `src/engine/trait.ts` using `weekday` from `src/mapgen/dates.ts`",
-      "status": "todo",
+      "status": "done",
       "verify": "npx vitest --run tests/engine/progression.test.ts tests/engine/trait.test.ts tests/engine/balance.test.ts"
     },
     {
@@ -795,7 +795,7 @@
       "spec": "progression",
       "task": "1.3",
       "title": "Write `tests/engine/progression.test.ts` (table, cap, PRD examples, aura) and `tests/engine/trait.test.ts`",
-      "status": "todo",
+      "status": "done",
       "verify": "npx vitest --run tests/engine/progression.test.ts tests/engine/trait.test.ts tests/engine/balance.test.ts"
     },
     {
@@ -804,7 +804,7 @@
       "spec": "progression",
       "task": "1.4",
       "title": "Write `tests/engine/progression.prop.test.ts` for P6 and P11",
-      "status": "todo",
+      "status": "done",
       "verify": "npx vitest --run tests/engine/progression.prop.test.ts"
     },
     {
@@ -813,7 +813,7 @@
       "spec": "progression",
       "task": "2.1",
       "title": "Add `relicOffer`, `relicTitle`, `pendingBlessing`, `newTrophies`, the new actions, and the new events to `src/engine/state.ts`",
-      "status": "todo",
+      "status": "done",
       "verify": "npm run typecheck"
     },
     {
@@ -822,7 +822,7 @@
       "spec": "progression",
       "task": "2.2",
       "title": "Implement `makeHero`, `newRun`, and `omenFor` (`src/engine/run.ts`, `src/engine/omen.ts`) with the opening log lines",
-      "status": "todo",
+      "status": "done",
       "verify": "npx vitest --run tests/engine/run.test.ts tests/engine/map-independence.prop.test.ts"
     },
     {
@@ -831,7 +831,7 @@
       "spec": "progression",
       "task": "2.3",
       "title": "Write `tests/engine/run.test.ts`; then enable `tests/engine/map-independence.prop.test.ts` (P18, map-generation spec) now that `newRun` exists",
-      "status": "todo",
+      "status": "done",
       "verify": "npx vitest --run tests/engine/run.test.ts tests/engine/map-independence.prop.test.ts"
     },
     {
@@ -840,7 +840,7 @@
       "spec": "progression",
       "task": "3.1",
       "title": "Implement `gainXp`, `collectWisp`, `openChest` in `src/engine/progression.ts` (`openChest` calls `offerRelic`; until group 4 exists, a stub that does nothing keeps the order testable)",
-      "status": "todo",
+      "status": "done",
       "verify": "npx vitest --run tests/engine/progression.test.ts"
     },
     {
@@ -849,7 +849,7 @@
       "spec": "progression",
       "task": "3.2",
       "title": "Extend `tests/engine/progression.test.ts`: Human rounding, level-up heal and log, two thresholds in one gain, wisp and chest logs, chest heal before XP, `levelUp`, `wisp`, `chest`, and `xp` events",
-      "status": "todo",
+      "status": "done",
       "verify": "npx vitest --run tests/engine/progression.test.ts"
     },
     {
@@ -1101,7 +1101,7 @@
       "spec": "presentation",
       "task": "1.3",
       "title": "In `src/main.ts`, add `dispatch` and `schedule` (deadline timer only; `advance` sent at once until group 6), keyboard movement, and the D-pad, so a run can be played with plain DOM output",
-      "status": "todo",
+      "status": "done",
       "verify": "npm run build"
     },
     {

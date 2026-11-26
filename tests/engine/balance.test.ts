@@ -2,24 +2,38 @@ import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import {
   ATK_MULT,
+  AURA_DAYS,
+  AURA_MAX,
+  BLANK_SLATE_HP,
+  BOSS_XP,
+  CHEST_GOLD,
+  CHEST_HEAL,
+  CHEST_XP,
+  COLD_BREW_HEAL,
   CLASS_STATS,
   COMBAT_LOG_LINES,
   DEF_MULT,
   DIFFICULTY,
   HERO_STATS,
   HUMAN_XP,
-  LEVEL_CAP,
   MAP_LOG_LINES,
+  MAX_LEVEL,
   MONSTER,
   PATTERN,
   PHASE2,
   PRESSURE_EPS,
   QTE,
   RELIC_COMBAT,
+  RELIC_OFFER,
+  SIM,
+  START_XP_MUL,
   TEST_TIMING,
+  TRAIT_ATK,
   VARIANCE,
+  WEEKEND_SHARE,
+  WISP_XP,
   WINDOW_RULES,
-  XP_PER_LEVEL,
+  XP_BASE,
 } from '../../src/engine/balance';
 
 // game-rules.md is the human-readable copy of balance.ts: a drift in either fails here.
@@ -165,8 +179,8 @@ describe('FR-DIF-1: balance.ts matches game-rules.md', () => {
     has(
       `\`atk = ${H.atkBase} + ${H.atkPerLevel} × (level − 1) + aura + (Stack Overflow ? ${RELIC_COMBAT.stackAtk} : 0) + classAtk + (Orc ? ${RELIC_COMBAT.orcAtk} : 0)\``,
     );
-    has(`\`${XP_PER_LEVEL} × n × (n − 1)\``);
-    has(`Cap at **level ${LEVEL_CAP}**`);
+    has(`\`${XP_BASE} × n × (n − 1)\``);
+    has(`Cap at **level ${MAX_LEVEL}**`);
     has(`every XP gain × ${HUMAN_XP}, rounded`);
   });
 
@@ -182,6 +196,23 @@ describe('FR-DIF-1: balance.ts matches game-rules.md', () => {
     has(`The +${RELIC_COMBAT.trait} applies to strike damage`);
     has(`+${RELIC_COMBAT.stackAtk} ATK`);
     has(`+${RELIC_COMBAT.coffeeHp} max HP (before class scaling)`);
+  });
+
+  it('progression constants', () => {
+    has(`Starting XP: \`round(${START_XP_MUL} × √total91)\``);
+    has(`\`aura = min(floor(streak / ${AURA_DAYS}), ${AURA_MAX})\``);
+    has(`XP rewards: wisp ${WISP_XP}, chest ${CHEST_XP}, monster \`${MONSTER.xpPerTier} × t\`, boss ${BOSS_XP}`);
+    has(`**Wisp:** +${WISP_XP} XP`);
+    has(`**Chest:** +${CHEST_GOLD[1]} treasure (size 1) or +${CHEST_GOLD[2]} (size 2), heal \`ceil(maxHp × ${CHEST_HEAL})\` up to max, +${CHEST_XP} XP`);
+    has(`+${BLANK_SLATE_HP} max HP (\`traitHp = ${BLANK_SLATE_HP}\`)`);
+    has(`\`(Sunday + Saturday) / total91 ≥ ${WEEKEND_SHARE}\``);
+    has(`+${TRAIT_ATK} ATK on rows 0 and 6`);
+    has(`offers ${RELIC_OFFER} relics`);
+    has(`heal ${COLD_BREW_HEAL} on pick`);
+    has(`${SIM.seeds} seeds per cell`);
+    has(`below ${SIM.healBelow * 100}% HP (${SIM.healBeforeBoss * 100}% before the boss)`);
+    has(`stops after ${SIM.maxActions} actions`);
+    has(`\`makeRng(${SIM.mixedSeed})\``);
   });
 
   it('log lengths', () => {

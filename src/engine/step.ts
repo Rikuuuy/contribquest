@@ -13,6 +13,7 @@ import {
 } from './combat';
 import { applyMove, checkMove } from './explore';
 import { log } from './log';
+import { collectWisp, openChest } from './progression';
 import { grade, testDeadline } from './qte';
 import type { Action, RunState } from './state';
 
@@ -77,8 +78,13 @@ function move(s: RunState, dir: Parameters<typeof checkMove>[1]): void {
       if (t.boss) startFight(s, t);
       else winRun(s);
       break;
+    case 'wisp':
+      collectWisp(s, t);
+      break;
+    case 'chest':
+      openChest(s, t);
+      break;
     default:
-      // Wisps and chests are entered by the progression spec (collectWisp, openChest).
       break;
   }
 }

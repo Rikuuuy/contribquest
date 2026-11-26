@@ -25,3 +25,8 @@ export {
 export { step, nextDeadline, resumeFight } from './step';
 export { combatKey } from './input';
 export { checkMove, applyMove, reveal, isVisible, collectShard, type Dir } from './explore';
+export { xpForLevel, levelFor, startingXp, auraTier, gainXp, collectWisp, openChest } from './progression';
+export { makeTrait } from './trait';
+export { omenFor, omenLog } from './omen';
+export { makeHero, newRun, type RunSettings } from './run';
+export { RACE_NAMES } from './races';

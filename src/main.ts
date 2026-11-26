@@ -1,12 +1,19 @@
 // Entry point. Until the Phase 1 build replaces the root page, index.html redirects visitors to the prototype.
-// This file wires input and timers to the engine; rendering and screens come with the presentation spec.
-import { combatKey, nextDeadline, step, type Action, type RunState } from './engine';
+// This file wires input and timers to the engine. Until the presentation spec's screens exist, a page with an
+// `#app` element gets a plain-text DOM view of the run (presentation task 1.3).
+import { loadDemo } from './data/demo';
+import { loadSettings } from './data/settings';
+import { combatKey, isVisible, newRun, nextDeadline, step, type Action, type Dir, type RunState } from './engine';
+import { tileAt } from './mapgen';
 
 let state: RunState | null = null;
 /** `performance.now()` when the current test (by `testId`) was first rendered. */
 let testStart = 0;
 let testId = 0;
-let deadlineTimer: ReturnType<typeof setTimeout> | null = null;
+const timers: { deadline: ReturnType<typeof setTimeout> | null; advance: ReturnType<typeof setTimeout> | null } = {
+  deadline: null,
+  advance: null,
+};
 const listeners = new Set<(s: RunState) => void>();
 
 /** Starts driving a run (called by the screens once a run exists). */
@@ -34,40 +41,79 @@ function afterStep(): void {
     testId = c.testId;
     testStart = performance.now();
   }
-  scheduleDeadline();
+  schedule();
   for (const fn of listeners) fn(state);
 }
 
-/** Sends `timeout` when the next deadline from the engine passes, in test time. */
-function scheduleDeadline(): void {
-  if (deadlineTimer !== null) clearTimeout(deadlineTimer);
-  deadlineTimer = null;
-  if (!state) return;
-  const d = nextDeadline(state);
-  if (!d) return;
-  const forId = testId;
-  deadlineTimer = setTimeout(
-    () => {
-      deadlineTimer = null;
-      if (state?.combat?.testId === forId) dispatch(d.action);
-    },
-    Math.max(0, testStart + d.t - performance.now()),
-  );
+function clearTimers(): void {
+  if (timers.deadline !== null) clearTimeout(timers.deadline);
+  if (timers.advance !== null) clearTimeout(timers.advance);
+  timers.deadline = timers.advance = null;
+}
+
+/**
+ * During a test: sends `timeout` when the engine's next deadline passes, in test time (requirement 11.5).
+ * In `wait`: sends `advance` at once; the pacing delays come with presentation group 6. A timer whose
+ * fight changed before it fires sends nothing (requirement 12.3).
+ */
+function schedule(): void {
+  clearTimers();
+  const f = state?.combat;
+  if (!state || state.status !== 'combat' || !f) return;
+  const id = f.testId;
+  if (f.phase === 'test') {
+    const d = nextDeadline(state);
+    if (!d) return;
+    timers.deadline = setTimeout(
+      () => {
+        timers.deadline = null;
+        if (state?.combat?.testId === id && state.combat.phase === 'test') dispatch(d.action);
+      },
+      Math.max(0, testStart + d.t - performance.now()),
+    );
+  } else if (f.phase === 'wait') {
+    timers.advance = setTimeout(() => {
+      timers.advance = null;
+      if (state?.status === 'combat' && state.combat?.testId === id && state.combat.phase === 'wait') dispatch({ type: 'advance' });
+    }, 0);
+  }
 }
 
 const inTest = (): boolean => state?.status === 'combat' && state.combat?.phase === 'test';
 const testTime = (timeStamp: number): number => timeStamp - testStart;
 
-/** Combat keys: a press or release during a test, Attack or Flee in `choose` (FR-COM-6). */
+const MOVE_KEYS: Readonly<Record<string, Dir>> = {
+  arrowup: 'up',
+  w: 'up',
+  arrowdown: 'down',
+  s: 'down',
+  arrowleft: 'left',
+  a: 'left',
+  arrowright: 'right',
+  d: 'right',
+};
+
+/**
+ * Combat keys go through `combatKey` while a fight is shown and movement keys are ignored (FR-COM-6);
+ * otherwise Arrow keys and WASD move while exploring (FR-MOV-1).
+ */
 function onKeyDown(e: KeyboardEvent): void {
-  if (!state || state.status !== 'combat') return;
-  const k = combatKey(e.key);
-  if (!k) return;
-  e.preventDefault();
-  if (e.repeat) return;
-  if (inTest()) {
-    if (k === 'hit') dispatch({ type: 'press', t: testTime(e.timeStamp), key: e.key.toLowerCase() });
-  } else if (state.combat?.phase === 'choose') dispatch({ type: k === 'flee' ? 'flee' : 'attack' });
+  if (!state) return;
+  if (state.status === 'combat') {
+    const k = combatKey(e.key);
+    if (!k) return;
+    e.preventDefault();
+    if (e.repeat) return;
+    if (inTest()) {
+      if (k === 'hit') dispatch({ type: 'press', t: testTime(e.timeStamp), key: e.key.toLowerCase() });
+    } else if (state.combat?.phase === 'choose') dispatch({ type: k === 'flee' ? 'flee' : 'attack' });
+    return;
+  }
+  const dir = MOVE_KEYS[e.key.toLowerCase()];
+  if (dir && state.status === 'exploring') {
+    e.preventDefault();
+    dispatch({ type: 'move', dir });
+  }
 }
 
 function onKeyUp(e: KeyboardEvent): void {
@@ -88,5 +134,86 @@ export function bindPointer(el: HTMLElement): void {
     });
 }
 
+/** D-pad buttons (`button[data-dir]`) send the same `move` actions as the keys (FR-MOV-2). */
+export function bindDpad(root: ParentNode): void {
+  root.querySelectorAll<HTMLButtonElement>('button[data-dir]').forEach((b) =>
+    b.addEventListener('click', () => {
+      const dir = b.dataset['dir'] as Dir | undefined;
+      if (dir && state?.status === 'exploring') dispatch({ type: 'move', dir });
+    }),
+  );
+}
+
 document.addEventListener('keydown', onKeyDown);
 document.addEventListener('keyup', onKeyUp);
+
+// ---------- Plain DOM view (Phase 1 only; replaced by the presentation spec's screens) ----------
+
+/** One character per tile: @ hero, ? unseen, . empty or resolved, w wisp, c chest, 1–4 monster tier, B boss, G Gate, S start. */
+function tileChar(s: RunState, col: number, row: number): string {
+  if (s.pos.col === col && s.pos.row === row) return '@';
+  const t = tileAt(s.map, col, row);
+  if (!t) return ' ';
+  if (!isVisible(t)) return '?';
+  if (t.boss && !t.resolved) return 'B';
+  if (t.kind === 'gate') return 'G';
+  if (t.kind === 'start') return 'S';
+  if (t.resolved || t.kind === 'fog') return '.';
+  if (t.kind === 'wisp') return 'w';
+  if (t.kind === 'chest') return 'c';
+  return String(t.tier);
+}
+
+function plainText(s: RunState): string {
+  const h = s.hero;
+  const rows: string[] = [];
+  for (let r = 0; r < s.map.rows; r++) {
+    let line = '';
+    for (let c = 0; c < s.map.cols; c++) line += tileChar(s, c, r) + ' ';
+    rows.push(line);
+  }
+  const out = [
+    `${h.name} · level ${h.level} · XP ${h.xp} · HP ${h.hp}/${h.maxHp} · ATK ${h.atk} · treasure ${h.treasure} · shards ${s.shards}/${s.map.shardsNeeded} · ${s.status}`,
+    '',
+    ...rows,
+    '',
+    ...s.log,
+  ];
+  const f = s.combat;
+  if (f) {
+    out.push('', `${f.m.name}: HP ${f.m.hp}/${f.m.maxHp}`, ...f.lines);
+    if (f.phase === 'choose') out.push('Attack (A) or Flee (F).');
+    if (f.phase === 'test' && f.test) out.push(`${f.test.kind} test: ${f.test.mode} (${f.test.pattern}). Press Space on the beat.`);
+  }
+  if (s.status === 'won') out.push('', 'The Gate opens. Your graph is exorcised.');
+  if (s.status === 'lost') out.push('', 'You became part of the graph.');
+  return out.join('\n');
+}
+
+function mountPlain(app: HTMLElement): void {
+  const settings = loadSettings(globalThis.localStorage ?? null);
+  const r = newRun(loadDemo(() => Date.now()), null, settings);
+  if (!r.ok) {
+    app.textContent = r.error.message;
+    return;
+  }
+  app.innerHTML = `<pre id="cq-view" aria-live="polite"></pre>
+<div class="dpad" aria-label="Direction buttons">
+  <span></span><button data-dir="up" aria-label="Up">▲</button><span></span>
+  <button data-dir="left" aria-label="Left">◀</button><span></span><button data-dir="right" aria-label="Right">▶</button>
+  <span></span><button data-dir="down" aria-label="Down">▼</button><span></span>
+</div>
+<p><button id="cq-attack" type="button">Attack (A)</button> <button id="cq-flee" type="button">Flee (F)</button> <button id="cq-now" type="button">Now! (Space)</button></p>`;
+  const view = app.querySelector('#cq-view') as HTMLElement;
+  bindDpad(app);
+  bindPointer(app.querySelector('#cq-now') as HTMLElement);
+  (app.querySelector('#cq-attack') as HTMLElement).addEventListener('click', () => dispatch({ type: 'attack' }));
+  (app.querySelector('#cq-flee') as HTMLElement).addEventListener('click', () => dispatch({ type: 'flee' }));
+  onState((s) => {
+    view.textContent = plainText(s);
+  });
+  setRun(r.value);
+}
+
+const app = document.getElementById('app');
+if (app) mountPlain(app);

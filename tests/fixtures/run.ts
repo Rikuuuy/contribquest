@@ -1,4 +1,4 @@
-// RunState builder for engine tests, until progression's newRun exists.
+// RunState builder for engine tests that need a hand-built hero (newRun builds the real one).
 import { loadDemo } from '../../src/data/demo';
 import type { ClassId, ContributionSet, RaceId } from '../../src/data/schema';
 import { applyStats } from '../../src/engine/classes';
@@ -84,6 +84,10 @@ export function makeTestRun(o: TestRunOptions = {}): RunState {
     opts: { calm: false, assist: false, ...o.opts },
     log: [],
     events: [],
+    relicOffer: null,
+    relicTitle: null,
+    pendingBlessing: false,
+    newTrophies: [],
   };
   s0.visited = true;
   reveal(s);

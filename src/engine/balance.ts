@@ -205,13 +205,38 @@ export const MONSTER = {
   bossLoot: 30,
 } as const;
 
-// ---------- XP (used by gainXp; the progression spec owns the rest of its rules) ----------
+// ---------- Progression (prototype xpForLevel, makeHero, makeTrait, enterTile, offerRelic) ----------
 
-/** XP for level n: `xpPerLevel × n × (n − 1)`. */
-export const XP_PER_LEVEL = 25;
-export const LEVEL_CAP = 10;
-/** Human: every XP gain × humanXp, rounded. */
+/** XP for level n: `XP_BASE × n × (n − 1)`. */
+export const XP_BASE = 25;
+export const MAX_LEVEL = 10;
+/** Starting XP: `round(START_XP_MUL × √total91)`. */
+export const START_XP_MUL = 15;
+/** Aura: `min(floor(streak / AURA_DAYS), AURA_MAX)`. */
+export const AURA_DAYS = 7;
+export const AURA_MAX = 4;
+export const WISP_XP = 5;
+export const CHEST_XP = 10;
+export const BOSS_XP = MONSTER.bossXp;
+/** Chest treasure by chest size. */
+export const CHEST_GOLD: Readonly<Record<1 | 2, number>> = { 1: 6, 2: 12 };
+/** Chest heal: `ceil(maxHp × CHEST_HEAL)`. */
+export const CHEST_HEAL = 0.3;
+/** Human: every XP gain × HUMAN_XP, rounded. */
 export const HUMAN_XP = 1.1;
+/** Weekday trait strike bonus. */
+export const TRAIT_ATK = RELIC_COMBAT.trait;
+/** Blank Slate trait: max HP before class scaling. */
+export const BLANK_SLATE_HP = 5;
+/** Weekend Warrior: `(Sunday + Saturday) / total91 ≥ WEEKEND_SHARE`. */
+export const WEEKEND_SHARE = 0.4;
+/** Relics offered per chest or blessing. */
+export const RELIC_OFFER = 3;
+/** Cold Brew: HP healed on pick. */
+export const COLD_BREW_HEAL = 10;
+
+/** Balance simulator settings. */
+export const SIM = { seeds: 200, maxActions: 2000, healBelow: 0.45, healBeforeBoss: 0.75, mixedSeed: 1234 } as const;
 
 // ---------- Logs ----------
 

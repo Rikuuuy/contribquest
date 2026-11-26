@@ -278,6 +278,7 @@ describe('FR-COM-1, FR-DIF-4, FR-PRO-3: end of a fight', () => {
       'Soul shard 1/3 collected.',
     ]);
     expect(s.events).toEqual([
+      { type: 'xp', amount: 66 },
       { type: 'timing', pct: 93, maxed: false },
       { type: 'monsterDown', boss: false },
       { type: 'shard', have: 1, need: 3, shattered: false },
@@ -301,7 +302,7 @@ describe('FR-COM-1, FR-DIF-4, FR-PRO-3: end of a fight', () => {
     const s = step(killer(5), { type: 'advance' });
     expect([s.bossDown, s.stats.bossHpLeft, s.stats.defeated, s.status]).toEqual([true, 42, 1, 'exploring']);
     expect(s.log).toEqual(['The Phantom of Tue 3 Nov 2026 is banished: +100 XP, +33 treasure.', 'The Phantom falls. The Gate is unsealed!']);
-    expect(s.events.map((e) => e.type)).toEqual(['monsterDown', 'gateOpen']);
+    expect(s.events.map((e) => e.type)).toEqual(['xp', 'monsterDown', 'gateOpen']);
   });
 
   it('a boss on the Gate ends the run as won', () => {

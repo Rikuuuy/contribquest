@@ -320,6 +320,8 @@ Ported from the prototype's `simulateGrade`. Each press lands at `offset = gauss
 
 Route rule (PRD, v1.2): collect shards, heal at chests when below 45% HP (75% before the boss), then fight the boss and walk to the Gate.
 
+A simulated run stops after 2000 actions (counted as a loss). The Mixed grade policy draws from `makeRng(1234)`.
+
 ### Targets
 
 200 seeds per cell, on the demo graph and on 6 fixture graphs.

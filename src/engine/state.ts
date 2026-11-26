@@ -20,6 +20,23 @@ export type Why =
   | 'rubber duck';
 export type RelicId = 'duck' | 'hotfix' | 'force' | 'linter' | 'stack' | 'coffee' | 'blame' | 'pair' | 'review' | 'cache';
 
+export type Omen = 'blessed' | 'cursed';
+export type TrophyId =
+  | 'first'
+  | 'self'
+  | 'raider'
+  | 'blessed'
+  | 'cursed'
+  | 'flawless'
+  | 'close'
+  | 'dodges'
+  | 'crits'
+  | 'relics'
+  | 'speed'
+  | 'nochest'
+  | 'nightmare'
+  | 'fullstack';
+
 /** Built by progression (makeTrait). */
 export type Trait = { name: string; text: string; rows: number[]; hp: number };
 
@@ -38,7 +55,7 @@ export type Hero = {
   atk: number;
   treasure: number;
   relics: RelicId[];
-  omen: 'blessed' | 'cursed';
+  omen: Omen;
 };
 
 export type Monster = { name: string; tier: Tier; hp: number; maxHp: number; dmg: number; xp: number; phase2: boolean };
@@ -127,7 +144,13 @@ export type RunState = {
   log: string[];
   /** Emitted by the last step only, for render and audio. */
   events: GameEvent[];
-  // Relic offer, blessing, and other progression fields are added by the progression spec.
+  /** The relics on offer while `status === 'relic'`. */
+  relicOffer: RelicId[] | null;
+  relicTitle: string | null;
+  /** The Commit Blessing is still owed (blessed runs, until the map opens). */
+  pendingBlessing: boolean;
+  /** Trophies earned by this run, for the results screen. */
+  newTrophies: TrophyId[];
 };
 
 export type Action =
@@ -141,8 +164,12 @@ export type Action =
   | { type: 'timeout'; t: number }
   | { type: 'advance' }
   | { type: 'forceGrade'; grade: Grade | ComboGrade }
-  | { type: 'retry' };
-// Progression adds pickRelic, chooseRace, and the new-run actions.
+  | { type: 'retry' }
+  | { type: 'pickRelic'; i: number }
+  | { type: 'chooseRace'; race: RaceId }
+  | { type: 'enterMap' }
+  | { type: 'offerBlessing' }
+  | { type: 'trophiesAwarded'; ids: TrophyId[] };
 
 export type GameEvent =
   | { type: 'blocked'; col: number; row: number }
@@ -161,4 +188,13 @@ export type GameEvent =
   | { type: 'gateOpen' }
   | { type: 'escaped'; dmg: number }
   | { type: 'won' }
-  | { type: 'lost' };
+  | { type: 'lost' }
+  | { type: 'xp'; amount: number }
+  | { type: 'levelUp'; level: number }
+  | { type: 'wisp'; col: number; row: number; xp: number }
+  | { type: 'chest'; col: number; row: number; gold: number; healed: number }
+  | { type: 'relicOffer'; ids: RelicId[]; title: string }
+  | { type: 'relicPicked'; id: RelicId }
+  | { type: 'raceChosen'; race: RaceId }
+  | { type: 'blessingDue' }
+  | { type: 'runEnded'; won: boolean };
