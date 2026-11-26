@@ -4,7 +4,7 @@ Your GitHub graph is haunted. ContribQuest is a retro pixel-art RPG that raises 
 
 Built for [Kiroween 2026](https://kiroween.devpost.com/), Frankenstein category.
 
-**Play:** https://winds-tech.github.io/contribquest/ (or [the demo](https://Rikuuuy.github.io/contribquest/?demo))
+**Play:** https://rikuuuy.github.io/contribquest/ (or [the demo](https://rikuuuy.github.io/contribquest/?demo))
 
 ![The haunted map](docs/screenshots/03b-warded-boss.png)
 
