@@ -102,7 +102,7 @@
       "spec": "data-import",
       "task": "1.1",
       "title": "Create `src/data/constants.ts` (`WINDOW`, `CACHE_TTL_MS`, `FETCH_TIMEOUT_MS`, `API_BASE`, `USERNAME_RE`, storage keys) and `src/data/errors.ts` (`DataError`, `Result`, `ERROR_TEXT` with the prototype strings)",
-      "status": "todo",
+      "status": "done",
       "verify": "npm run typecheck"
     },
     {
@@ -111,7 +111,7 @@
       "spec": "data-import",
       "task": "1.2",
       "title": "Create `src/data/schema.ts` with `ContributionDaySchema`, `ApiResponseSchema`, `ContributionSetSchema`, `CacheEntrySchema`, and the `ClassId` / `RaceId` enums; export inferred types",
-      "status": "todo",
+      "status": "done",
       "verify": "npm run typecheck"
     },
     {
@@ -120,7 +120,7 @@
       "spec": "data-import",
       "task": "2.1",
       "title": "Implement `cleanUsername` and `validateUsername` in `src/data/username.ts`",
-      "status": "todo",
+      "status": "done",
       "verify": "npx vitest --run tests/data/username.test.ts"
     },
     {
@@ -129,7 +129,7 @@
       "spec": "data-import",
       "task": "2.2",
       "title": "Write `tests/data/username.test.ts` (valid, empty, 39 and 40 chars, leading/trailing/double hyphen, `@` prefix, whitespace, friend message)",
-      "status": "todo",
+      "status": "done",
       "verify": "npx vitest --run tests/data/username.test.ts"
     },
     {
@@ -138,7 +138,7 @@
       "spec": "data-import",
       "task": "2.3",
       "title": "Implement `parseLaunch` in `src/data/launch.ts` and write `tests/data/launch.test.ts`",
-      "status": "todo",
+      "status": "done",
       "verify": "npx vitest --run tests/data/launch.test.ts"
     },
     {
@@ -147,7 +147,7 @@
       "spec": "data-import",
       "task": "3.1",
       "title": "Implement `parseApiResponse`, `computeStreak`, `buildSet`, `profileFacts` in `src/data/normalize.ts`",
-      "status": "todo",
+      "status": "done",
       "verify": "npx vitest --run tests/data/normalize.test.ts"
     },
     {
@@ -156,7 +156,7 @@
       "spec": "data-import",
       "task": "3.2",
       "title": "Write `tests/data/normalize.test.ts`: unsorted input, more than 91 days, exactly 90 days, `total.lastYear` missing or a string, streak with last day 0, all-zero year, streak across the window edge, avatar URL null for demo",
-      "status": "todo",
+      "status": "done",
       "verify": "npx vitest --run tests/data/normalize.test.ts"
     },
     {
@@ -165,7 +165,7 @@
       "spec": "data-import",
       "task": "3.3",
       "title": "Add `tests/fixtures/profiles.ts` (API-shaped fixture builders for the PRD fixture profiles) and `tests/data/schema.prop.test.ts` for P9: fixtures pass; fast-check mutations are rejected with `ok: false` and never throw",
-      "status": "todo",
+      "status": "done",
       "verify": "npx vitest --run tests/data/schema.prop.test.ts"
     },
     {
@@ -174,7 +174,7 @@
       "spec": "data-import",
       "task": "4.1",
       "title": "Implement `src/data/storage.ts` (`readJson`, `writeJson`, `removeKey`, all non-throwing) and `src/data/settings.ts` (`DEFAULT_SETTINGS`, `loadSettings`, `saveSettings`)",
-      "status": "todo",
+      "status": "done",
       "verify": "npx vitest --run tests/data/settings.test.ts"
     },
     {
@@ -183,7 +183,7 @@
       "spec": "data-import",
       "task": "4.2",
       "title": "Write `tests/data/settings.test.ts` with a throwing storage stub and an in-memory stub",
-      "status": "todo",
+      "status": "done",
       "verify": "npx vitest --run tests/data/settings.test.ts"
     },
     {
@@ -192,7 +192,7 @@
       "spec": "data-import",
       "task": "4.3",
       "title": "Implement `cacheKey`, `readCache` (schema-checked), `writeCache` in `src/data/cache.ts`",
-      "status": "todo",
+      "status": "done",
       "verify": "npm run typecheck"
     },
     {
@@ -201,7 +201,7 @@
       "spec": "data-import",
       "task": "5.1",
       "title": "Implement `fetchProfile` in `src/data/fetch.ts` (encoded URL, no auth, 8 s abort, status mapping, transient flag)",
-      "status": "todo",
+      "status": "done",
       "verify": "npx vitest --run tests/data/fetch.test.ts"
     },
     {
@@ -210,7 +210,7 @@
       "spec": "data-import",
       "task": "5.2",
       "title": "Write `tests/data/fetch.test.ts` with mocked `fetch`: 200, 404, 429, 500, network error, timeout with fake timers, malformed JSON, header and URL checks",
-      "status": "todo",
+      "status": "done",
       "verify": "npx vitest --run tests/data/fetch.test.ts"
     },
     {
@@ -219,7 +219,7 @@
       "spec": "data-import",
       "task": "5.3",
       "title": "Implement `loadProfile` and `loadingText` in `src/data/load.ts` (fresh cache, live + write, stale fallback on transient errors only)",
-      "status": "todo",
+      "status": "done",
       "verify": "npx vitest --run tests/data/cache.test.ts"
     },
     {
@@ -228,7 +228,7 @@
       "spec": "data-import",
       "task": "5.4",
       "title": "Write `tests/data/cache.test.ts`: fresh hit sends no request, stale + 500 returns `cache`, stale + 404 returns the error, corrupt entry ignored, key is lowercase, raw payload not stored",
-      "status": "todo",
+      "status": "done",
       "verify": "npx vitest --run tests/data/cache.test.ts"
     },
     {
@@ -237,7 +237,7 @@
       "spec": "data-import",
       "task": "6.1",
       "title": "Implement `loadRun` in `src/data/load.ts` (validate both names, parallel load, same-name normal run, first error wins)",
-      "status": "todo",
+      "status": "done",
       "verify": "npx vitest --run tests/data/load.test.ts"
     },
     {
@@ -246,7 +246,7 @@
       "spec": "data-import",
       "task": "6.2",
       "title": "Write `tests/data/load.test.ts`: both requests start before either resolves, case-insensitive same name, failure on each side, invalid friend sends no request, loading texts",
-      "status": "todo",
+      "status": "done",
       "verify": "npx vitest --run tests/data/load.test.ts"
     },
     {
@@ -255,7 +255,7 @@
       "spec": "data-import",
       "task": "7.1",
       "title": "Write `scripts/make-demo-data.ts`, porting `makeDemoSet` exactly, and run it once to create `src/data/demo-data.json` in API shape (`total.lastYear` 1287)",
-      "status": "todo",
+      "status": "done",
       "verify": "npx tsx scripts/make-demo-data.ts && git diff --stat src/data/demo-data.json"
     },
     {
@@ -264,7 +264,7 @@
       "spec": "data-import",
       "task": "7.2",
       "title": "Implement `loadDemo` in `src/data/demo.ts` through `parseApiResponse` and `buildSet`",
-      "status": "todo",
+      "status": "done",
       "verify": "npx vitest --run tests/data/demo.test.ts tests/data/schema.prop.test.ts"
     },
     {
@@ -273,7 +273,7 @@
       "spec": "data-import",
       "task": "7.3",
       "title": "Write `tests/data/demo.test.ts`: `fetch` spy never called, 91 days from 2026-08-18 to 2026-11-16, streak 15, yearTotal 1287, index 77 is count 31 level 4, indexes 12\u201318 and 75 are level 0, and the file equals a fresh generator run; add the demo file to the P9 test",
-      "status": "todo",
+      "status": "done",
       "verify": "npx vitest --run tests/data/demo.test.ts tests/data/schema.prop.test.ts"
     },
     {
@@ -282,7 +282,7 @@
       "spec": "data-import",
       "task": "8.1",
       "title": "Run the whole data suite and the type check; confirm `src/data` imports nothing from `src/mapgen`, `src/engine`, `src/render`, or `src/audio`",
-      "status": "todo",
+      "status": "done",
       "verify": "npm run typecheck && npx vitest --run tests/data && ! grep -rE \"from ['\\\"]\\.\\./(mapgen|engine|render|audio)\" src/data"
     },
     {
