@@ -291,7 +291,7 @@
       "spec": "map-generation",
       "task": "1.1",
       "title": "Implement `fnv1a`, `makeRng`, `nextFloat`, `shuffleInPlace` in `src/mapgen/rng.ts`, ported from the prototype",
-      "status": "todo",
+      "status": "done",
       "verify": "npx vitest --run tests/mapgen/rng.test.ts tests/mapgen/dates.test.ts"
     },
     {
@@ -300,7 +300,7 @@
       "spec": "map-generation",
       "task": "1.2",
       "title": "Implement the UTC helpers in `src/mapgen/dates.ts` (`parseDate`, `weekday`, `addDays`, `fmtDate`, `fmtShort`)",
-      "status": "todo",
+      "status": "done",
       "verify": "npx vitest --run tests/mapgen/rng.test.ts tests/mapgen/dates.test.ts"
     },
     {
@@ -309,7 +309,7 @@
       "spec": "map-generation",
       "task": "1.3",
       "title": "Write `tests/mapgen/rng.test.ts` (hash and draw values computed from the prototype, Fisher-Yates order) and `tests/mapgen/dates.test.ts` (weekday of known dates, `fmtDate(\"2026-11-03\") === \"Tue 3 Nov 2026\"`, month and year rollover in `addDays`)",
-      "status": "todo",
+      "status": "done",
       "verify": "npx vitest --run tests/mapgen/rng.test.ts tests/mapgen/dates.test.ts"
     },
     {
@@ -318,7 +318,7 @@
       "spec": "map-generation",
       "task": "2.1",
       "title": "Create `src/mapgen/types.ts` and `src/mapgen/rules.ts`; re-export the rule constants from `src/engine/balance.ts` and list them in `game-rules.md` if any is missing",
-      "status": "todo",
+      "status": "done",
       "verify": "npm run typecheck"
     },
     {
@@ -327,7 +327,7 @@
       "spec": "map-generation",
       "task": "2.2",
       "title": "Implement `layoutDays`, `tileAt`, `neighbours` in `src/mapgen/layout.ts`",
-      "status": "todo",
+      "status": "done",
       "verify": "npx vitest --run tests/mapgen/layout.test.ts"
     },
     {
@@ -336,7 +336,7 @@
       "spec": "map-generation",
       "task": "2.3",
       "title": "Write `tests/mapgen/layout.test.ts`: last date on a Saturday gives 13 columns and no void cells; on a Sunday gives 14; void only at the top of column 0 and the bottom of the last column; `tileAt` outside the grid is null",
-      "status": "todo",
+      "status": "done",
       "verify": "npx vitest --run tests/mapgen/layout.test.ts"
     },
     {
@@ -345,7 +345,7 @@
       "spec": "map-generation",
       "task": "3.1",
       "title": "Implement `bestDayIndex` and `assignTiles` in `src/mapgen/assign.ts`",
-      "status": "todo",
+      "status": "done",
       "verify": "npx vitest --run tests/mapgen/assign.test.ts"
     },
     {
@@ -354,7 +354,7 @@
       "spec": "map-generation",
       "task": "3.2",
       "title": "Write `tests/mapgen/assign.test.ts`: each rule row, chest vs monster by `fnv1a(date) % 3`, deco by `% 6`, best day on index 0, best day on index 90 (gate + boss), ties to the latest, all-empty \u2192 index 45 and `emptyQuarter`",
-      "status": "todo",
+      "status": "done",
       "verify": "npx vitest --run tests/mapgen/assign.test.ts"
     },
     {
@@ -363,7 +363,7 @@
       "spec": "map-generation",
       "task": "3.3",
       "title": "Implement `applyShortfall` in `src/mapgen/shortfall.ts` (map RNG `seed ^ 0x9e3779b9`, Fisher-Yates over fog, pop from the end, tier-1 `risen` monsters, `quiet`)",
-      "status": "todo",
+      "status": "done",
       "verify": "npx vitest --run tests/mapgen/shortfall.test.ts"
     },
     {
@@ -372,7 +372,7 @@
       "spec": "map-generation",
       "task": "3.4",
       "title": "Write `tests/mapgen/shortfall.test.ts`: a quiet profile reaches exactly 6 monsters with `risen` and no deco; a profile without enough fog stops when the pool is empty; a busy profile is untouched and not quiet",
-      "status": "todo",
+      "status": "done",
       "verify": "npx vitest --run tests/mapgen/shortfall.test.ts"
     },
     {
@@ -381,7 +381,7 @@
       "spec": "map-generation",
       "task": "4.1",
       "title": "Implement `reachable` and `validateMap` in `src/mapgen/validate.ts`, and `generateMap` and `mapDateRange` in `src/mapgen/generate.ts` (seed, shards needed, `Result` return); add `src/mapgen/index.ts`",
-      "status": "todo",
+      "status": "done",
       "verify": "npx vitest --run tests/mapgen/validate.test.ts"
     },
     {
@@ -390,7 +390,7 @@
       "spec": "map-generation",
       "task": "4.2",
       "title": "Write `tests/mapgen/validate.test.ts`: hand-built maps missing a start, with no route, and with a duplicate date each return their message; `generateMap` never throws",
-      "status": "todo",
+      "status": "done",
       "verify": "npx vitest --run tests/mapgen/validate.test.ts"
     },
     {
@@ -399,7 +399,7 @@
       "spec": "map-generation",
       "task": "5.1",
       "title": "Record `tests/fixtures/golden/demo-map.json` by evaluating the prototype's utilities-to-map script section in a Node `vm` context and calling `generateMap(makeDemoSet())` (tiles without `grid`); write `tests/mapgen/golden.test.ts` comparing the port's demo map to it, plus the summary facts (14 cols, seed 722674249, boss index 77, 3 shards, not quiet, the tile counts in design.md)",
-      "status": "todo",
+      "status": "done",
       "verify": "npx vitest --run tests/mapgen/golden.test.ts"
     },
     {
@@ -408,7 +408,7 @@
       "spec": "map-generation",
       "task": "5.2",
       "title": "Add `tests/arbitraries.ts` (fast-check ContributionSet arbitrary with valid usernames, any last date, 91 consecutive days, plus all-zero and dense variants) and `tests/mapgen/map.prop.test.ts` for P1, P2, P3, P4, P5, P10",
-      "status": "todo",
+      "status": "done",
       "verify": "npx vitest --run tests/mapgen/map.prop.test.ts"
     },
     {
@@ -417,7 +417,7 @@
       "spec": "map-generation",
       "task": "5.3",
       "title": "Run every fixture profile from `tests/fixtures/profiles.ts` through `generateMap` and assert `ok: true`",
-      "status": "todo",
+      "status": "done",
       "verify": "npx vitest --run tests/mapgen"
     },
     {
@@ -426,7 +426,7 @@
       "spec": "map-generation",
       "task": "6.1",
       "title": "Implement `revealRadiusSq`, `reveal`, `isVisible`, `checkMove`, `applyMove` in `src/engine/explore.ts`; add `REVEAL_R2 = 5` and `REVEAL_R2_REVIEW = 8` to `balance.ts`",
-      "status": "todo",
+      "status": "done",
       "verify": "npx vitest --run tests/engine/explore.test.ts"
     },
     {
@@ -435,7 +435,7 @@
       "spec": "map-generation",
       "task": "6.2",
       "title": "Implement `collectShard` and `shardStatus` in `src/engine/explore.ts`",
-      "status": "todo",
+      "status": "done",
       "verify": "npx vitest --run tests/engine/explore.test.ts"
     },
     {
@@ -444,7 +444,7 @@
       "spec": "map-generation",
       "task": "6.3",
       "title": "Write `tests/engine/explore.test.ts`: reveal at radius 5 and 8 (count of tiles from a known position), start/gate/boss always visible, sealed and warded messages, refused move leaves state unchanged, successful move updates `prev`, `steps`, `visited`; shard log lines, `shattered`, no shard past the need or from tiers 1, 2, 5",
-      "status": "todo",
+      "status": "done",
       "verify": "npx vitest --run tests/engine/explore.test.ts"
     },
     {
