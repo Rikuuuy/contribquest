@@ -480,7 +480,7 @@
       "spec": "combat-timing",
       "task": "1.1",
       "title": "Add the combat constants to `src/engine/balance.ts`: `QTE` (perfect 70, good 170, auraPerfect 10, calm 1.6, grace 120, counter 0.5, dmgScale 1.25), `ATK_MULT`, `DEF_MULT`, class stat numbers, `DIFFICULTY`, monster formula numbers, pattern numbers (quick 640, flaky 320/220/0.4/0.25, conflict 300/120/1.6, plan chance 0.65, imp \u00d70.6), phase-2 numbers (speed 0.85, pressure 0.9, damage 0.75), combo cap 120, sidestep \u00d71.2, charge 0.82 / 2600 / +20, deadline +30, shield +10, assist charge 300, and the relic/race combat numbers (Linter 25, Elf 15, Force 1.25, Pair 1.6, Hotfix 0.06, Vampire 2, trait +2)",
-      "status": "todo",
+      "status": "done",
       "verify": "npm run typecheck && npx vitest --run tests/engine/balance.test.ts"
     },
     {
@@ -489,7 +489,7 @@
       "spec": "combat-timing",
       "task": "1.2",
       "title": "Create `src/engine/state.ts` (types in design.md) and `src/engine/rand.ts`",
-      "status": "todo",
+      "status": "done",
       "verify": "npm run typecheck && npx vitest --run tests/engine/balance.test.ts"
     },
     {
@@ -498,7 +498,7 @@
       "spec": "combat-timing",
       "task": "1.3",
       "title": "Write `tests/engine/balance.test.ts`, which parses the tables in `.kiro/steering/game-rules.md` and checks every value against `balance.ts`",
-      "status": "todo",
+      "status": "done",
       "verify": "npm run typecheck && npx vitest --run tests/engine/balance.test.ts"
     },
     {
@@ -507,7 +507,7 @@
       "spec": "combat-timing",
       "task": "1.4",
       "title": "Add `tests/fixtures/run.ts` with `makeTestRun(options)` (fixture set \u2192 `generateMap`, hand-built hero, chosen class, race, relics, level, aura, options)",
-      "status": "todo",
+      "status": "done",
       "verify": "npm run typecheck"
     },
     {
@@ -516,7 +516,7 @@
       "spec": "combat-timing",
       "task": "2.1",
       "title": "Implement `src/engine/classes.ts` (`CLASS_INFO` with the prototype's names, modes, `slow`, and `CLASS_HINT` text; `heroClass`; `applyStats`) and `src/engine/mods.ts` (`modsOf`)",
-      "status": "todo",
+      "status": "done",
       "verify": "npx vitest --run tests/engine/classes.test.ts tests/engine/difficulty.test.ts"
     },
     {
@@ -525,7 +525,7 @@
       "spec": "combat-timing",
       "task": "2.2",
       "title": "Implement `src/engine/difficulty.ts` (`classDiff`, `pressure`, `timingPercent`, `classCardLine`)",
-      "status": "todo",
+      "status": "done",
       "verify": "npx vitest --run tests/engine/classes.test.ts tests/engine/difficulty.test.ts"
     },
     {
@@ -534,7 +534,7 @@
       "spec": "combat-timing",
       "task": "2.3",
       "title": "Write `tests/engine/classes.test.ts` and `tests/engine/difficulty.test.ts`: stats per class with Cold Brew, Stack Overflow, Orc; HP clamp; pressure at 0, 5, and 50 kills per class; phase-2 \u00d70.9; `timingPercent` and `maxed`; card lines for all four classes",
-      "status": "todo",
+      "status": "done",
       "verify": "npx vitest --run tests/engine/classes.test.ts tests/engine/difficulty.test.ts"
     },
     {
@@ -543,7 +543,7 @@
       "spec": "combat-timing",
       "task": "3.1",
       "title": "Implement `src/engine/monsters.ts` (`TIER_NAMES`, `makeMonster`, `sourceLabel`, `fightTreasure`), using `fmtDate` from `src/mapgen/dates.ts`",
-      "status": "todo",
+      "status": "done",
       "verify": "npx vitest --run tests/engine/monsters.test.ts"
     },
     {
@@ -552,7 +552,7 @@
       "spec": "combat-timing",
       "task": "3.2",
       "title": "Write `tests/engine/monsters.test.ts`: the PRD worked example at start level 3 (Imp 24 HP, Lich 41 HP, boss 69 HP), damage with curse and each class `dmg`, XP, names, all three source labels, singular \"contribution\", treasure per class",
-      "status": "todo",
+      "status": "done",
       "verify": "npx vitest --run tests/engine/monsters.test.ts"
     },
     {
@@ -561,7 +561,7 @@
       "spec": "combat-timing",
       "task": "4.1",
       "title": "Implement `windows` and `createTest` in `src/engine/qte.ts` for all six modes and four patterns, drawing from `rand` in the order listed in design.md",
-      "status": "todo",
+      "status": "done",
       "verify": "npx vitest --run tests/engine/qte.test.ts"
     },
     {
@@ -570,7 +570,7 @@
       "spec": "combat-timing",
       "task": "4.2",
       "title": "Write the creation part of `tests/engine/qte.test.ts`: windows for a known hero (aura, Linter, Elf, calm, each class, pressure 1 and 0.6); durations, targets, marks, fill, pause, and decoy for fixed draws; draw counts per mode and pattern",
-      "status": "todo",
+      "status": "done",
       "verify": "npx vitest --run tests/engine/qte.test.ts"
     },
     {
@@ -579,7 +579,7 @@
       "spec": "combat-timing",
       "task": "5.1",
       "title": "Implement `grade` and `testDeadline` for bar, ring, and sidestep (single press, grace, early/late reasons, `dur + 30`)",
-      "status": "todo",
+      "status": "done",
       "verify": "npx vitest --run tests/engine/qte.test.ts"
     },
     {
@@ -588,7 +588,7 @@
       "spec": "combat-timing",
       "task": "5.2",
       "title": "Add combo grading (skipped marks, three presses, `dur + 30`, \"too late\" when all miss)",
-      "status": "todo",
+      "status": "done",
       "verify": "npx vitest --run tests/engine/qte.test.ts"
     },
     {
@@ -597,7 +597,7 @@
       "spec": "combat-timing",
       "task": "5.3",
       "title": "Add charge grading (first press, matching release, too slow at `dur`, too weak, overload on release and at `downAt + fill + 20`)",
-      "status": "todo",
+      "status": "done",
       "verify": "npx vitest --run tests/engine/qte.test.ts"
     },
     {
@@ -606,7 +606,7 @@
       "spec": "combat-timing",
       "task": "5.4",
       "title": "Add shield grading (hold state, early release, impact at target, late parry within P, miss at `target + P + 10` with both reasons)",
-      "status": "todo",
+      "status": "done",
       "verify": "npx vitest --run tests/engine/qte.test.ts"
     },
     {
@@ -615,7 +615,7 @@
       "spec": "combat-timing",
       "task": "5.5",
       "title": "Add assist (Good at target, charge at 300 ms, events ignored) and `gradeText` with `GRADE_LABELS` and the combo text",
-      "status": "todo",
+      "status": "done",
       "verify": "npx vitest --run tests/engine/qte.test.ts"
     },
     {
@@ -624,7 +624,7 @@
       "spec": "combat-timing",
       "task": "5.6",
       "title": "Complete `tests/engine/qte.test.ts` with one case per row of the grading table in design.md, the release-from-another-key case, and every label",
-      "status": "todo",
+      "status": "done",
       "verify": "npx vitest --run tests/engine/qte.test.ts"
     },
     {
@@ -633,7 +633,7 @@
       "spec": "combat-timing",
       "task": "5.7",
       "title": "Write `tests/engine/qte.prop.test.ts` for P12, P15 (scoped as in design.md), and P16, plus the v1.4 properties: the flaky target equals base plus pause, and the decoy never lies within G of the target",
-      "status": "todo",
+      "status": "done",
       "verify": "npx vitest --run tests/engine/qte.prop.test.ts"
     },
     {
@@ -642,7 +642,7 @@
       "spec": "combat-timing",
       "task": "6.1",
       "title": "Implement `src/engine/patterns.ts` (`strikePlan`, `patternDamageMult`, `checkPhase2`, `STRIKE_LINE`)",
-      "status": "todo",
+      "status": "done",
       "verify": "npx vitest --run tests/engine/patterns.test.ts"
     },
     {
@@ -651,7 +651,7 @@
       "spec": "combat-timing",
       "task": "6.2",
       "title": "Write `tests/engine/patterns.test.ts`: plans per tier with fixed draws (0.64 and 0.65 at the threshold), imp and phase-2 multipliers, phase 2 triggers once, at exactly half HP, and not when the hit kills",
-      "status": "todo",
+      "status": "done",
       "verify": "npx vitest --run tests/engine/patterns.test.ts"
     },
     {
@@ -660,7 +660,7 @@
       "spec": "combat-timing",
       "task": "7.1",
       "title": "Implement `startFight`, `resolveStrike`, `resolveGuard`, and `applyDuck` in `src/engine/combat.ts`, with the prototype's log lines",
-      "status": "todo",
+      "status": "done",
       "verify": "npx vitest --run tests/engine/combat.test.ts"
     },
     {
@@ -669,7 +669,7 @@
       "spec": "combat-timing",
       "task": "7.2",
       "title": "Implement `resolveFlee`, `winFight` (treasure, XP through `gainXp`, pressure message with \"before\" read first, shard through `collectShard`, boss and Gate), and `loseFight`",
-      "status": "todo",
+      "status": "done",
       "verify": "npx vitest --run tests/engine/combat.test.ts"
     },
     {
@@ -678,7 +678,7 @@
       "spec": "combat-timing",
       "task": "7.3",
       "title": "Implement `step` and `nextDeadline` in `src/engine/step.ts`: `move` (via `checkMove`/`applyMove`, then monster, boss, and Gate entry), `chooseClass`, `setOptions`, `attack`, `flee`, `press`, `release`, `timeout`, `advance`, `forceGrade`; deep-clone the input first",
-      "status": "todo",
+      "status": "done",
       "verify": "npx vitest --run tests/engine/combat.test.ts"
     },
     {
@@ -687,7 +687,7 @@
       "spec": "combat-timing",
       "task": "7.4",
       "title": "Write `tests/engine/combat.test.ts`: damage with fixed RNG for each strike and guard mode, trait bonus on strikes only, every combat relic and race effect, flee HP floor and return to `prev`, win and loss bookkeeping, pressure log on non-boss kills only",
-      "status": "todo",
+      "status": "done",
       "verify": "npx vitest --run tests/engine/combat.test.ts"
     },
     {
@@ -696,7 +696,7 @@
       "spec": "combat-timing",
       "task": "7.5",
       "title": "Write `tests/engine/step.test.ts`: input never mutated (deep-frozen), same actions \u2192 same states, `nextDeadline` per mode, a scripted fight to a win and to a loss, a boss fight through phase 2, `forceGrade` with Rubber Duck, a restored test resumes at `choose`, class change refused after a step",
-      "status": "todo",
+      "status": "done",
       "verify": "npx vitest --run tests/engine/step.test.ts"
     },
     {
@@ -705,7 +705,7 @@
       "spec": "combat-timing",
       "task": "7.6",
       "title": "Write `tests/engine/combat.prop.test.ts` for P7, P13, and P14 (P14 scoped to `floor \u00d7 0.9` in phase 2, as in design.md)",
-      "status": "todo",
+      "status": "done",
       "verify": "npx vitest --run tests/engine/combat.prop.test.ts"
     },
     {
@@ -714,7 +714,7 @@
       "spec": "combat-timing",
       "task": "7.7",
       "title": "Record `tests/fixtures/golden/demo-fight.json` from the prototype in a browser (`window.__cq.setGrade`, `forcePlan`, `teleport` on the demo run, Wanderer) and write `tests/engine/rng-order.test.ts` checking the port's RNG state and HP values after each action",
-      "status": "todo",
+      "status": "done",
       "verify": "npx vitest --run tests/engine/rng-order.test.ts"
     },
     {
@@ -723,7 +723,7 @@
       "spec": "combat-timing",
       "task": "8.1",
       "title": "Implement `combatKey` in `src/engine/input.ts` (Space, Enter, A, J, K \u2192 `hit`; F, Escape \u2192 `flee`) and test it in `tests/engine/input.test.ts`",
-      "status": "todo",
+      "status": "done",
       "verify": "npx vitest --run tests/engine/input.test.ts"
     },
     {
@@ -732,7 +732,7 @@
       "spec": "combat-timing",
       "task": "8.2",
       "title": "In `src/main.ts`, record `testStart` on each new `testId`, send `press`/`release` with `event.timeStamp \u2212 testStart` and the key or `\"pointer\"` id, skip `event.repeat`, and schedule `timeout` from `nextDeadline`",
-      "status": "todo",
+      "status": "done",
       "verify": "npm run build"
     },
     {
