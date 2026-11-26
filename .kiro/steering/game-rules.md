@@ -217,6 +217,7 @@ Damage multiplier on guard tests: Bug Imp × 0.6, boss in phase 2 × 0.75, other
 - **Flee:** one guard test. Safe on Perfect, or on Good with CI Cache; otherwise damage is `max(1, round(dmg × DEF_MULT[guard][grade] × (0.9 + 0.2 × rand())))` with no pattern multiplier. HP never drops below 1 from fleeing. The hero returns to the previous tile and the monster stays.
 - **Defeat:** HP 0 ends the run as lost (unless Skeleton's Undying triggers).
 - **Win fight:** tile resolved, `defeated + 1`, treasure and XP, shard check. Beating the boss sets `bossDown` and opens the Gate; if the boss was on the Gate, the run is won immediately.
+- Logs: the map log keeps the last 4 lines, the combat log the last 7.
 - Stats tracked: `steps`, `defeated`, `chests`, `wisps`, `crits` (Perfect strike hits), `dodges` (Perfect guards, including flee), `bossDmg` (damage taken from the boss), `bossHpLeft` (hero HP when the boss falls).
 
 ### Damage multipliers
@@ -318,6 +319,8 @@ Ported from the prototype's `simulateGrade`. Each press lands at `offset = gauss
 - Shield: a Miss becomes Good with probability 0.7 (holding early saves most misses).
 
 Route rule (PRD, v1.2): collect shards, heal at chests when below 45% HP (75% before the boss), then fight the boss and walk to the Gate.
+
+A simulated run stops after 2000 actions (counted as a loss). The Mixed grade policy draws from `makeRng(1234)`.
 
 ### Targets
 

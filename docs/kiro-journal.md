@@ -33,6 +33,14 @@ A short log of how ContribQuest is built with Kiro, 3–5 lines per working day.
 - No game code was ported. The prototype is unchanged and still the playable game.
 - Compared with the vibe-coded days: every requirement now has a PRD ID, a task, and a verify command before any code exists.
 
+## Thu 26 Nov 2026: Phase 1, the pure game logic ported to TypeScript
+
+- **Kiro client:** Kiro Web, workflow run (one subagent per spec, then a final gate step).
+- **Specs and tasks:** all 78 phase-1 items done (see docs/build-checklist.json): data-import 1.1–8.1 (21), map-generation 1.1–6.3 (18), combat-timing 1.1–8.2 (29), progression 1.1–3.2 (9), presentation 1.3.
+- **Hooks and agents:** none fired in the web workflow. Each step ran its items' verify commands before marking them done; the final gate re-ran all 37 unique phase-1 verify commands plus `npm run typecheck && npm test && npm run build` (351 of 351 tests in 37 files).
+- **Commits / PRs:** `ae2fb87` data import, `ca110f2` map generation, `31ae6a7` combat and timing, `3af4346` progression; PR *Port Phase 1 core logic to TypeScript with tests*.
+- **Notes:** golden fixtures recorded by running the prototype's own code in a Node `vm` (demo map, and demo fights for all four classes) match the port exactly, including RNG state. Spec text that disagreed with the prototype (boss entry line) followed the prototype. Rendering is still not ported; `index.html` still redirects to the prototype.
+
 <!--
 Template for future days. Copy the block below, newest day last.
 

@@ -1,0 +1,2626 @@
+{
+ "recordedFrom": "prototype/index.html, its script run in a Node vm with stubbed DOM: for each class, __cq.setClass(cls), setRace(\"human\"), newRun(demoSet()), then teleport onto five fights (Lich, Ghoul, Imp fled, Imp, the boss) with setGrade cycling through `cycle`",
+ "cycle": [
+  "good",
+  "miss",
+  "perfect",
+  "perfect",
+  "miss",
+  "good"
+ ],
+ "runs": {
+  "wanderer": {
+   "seed": 722674249,
+   "hero": {
+    "name": "demo-necromancer",
+    "xp": 287,
+    "level": 3,
+    "startLevel": 3,
+    "aura": 2,
+    "trait": {
+     "name": "Tuesday Slayer",
+     "text": "Tuesday is your busiest day: +2 ATK when fighting in the Tuesday row.",
+     "rows": [
+      2
+     ],
+     "hp": 0
+    },
+    "treasure": 0,
+    "total91": 366,
+    "relics": [],
+    "cls": "wanderer",
+    "race": "human",
+    "maxHp": 52,
+    "atk": 11,
+    "hp": 52,
+    "omen": "blessed"
+   },
+   "snaps": [
+    {
+     "n": 0,
+     "kind": "attack",
+     "mode": "bar",
+     "pattern": "normal",
+     "target": 639.734018123746,
+     "P": 85.5,
+     "G": 153,
+     "rngAtStart": 2554240062,
+     "heroHp": 52,
+     "monHp": 41,
+     "grade": "good"
+    },
+    {
+     "n": 1,
+     "kind": "defend",
+     "mode": "ring",
+     "pattern": "normal",
+     "target": 796.8,
+     "P": 85.5,
+     "G": 153,
+     "rngAtStart": 1922404392,
+     "heroHp": 52,
+     "monHp": 30,
+     "grade": "miss"
+    },
+    {
+     "n": 2,
+     "kind": "attack",
+     "mode": "bar",
+     "pattern": "normal",
+     "target": 526.4056197738647,
+     "P": 85.5,
+     "G": 153,
+     "rngAtStart": 1290568722,
+     "heroHp": 41,
+     "monHp": 30,
+     "grade": "perfect"
+    },
+    {
+     "n": 3,
+     "kind": "defend",
+     "mode": "ring",
+     "pattern": "normal",
+     "target": 796.8,
+     "P": 85.5,
+     "G": 153,
+     "rngAtStart": 658733052,
+     "heroHp": 41,
+     "monHp": 12,
+     "grade": "perfect"
+    },
+    {
+     "n": 4,
+     "kind": "attack",
+     "mode": "bar",
+     "pattern": "normal",
+     "target": 509.5956239140034,
+     "P": 85.5,
+     "G": 153,
+     "rngAtStart": 2490298865,
+     "heroHp": 41,
+     "monHp": 6,
+     "grade": "miss"
+    },
+    {
+     "n": 5,
+     "kind": "defend",
+     "mode": "ring",
+     "pattern": "conflict",
+     "target": 796.8,
+     "P": 85.5,
+     "G": 153,
+     "rngAtStart": 1226627525,
+     "heroHp": 41,
+     "monHp": 1,
+     "grade": "good"
+    },
+    {
+     "n": 6,
+     "kind": "attack",
+     "mode": "bar",
+     "pattern": "normal",
+     "target": 717.5110591310262,
+     "P": 85.5,
+     "G": 153,
+     "rngAtStart": 594791855,
+     "heroHp": 36,
+     "monHp": 1,
+     "grade": "good"
+    },
+    {
+     "n": 7,
+     "kind": "attack",
+     "mode": "bar",
+     "pattern": "normal",
+     "target": 781.7744919291187,
+     "P": 83.78999999999999,
+     "G": 149.94,
+     "rngAtStart": 4257923481,
+     "heroHp": 58,
+     "monHp": 32,
+     "grade": "miss"
+    },
+    {
+     "n": 8,
+     "kind": "defend",
+     "mode": "ring",
+     "pattern": "flaky",
+     "target": 1214.847318506634,
+     "P": 83.78999999999999,
+     "G": 149.94,
+     "rngAtStart": 2994252141,
+     "heroHp": 58,
+     "monHp": 26,
+     "grade": "perfect"
+    },
+    {
+     "n": 9,
+     "kind": "attack",
+     "mode": "bar",
+     "pattern": "normal",
+     "target": 800.666325471865,
+     "P": 83.78999999999999,
+     "G": 149.94,
+     "rngAtStart": 530850658,
+     "heroHp": 58,
+     "monHp": 19,
+     "grade": "perfect"
+    },
+    {
+     "n": 10,
+     "kind": "defend",
+     "mode": "ring",
+     "pattern": "normal",
+     "target": 942.7968,
+     "P": 82.08,
+     "G": 146.88,
+     "rngAtStart": 2362416471,
+     "heroHp": 58,
+     "monHp": 24,
+     "grade": "miss"
+    },
+    {
+     "n": 11,
+     "kind": "attack",
+     "mode": "bar",
+     "pattern": "normal",
+     "target": 565.3881367944716,
+     "P": 82.08,
+     "G": 146.88,
+     "rngAtStart": 1730580801,
+     "heroHp": 51,
+     "monHp": 24,
+     "grade": "good"
+    },
+    {
+     "n": 12,
+     "kind": "defend",
+     "mode": "ring",
+     "pattern": "normal",
+     "target": 942.7968,
+     "P": 82.08,
+     "G": 146.88,
+     "rngAtStart": 3562146614,
+     "heroHp": 51,
+     "monHp": 12,
+     "grade": "good"
+    },
+    {
+     "n": 13,
+     "kind": "defend",
+     "mode": "ring",
+     "pattern": "quick",
+     "target": 609.4848,
+     "P": 82.08,
+     "G": 146.88,
+     "rngAtStart": 1098745131,
+     "heroHp": 49,
+     "monHp": 12,
+     "grade": "miss"
+    },
+    {
+     "n": 14,
+     "kind": "attack",
+     "mode": "bar",
+     "pattern": "normal",
+     "target": 622.4391839845275,
+     "P": 82.08,
+     "G": 146.88,
+     "rngAtStart": 466909461,
+     "heroHp": 44,
+     "monHp": 12,
+     "grade": "perfect"
+    },
+    {
+     "n": 15,
+     "kind": "attack",
+     "mode": "bar",
+     "pattern": "normal",
+     "target": 716.3645102413594,
+     "P": 80.36999999999999,
+     "G": 143.82,
+     "rngAtStart": 4130041087,
+     "heroHp": 44,
+     "monHp": 69,
+     "grade": "perfect"
+    },
+    {
+     "n": 16,
+     "kind": "defend",
+     "mode": "ring",
+     "pattern": "normal",
+     "target": 711.36,
+     "P": 80.36999999999999,
+     "G": 143.82,
+     "rngAtStart": 1666639604,
+     "heroHp": 44,
+     "monHp": 46,
+     "grade": "miss"
+    },
+    {
+     "n": 17,
+     "kind": "defend",
+     "mode": "ring",
+     "pattern": "flaky",
+     "target": 1110.6288780957877,
+     "P": 80.36999999999999,
+     "G": 143.82,
+     "rngAtStart": 2866369747,
+     "heroHp": 30,
+     "monHp": 46,
+     "grade": "good"
+    },
+    {
+     "n": 18,
+     "kind": "attack",
+     "mode": "bar",
+     "pattern": "normal",
+     "target": 569.9563680979908,
+     "P": 80.36999999999999,
+     "G": 143.82,
+     "rngAtStart": 2234534077,
+     "heroHp": 25,
+     "monHp": 46,
+     "grade": "good"
+    },
+    {
+     "n": 19,
+     "kind": "defend",
+     "mode": "ring",
+     "pattern": "conflict",
+     "target": 593.1504,
+     "P": 72.333,
+     "G": 129.438,
+     "rngAtStart": 3434264220,
+     "heroHp": 25,
+     "monHp": 32,
+     "grade": "miss"
+    },
+    {
+     "n": 20,
+     "kind": "defend",
+     "mode": "ring",
+     "pattern": "flaky",
+     "target": 892.3454668364078,
+     "P": 72.333,
+     "G": 129.438,
+     "rngAtStart": 339027067,
+     "heroHp": 14,
+     "monHp": 32,
+     "grade": "perfect"
+    },
+    {
+     "n": 21,
+     "kind": "defend",
+     "mode": "ring",
+     "pattern": "quick",
+     "target": 506.155008,
+     "P": 72.333,
+     "G": 129.438,
+     "rngAtStart": 339027067,
+     "heroHp": 14,
+     "monHp": 25,
+     "grade": "perfect"
+    },
+    {
+     "n": 22,
+     "kind": "attack",
+     "mode": "bar",
+     "pattern": "normal",
+     "target": 691.7792126285702,
+     "P": 72.333,
+     "G": 129.438,
+     "rngAtStart": 2170592880,
+     "heroHp": 14,
+     "monHp": 18,
+     "grade": "miss"
+    },
+    {
+     "n": 23,
+     "kind": "defend",
+     "mode": "ring",
+     "pattern": "conflict",
+     "target": 593.1504,
+     "P": 72.333,
+     "G": 129.438,
+     "rngAtStart": 3370323023,
+     "heroHp": 14,
+     "monHp": 10,
+     "grade": "good"
+    },
+    {
+     "n": 24,
+     "kind": "defend",
+     "mode": "ring",
+     "pattern": "flaky",
+     "target": 905.9768015035952,
+     "P": 72.333,
+     "G": 129.438,
+     "rngAtStart": 275085870,
+     "heroHp": 9,
+     "monHp": 10,
+     "grade": "good"
+    },
+    {
+     "n": 25,
+     "kind": "defend",
+     "mode": "ring",
+     "pattern": "quick",
+     "target": 506.155008,
+     "P": 72.333,
+     "G": 129.438,
+     "rngAtStart": 2106651683,
+     "heroHp": 5,
+     "monHp": 10,
+     "grade": "miss"
+    }
+   ],
+   "fights": [
+    {
+     "col": 4,
+     "row": 0,
+     "tier": 4,
+     "plan": "attack",
+     "turns": [
+      {
+       "action": "attack",
+       "rng": 3753970205,
+       "heroHp": 41,
+       "monHp": 30,
+       "phase2": false,
+       "status": "combat"
+      },
+      {
+       "action": "attack",
+       "rng": 658733052,
+       "heroHp": 41,
+       "monHp": 6,
+       "phase2": false,
+       "status": "combat"
+      },
+      {
+       "action": "attack",
+       "rng": 3058193338,
+       "heroHp": 36,
+       "monHp": 1,
+       "phase2": false,
+       "status": "combat"
+      },
+      {
+       "action": "attack",
+       "rng": 2426357668,
+       "heroHp": 58,
+       "monHp": null,
+       "phase2": null,
+       "status": "exploring"
+      }
+     ],
+     "after": {
+      "rng": 2426357668,
+      "status": "exploring",
+      "pos": {
+       "col": 4,
+       "row": 0
+      },
+      "hero": {
+       "hp": 58,
+       "maxHp": 58,
+       "atk": 13,
+       "xp": 353,
+       "level": 4,
+       "treasure": 13
+      },
+      "stats": {
+       "steps": 0,
+       "defeated": 1,
+       "chests": 0,
+       "wisps": 0,
+       "crits": 1,
+       "dodges": 1,
+       "bossDmg": 0,
+       "bossHpLeft": null
+      },
+      "shards": 1,
+      "bossDown": false,
+      "killer": null,
+      "log": [
+       "Its ward is fed by your other big days. Banish 3 elites (Ghouls or Liches) to collect soul shards and break it.",
+       "Merge Conflict Lich is banished: +60 XP, +13 treasure.",
+       "Level up! You are now level 4. HP fully restored.",
+       "Soul shard 1/3 collected."
+      ]
+     }
+    },
+    {
+     "col": 1,
+     "row": 1,
+     "tier": 3,
+     "plan": "attack",
+     "turns": [
+      {
+       "action": "attack",
+       "rng": 2994252141,
+       "heroHp": 58,
+       "monHp": 19,
+       "phase2": false,
+       "status": "combat"
+      },
+      {
+       "action": "attack",
+       "rng": 2362416471,
+       "heroHp": 58,
+       "monHp": null,
+       "phase2": null,
+       "status": "exploring"
+      }
+     ],
+     "after": {
+      "rng": 2362416471,
+      "status": "exploring",
+      "pos": {
+       "col": 1,
+       "row": 1
+      },
+      "hero": {
+       "hp": 58,
+       "maxHp": 58,
+       "atk": 13,
+       "xp": 403,
+       "level": 4,
+       "treasure": 23
+      },
+      "stats": {
+       "steps": 0,
+       "defeated": 2,
+       "chests": 0,
+       "wisps": 0,
+       "crits": 2,
+       "dodges": 2,
+       "bossDmg": 0,
+       "bossHpLeft": null
+      },
+      "shards": 2,
+      "bossDown": false,
+      "killer": null,
+      "log": [
+       "Level up! You are now level 4. HP fully restored.",
+       "Soul shard 1/3 collected.",
+       "Flaky Test Ghoul is banished: +45 XP, +10 treasure.",
+       "Soul shard 2/3 collected."
+      ]
+     }
+    },
+    {
+     "col": 0,
+     "row": 4,
+     "tier": 2,
+     "plan": "flee",
+     "turns": [
+      {
+       "action": "flee",
+       "rng": 4193982284,
+       "heroHp": 51,
+       "monHp": null,
+       "phase2": null,
+       "status": "exploring"
+      }
+     ],
+     "after": {
+      "rng": 4193982284,
+      "status": "exploring",
+      "pos": {
+       "col": 1,
+       "row": 1
+      },
+      "hero": {
+       "hp": 51,
+       "maxHp": 58,
+       "atk": 13,
+       "xp": 403,
+       "level": 4,
+       "treasure": 23
+      },
+      "stats": {
+       "steps": 0,
+       "defeated": 2,
+       "chests": 0,
+       "wisps": 0,
+       "crits": 2,
+       "dodges": 2,
+       "bossDmg": 0,
+       "bossHpLeft": null
+      },
+      "shards": 2,
+      "bossDown": false,
+      "killer": null,
+      "log": [
+       "Soul shard 1/3 collected.",
+       "Flaky Test Ghoul is banished: +45 XP, +10 treasure.",
+       "Soul shard 2/3 collected.",
+       "You escaped but took 7 damage. It still haunts that day."
+      ]
+     }
+    },
+    {
+     "col": 0,
+     "row": 4,
+     "tier": 2,
+     "plan": "attack",
+     "turns": [
+      {
+       "action": "attack",
+       "rng": 2930310944,
+       "heroHp": 44,
+       "monHp": 12,
+       "phase2": false,
+       "status": "combat"
+      },
+      {
+       "action": "attack",
+       "rng": 2298475274,
+       "heroHp": 44,
+       "monHp": null,
+       "phase2": null,
+       "status": "exploring"
+      }
+     ],
+     "after": {
+      "rng": 2298475274,
+      "status": "exploring",
+      "pos": {
+       "col": 0,
+       "row": 4
+      },
+      "hero": {
+       "hp": 44,
+       "maxHp": 58,
+       "atk": 13,
+       "xp": 436,
+       "level": 4,
+       "treasure": 30
+      },
+      "stats": {
+       "steps": 0,
+       "defeated": 3,
+       "chests": 0,
+       "wisps": 0,
+       "crits": 3,
+       "dodges": 2,
+       "bossDmg": 0,
+       "bossHpLeft": null
+      },
+      "shards": 2,
+      "bossDown": false,
+      "killer": null,
+      "log": [
+       "Flaky Test Ghoul is banished: +45 XP, +10 treasure.",
+       "Soul shard 2/3 collected.",
+       "You escaped but took 7 damage. It still haunts that day.",
+       "Bug Imp is banished: +30 XP, +7 treasure."
+      ]
+     }
+    },
+    {
+     "col": 11,
+     "row": 2,
+     "tier": 5,
+     "plan": "attack",
+     "turns": [
+      {
+       "action": "attack",
+       "rng": 402968264,
+       "heroHp": 25,
+       "monHp": 46,
+       "phase2": false,
+       "status": "combat"
+      },
+      {
+       "action": "attack",
+       "rng": 339027067,
+       "heroHp": 14,
+       "monHp": 18,
+       "phase2": true,
+       "status": "combat"
+      },
+      {
+       "action": "attack",
+       "rng": 3938217496,
+       "heroHp": 0,
+       "monHp": 10,
+       "phase2": true,
+       "status": "lost"
+      }
+     ],
+     "after": {
+      "rng": 3938217496,
+      "status": "lost",
+      "pos": {
+       "col": 11,
+       "row": 2
+      },
+      "hero": {
+       "hp": 0,
+       "maxHp": 58,
+       "atk": 13,
+       "xp": 436,
+       "level": 4,
+       "treasure": 30
+      },
+      "stats": {
+       "steps": 0,
+       "defeated": 3,
+       "chests": 0,
+       "wisps": 0,
+       "crits": 4,
+       "dodges": 4,
+       "bossDmg": 49,
+       "bossHpLeft": null
+      },
+      "shards": 2,
+      "bossDown": false,
+      "killer": "The Phantom of Tue 3 Nov 2026",
+      "log": [
+       "Flaky Test Ghoul is banished: +45 XP, +10 treasure.",
+       "Soul shard 2/3 collected.",
+       "You escaped but took 7 damage. It still haunts that day.",
+       "Bug Imp is banished: +30 XP, +7 treasure."
+      ]
+     }
+    }
+   ]
+  },
+  "knight": {
+   "seed": 722674249,
+   "hero": {
+    "name": "demo-necromancer",
+    "xp": 287,
+    "level": 3,
+    "startLevel": 3,
+    "aura": 2,
+    "trait": {
+     "name": "Tuesday Slayer",
+     "text": "Tuesday is your busiest day: +2 ATK when fighting in the Tuesday row.",
+     "rows": [
+      2
+     ],
+     "hp": 0
+    },
+    "treasure": 0,
+    "total91": 366,
+    "relics": [],
+    "cls": "knight",
+    "race": "human",
+    "maxHp": 65,
+    "atk": 10,
+    "hp": 65,
+    "omen": "blessed"
+   },
+   "snaps": [
+    {
+     "n": 0,
+     "kind": "attack",
+     "mode": "bar",
+     "pattern": "normal",
+     "target": 858.3098076493593,
+     "P": 112.5,
+     "G": 204,
+     "rngAtStart": 2554240062,
+     "heroHp": 65,
+     "monHp": 41,
+     "grade": "good"
+    },
+    {
+     "n": 1,
+     "kind": "defend",
+     "mode": "shield",
+     "pattern": "normal",
+     "target": 929.6000000000001,
+     "P": 112.5,
+     "G": 204,
+     "rngAtStart": 1922404392,
+     "heroHp": 65,
+     "monHp": 31,
+     "grade": "miss"
+    },
+    {
+     "n": 2,
+     "kind": "attack",
+     "mode": "bar",
+     "pattern": "normal",
+     "target": 706.260873196602,
+     "P": 112.5,
+     "G": 204,
+     "rngAtStart": 1290568722,
+     "heroHp": 58,
+     "monHp": 31,
+     "grade": "perfect"
+    },
+    {
+     "n": 3,
+     "kind": "defend",
+     "mode": "shield",
+     "pattern": "normal",
+     "target": 929.6000000000001,
+     "P": 112.5,
+     "G": 204,
+     "rngAtStart": 658733052,
+     "heroHp": 58,
+     "monHp": 14,
+     "grade": "perfect"
+    },
+    {
+     "n": 4,
+     "kind": "attack",
+     "mode": "bar",
+     "pattern": "normal",
+     "target": 683.7074620846213,
+     "P": 112.5,
+     "G": 204,
+     "rngAtStart": 2490298865,
+     "heroHp": 58,
+     "monHp": 9,
+     "grade": "miss"
+    },
+    {
+     "n": 5,
+     "kind": "defend",
+     "mode": "shield",
+     "pattern": "conflict",
+     "target": 929.6000000000001,
+     "P": 112.5,
+     "G": 204,
+     "rngAtStart": 1226627525,
+     "heroHp": 58,
+     "monHp": 4,
+     "grade": "good"
+    },
+    {
+     "n": 6,
+     "kind": "attack",
+     "mode": "bar",
+     "pattern": "normal",
+     "target": 962.6606710007936,
+     "P": 112.5,
+     "G": 204,
+     "rngAtStart": 594791855,
+     "heroHp": 56,
+     "monHp": 4,
+     "grade": "good"
+    },
+    {
+     "n": 7,
+     "kind": "attack",
+     "mode": "bar",
+     "pattern": "normal",
+     "target": 1050.9869629701047,
+     "P": 111.375,
+     "G": 201.96,
+     "rngAtStart": 4257923481,
+     "heroHp": 73,
+     "monHp": 32,
+     "grade": "miss"
+    },
+    {
+     "n": 8,
+     "kind": "defend",
+     "mode": "shield",
+     "pattern": "flaky",
+     "target": 1420.167899445674,
+     "P": 111.375,
+     "G": 201.96,
+     "rngAtStart": 2994252141,
+     "heroHp": 73,
+     "monHp": 26,
+     "grade": "perfect"
+    },
+    {
+     "n": 9,
+     "kind": "attack",
+     "mode": "bar",
+     "pattern": "normal",
+     "target": 1076.3844029799893,
+     "P": 111.375,
+     "G": 201.96,
+     "rngAtStart": 530850658,
+     "heroHp": 73,
+     "monHp": 20,
+     "grade": "perfect"
+    },
+    {
+     "n": 10,
+     "kind": "defend",
+     "mode": "shield",
+     "pattern": "flaky",
+     "target": 1399.5054426502095,
+     "P": 111.375,
+     "G": 201.96,
+     "rngAtStart": 3562146614,
+     "heroHp": 73,
+     "monHp": 1,
+     "grade": "miss"
+    },
+    {
+     "n": 11,
+     "kind": "attack",
+     "mode": "bar",
+     "pattern": "normal",
+     "target": 1052.0587250893145,
+     "P": 111.375,
+     "G": 201.96,
+     "rngAtStart": 2930310944,
+     "heroHp": 68,
+     "monHp": 1,
+     "grade": "good"
+    },
+    {
+     "n": 12,
+     "kind": "defend",
+     "mode": "shield",
+     "pattern": "normal",
+     "target": 1104.3648,
+     "P": 110.25000000000001,
+     "G": 199.92,
+     "rngAtStart": 466909461,
+     "heroHp": 68,
+     "monHp": 24,
+     "grade": "good"
+    },
+    {
+     "n": 13,
+     "kind": "attack",
+     "mode": "bar",
+     "pattern": "normal",
+     "target": 1085.1733223074818,
+     "P": 110.25000000000001,
+     "G": 199.92,
+     "rngAtStart": 4130041087,
+     "heroHp": 67,
+     "monHp": 24,
+     "grade": "miss"
+    },
+    {
+     "n": 14,
+     "kind": "defend",
+     "mode": "shield",
+     "pattern": "normal",
+     "target": 1104.3648,
+     "P": 110.25000000000001,
+     "G": 199.92,
+     "rngAtStart": 1666639604,
+     "heroHp": 67,
+     "monHp": 18,
+     "grade": "perfect"
+    },
+    {
+     "n": 15,
+     "kind": "defend",
+     "mode": "shield",
+     "pattern": "quick",
+     "target": 713.9328,
+     "P": 110.25000000000001,
+     "G": 199.92,
+     "rngAtStart": 1666639604,
+     "heroHp": 67,
+     "monHp": 12,
+     "grade": "perfect"
+    },
+    {
+     "n": 16,
+     "kind": "attack",
+     "mode": "bar",
+     "pattern": "normal",
+     "target": 898.8421385652908,
+     "P": 110.25000000000001,
+     "G": 199.92,
+     "rngAtStart": 3498205417,
+     "heroHp": 67,
+     "monHp": 6,
+     "grade": "miss"
+    },
+    {
+     "n": 17,
+     "kind": "attack",
+     "mode": "bar",
+     "pattern": "normal",
+     "target": 958.1329474450513,
+     "P": 109.12499999999999,
+     "G": 197.88,
+     "rngAtStart": 2866369747,
+     "heroHp": 67,
+     "monHp": 69,
+     "grade": "good"
+    },
+    {
+     "n": 18,
+     "kind": "defend",
+     "mode": "shield",
+     "pattern": "normal",
+     "target": 834.96,
+     "P": 109.12499999999999,
+     "G": 197.88,
+     "rngAtStart": 402968264,
+     "heroHp": 67,
+     "monHp": 56,
+     "grade": "good"
+    },
+    {
+     "n": 19,
+     "kind": "defend",
+     "mode": "shield",
+     "pattern": "flaky",
+     "target": 1269.4345589788988,
+     "P": 109.12499999999999,
+     "G": 197.88,
+     "rngAtStart": 1602698407,
+     "heroHp": 65,
+     "monHp": 56,
+     "grade": "miss"
+    },
+    {
+     "n": 20,
+     "kind": "attack",
+     "mode": "bar",
+     "pattern": "normal",
+     "target": 1011.9652933816951,
+     "P": 109.12499999999999,
+     "G": 197.88,
+     "rngAtStart": 970862737,
+     "heroHp": 56,
+     "monHp": 56,
+     "grade": "perfect"
+    },
+    {
+     "n": 21,
+     "kind": "defend",
+     "mode": "shield",
+     "pattern": "normal",
+     "target": 834.96,
+     "P": 109.12499999999999,
+     "G": 197.88,
+     "rngAtStart": 2802428550,
+     "heroHp": 56,
+     "monHp": 36,
+     "grade": "perfect"
+    },
+    {
+     "n": 22,
+     "kind": "defend",
+     "mode": "shield",
+     "pattern": "flaky",
+     "target": 1270.049800705688,
+     "P": 98.2125,
+     "G": 178.092,
+     "rngAtStart": 2170592880,
+     "heroHp": 56,
+     "monHp": 30,
+     "grade": "miss"
+    },
+    {
+     "n": 23,
+     "kind": "attack",
+     "mode": "bar",
+     "pattern": "normal",
+     "target": 629.0526220281677,
+     "P": 98.2125,
+     "G": 178.092,
+     "rngAtStart": 1538757210,
+     "heroHp": 50,
+     "monHp": 30,
+     "grade": "good"
+    },
+    {
+     "n": 24,
+     "kind": "defend",
+     "mode": "shield",
+     "pattern": "conflict",
+     "target": 695.8644,
+     "P": 98.2125,
+     "G": 178.092,
+     "rngAtStart": 2738487353,
+     "heroHp": 50,
+     "monHp": 17,
+     "grade": "good"
+    },
+    {
+     "n": 25,
+     "kind": "defend",
+     "mode": "shield",
+     "pattern": "flaky",
+     "target": 1238.300436860976,
+     "P": 98.2125,
+     "G": 178.092,
+     "rngAtStart": 3938217496,
+     "heroHp": 48,
+     "monHp": 17,
+     "grade": "miss"
+    },
+    {
+     "n": 26,
+     "kind": "defend",
+     "mode": "shield",
+     "pattern": "quick",
+     "target": 593.804288,
+     "P": 98.2125,
+     "G": 178.092,
+     "rngAtStart": 1474816013,
+     "heroHp": 42,
+     "monHp": 17,
+     "grade": "perfect"
+    },
+    {
+     "n": 27,
+     "kind": "attack",
+     "mode": "bar",
+     "pattern": "normal",
+     "target": 729.0388501960583,
+     "P": 98.2125,
+     "G": 178.092,
+     "rngAtStart": 3306381826,
+     "heroHp": 42,
+     "monHp": 11,
+     "grade": "perfect"
+    }
+   ],
+   "fights": [
+    {
+     "col": 4,
+     "row": 0,
+     "tier": 4,
+     "plan": "attack",
+     "turns": [
+      {
+       "action": "attack",
+       "rng": 3753970205,
+       "heroHp": 58,
+       "monHp": 31,
+       "phase2": false,
+       "status": "combat"
+      },
+      {
+       "action": "attack",
+       "rng": 658733052,
+       "heroHp": 58,
+       "monHp": 9,
+       "phase2": false,
+       "status": "combat"
+      },
+      {
+       "action": "attack",
+       "rng": 3058193338,
+       "heroHp": 56,
+       "monHp": 4,
+       "phase2": false,
+       "status": "combat"
+      },
+      {
+       "action": "attack",
+       "rng": 2426357668,
+       "heroHp": 73,
+       "monHp": null,
+       "phase2": null,
+       "status": "exploring"
+      }
+     ],
+     "after": {
+      "rng": 2426357668,
+      "status": "exploring",
+      "pos": {
+       "col": 4,
+       "row": 0
+      },
+      "hero": {
+       "hp": 73,
+       "maxHp": 73,
+       "atk": 12,
+       "xp": 353,
+       "level": 4,
+       "treasure": 12
+      },
+      "stats": {
+       "steps": 0,
+       "defeated": 1,
+       "chests": 0,
+       "wisps": 0,
+       "crits": 1,
+       "dodges": 1,
+       "bossDmg": 0,
+       "bossHpLeft": null
+      },
+      "shards": 1,
+      "bossDown": false,
+      "killer": null,
+      "log": [
+       "Its ward is fed by your other big days. Banish 3 elites (Ghouls or Liches) to collect soul shards and break it.",
+       "Merge Conflict Lich is banished: +60 XP, +12 treasure.",
+       "Level up! You are now level 4. HP fully restored.",
+       "Soul shard 1/3 collected."
+      ]
+     }
+    },
+    {
+     "col": 1,
+     "row": 1,
+     "tier": 3,
+     "plan": "attack",
+     "turns": [
+      {
+       "action": "attack",
+       "rng": 2994252141,
+       "heroHp": 73,
+       "monHp": 20,
+       "phase2": false,
+       "status": "combat"
+      },
+      {
+       "action": "attack",
+       "rng": 1098745131,
+       "heroHp": 68,
+       "monHp": 1,
+       "phase2": false,
+       "status": "combat"
+      },
+      {
+       "action": "attack",
+       "rng": 466909461,
+       "heroHp": 68,
+       "monHp": null,
+       "phase2": null,
+       "status": "exploring"
+      }
+     ],
+     "after": {
+      "rng": 466909461,
+      "status": "exploring",
+      "pos": {
+       "col": 1,
+       "row": 1
+      },
+      "hero": {
+       "hp": 68,
+       "maxHp": 73,
+       "atk": 12,
+       "xp": 403,
+       "level": 4,
+       "treasure": 21
+      },
+      "stats": {
+       "steps": 0,
+       "defeated": 2,
+       "chests": 0,
+       "wisps": 0,
+       "crits": 2,
+       "dodges": 2,
+       "bossDmg": 0,
+       "bossHpLeft": null
+      },
+      "shards": 2,
+      "bossDown": false,
+      "killer": null,
+      "log": [
+       "Level up! You are now level 4. HP fully restored.",
+       "Soul shard 1/3 collected.",
+       "Flaky Test Ghoul is banished: +45 XP, +9 treasure.",
+       "Soul shard 2/3 collected."
+      ]
+     }
+    },
+    {
+     "col": 0,
+     "row": 4,
+     "tier": 2,
+     "plan": "flee",
+     "turns": [
+      {
+       "action": "flee",
+       "rng": 2298475274,
+       "heroHp": 67,
+       "monHp": null,
+       "phase2": null,
+       "status": "exploring"
+      }
+     ],
+     "after": {
+      "rng": 2298475274,
+      "status": "exploring",
+      "pos": {
+       "col": 1,
+       "row": 1
+      },
+      "hero": {
+       "hp": 67,
+       "maxHp": 73,
+       "atk": 12,
+       "xp": 403,
+       "level": 4,
+       "treasure": 21
+      },
+      "stats": {
+       "steps": 0,
+       "defeated": 2,
+       "chests": 0,
+       "wisps": 0,
+       "crits": 2,
+       "dodges": 2,
+       "bossDmg": 0,
+       "bossHpLeft": null
+      },
+      "shards": 2,
+      "bossDown": false,
+      "killer": null,
+      "log": [
+       "Soul shard 1/3 collected.",
+       "Flaky Test Ghoul is banished: +45 XP, +9 treasure.",
+       "Soul shard 2/3 collected.",
+       "You escaped but took 1 damage. It still haunts that day."
+      ]
+     }
+    },
+    {
+     "col": 0,
+     "row": 4,
+     "tier": 2,
+     "plan": "attack",
+     "turns": [
+      {
+       "action": "attack",
+       "rng": 1666639604,
+       "heroHp": 67,
+       "monHp": 6,
+       "phase2": false,
+       "status": "combat"
+      },
+      {
+       "action": "attack",
+       "rng": 1034803934,
+       "heroHp": 67,
+       "monHp": null,
+       "phase2": null,
+       "status": "exploring"
+      }
+     ],
+     "after": {
+      "rng": 1034803934,
+      "status": "exploring",
+      "pos": {
+       "col": 0,
+       "row": 4
+      },
+      "hero": {
+       "hp": 67,
+       "maxHp": 73,
+       "atk": 12,
+       "xp": 436,
+       "level": 4,
+       "treasure": 27
+      },
+      "stats": {
+       "steps": 0,
+       "defeated": 3,
+       "chests": 0,
+       "wisps": 0,
+       "crits": 2,
+       "dodges": 4,
+       "bossDmg": 0,
+       "bossHpLeft": null
+      },
+      "shards": 2,
+      "bossDown": false,
+      "killer": null,
+      "log": [
+       "Flaky Test Ghoul is banished: +45 XP, +9 treasure.",
+       "Soul shard 2/3 collected.",
+       "You escaped but took 1 damage. It still haunts that day.",
+       "Bug Imp is banished: +30 XP, +6 treasure."
+      ]
+     }
+    },
+    {
+     "col": 11,
+     "row": 2,
+     "tier": 5,
+     "plan": "attack",
+     "turns": [
+      {
+       "action": "attack",
+       "rng": 3434264220,
+       "heroHp": 56,
+       "monHp": 56,
+       "phase2": false,
+       "status": "combat"
+      },
+      {
+       "action": "attack",
+       "rng": 4002158693,
+       "heroHp": 50,
+       "monHp": 30,
+       "phase2": true,
+       "status": "combat"
+      },
+      {
+       "action": "attack",
+       "rng": 1474816013,
+       "heroHp": 42,
+       "monHp": 11,
+       "phase2": true,
+       "status": "combat"
+      },
+      {
+       "action": "attack",
+       "rng": 842980343,
+       "heroHp": 80,
+       "monHp": null,
+       "phase2": null,
+       "status": "exploring"
+      }
+     ],
+     "after": {
+      "rng": 842980343,
+      "status": "exploring",
+      "pos": {
+       "col": 11,
+       "row": 2
+      },
+      "hero": {
+       "hp": 80,
+       "maxHp": 80,
+       "atk": 14,
+       "xp": 546,
+       "level": 5,
+       "treasure": 57
+      },
+      "stats": {
+       "steps": 0,
+       "defeated": 4,
+       "chests": 0,
+       "wisps": 0,
+       "crits": 4,
+       "dodges": 6,
+       "bossDmg": 25,
+       "bossHpLeft": 80
+      },
+      "shards": 2,
+      "bossDown": true,
+      "killer": null,
+      "log": [
+       "Bug Imp is banished: +30 XP, +6 treasure.",
+       "The Phantom of Tue 3 Nov 2026 is banished: +100 XP, +30 treasure.",
+       "Level up! You are now level 5. HP fully restored.",
+       "The Phantom falls. The Gate is unsealed!"
+      ]
+     }
+    }
+   ]
+  },
+  "rogue": {
+   "seed": 722674249,
+   "hero": {
+    "name": "demo-necromancer",
+    "xp": 287,
+    "level": 3,
+    "startLevel": 3,
+    "aura": 2,
+    "trait": {
+     "name": "Tuesday Slayer",
+     "text": "Tuesday is your busiest day: +2 ATK when fighting in the Tuesday row.",
+     "rows": [
+      2
+     ],
+     "hp": 0
+    },
+    "treasure": 0,
+    "total91": 366,
+    "relics": [],
+    "cls": "rogue",
+    "race": "human",
+    "maxHp": 47,
+    "atk": 11,
+    "hp": 47,
+    "omen": "blessed"
+   },
+   "snaps": [
+    {
+     "n": 0,
+     "kind": "attack",
+     "mode": "combo",
+     "pattern": "normal",
+     "target": 842.5682334164837,
+     "P": 55.8,
+     "G": 81.60000000000001,
+     "rngAtStart": 1922404392,
+     "heroHp": 47,
+     "monHp": 41,
+     "grade": "good"
+    },
+    {
+     "n": 1,
+     "kind": "defend",
+     "mode": "sidestep",
+     "pattern": "normal",
+     "target": 680.5999999999999,
+     "P": 66.96,
+     "G": 115.60000000000001,
+     "rngAtStart": 658733052,
+     "heroHp": 47,
+     "monHp": 29,
+     "grade": "miss"
+    },
+    {
+     "n": 2,
+     "kind": "attack",
+     "mode": "combo",
+     "pattern": "normal",
+     "target": 802.0203493453589,
+     "P": 55.8,
+     "G": 81.60000000000001,
+     "rngAtStart": 3690029008,
+     "heroHp": 26,
+     "monHp": 29,
+     "grade": "perfect"
+    },
+    {
+     "n": 3,
+     "kind": "defend",
+     "mode": "sidestep",
+     "pattern": "conflict",
+     "target": 680.5999999999999,
+     "P": 66.96,
+     "G": 115.60000000000001,
+     "rngAtStart": 1794521998,
+     "heroHp": 26,
+     "monHp": 11,
+     "grade": "perfect"
+    },
+    {
+     "n": 4,
+     "kind": "attack",
+     "mode": "combo",
+     "pattern": "normal",
+     "target": 764.9072003876347,
+     "P": 53.568,
+     "G": 78.336,
+     "rngAtStart": 2994252141,
+     "heroHp": 52,
+     "monHp": 32,
+     "grade": "miss"
+    },
+    {
+     "n": 5,
+     "kind": "defend",
+     "mode": "sidestep",
+     "pattern": "flaky",
+     "target": 1002.8099551601408,
+     "P": 64.2816,
+     "G": 110.976,
+     "rngAtStart": 1098745131,
+     "heroHp": 52,
+     "monHp": 29,
+     "grade": "good"
+    },
+    {
+     "n": 6,
+     "kind": "attack",
+     "mode": "combo",
+     "pattern": "normal",
+     "target": 843.1503744489444,
+     "P": 53.568,
+     "G": 78.336,
+     "rngAtStart": 4130041087,
+     "heroHp": 36,
+     "monHp": 29,
+     "grade": "good"
+    },
+    {
+     "n": 7,
+     "kind": "defend",
+     "mode": "sidestep",
+     "pattern": "normal",
+     "target": 740.2303999999999,
+     "P": 64.2816,
+     "G": 110.976,
+     "rngAtStart": 2866369747,
+     "heroHp": 36,
+     "monHp": 16,
+     "grade": "miss"
+    },
+    {
+     "n": 8,
+     "kind": "attack",
+     "mode": "combo",
+     "pattern": "normal",
+     "target": 828.5772626329828,
+     "P": 53.568,
+     "G": 78.336,
+     "rngAtStart": 1602698407,
+     "heroHp": 19,
+     "monHp": 16,
+     "grade": "perfect"
+    },
+    {
+     "n": 9,
+     "kind": "defend",
+     "mode": "sidestep",
+     "pattern": "normal",
+     "target": 798.8112,
+     "P": 61.603199999999994,
+     "G": 106.35200000000002,
+     "rngAtStart": 2802428550,
+     "heroHp": 19,
+     "monHp": 24,
+     "grade": "perfect"
+    },
+    {
+     "n": 10,
+     "kind": "attack",
+     "mode": "combo",
+     "pattern": "normal",
+     "target": 910.4245420850369,
+     "P": 51.336,
+     "G": 75.07200000000002,
+     "rngAtStart": 4002158693,
+     "heroHp": 19,
+     "monHp": 24,
+     "grade": "miss"
+    },
+    {
+     "n": 11,
+     "kind": "defend",
+     "mode": "sidestep",
+     "pattern": "normal",
+     "target": 798.8112,
+     "P": 61.603199999999994,
+     "G": 106.35200000000002,
+     "rngAtStart": 906921540,
+     "heroHp": 19,
+     "monHp": 21,
+     "grade": "good"
+    },
+    {
+     "n": 12,
+     "kind": "defend",
+     "mode": "sidestep",
+     "pattern": "quick",
+     "target": 516.4032,
+     "P": 61.603199999999994,
+     "G": 106.35200000000002,
+     "rngAtStart": 2738487353,
+     "heroHp": 13,
+     "monHp": 21,
+     "grade": "good"
+    },
+    {
+     "n": 13,
+     "kind": "attack",
+     "mode": "combo",
+     "pattern": "normal",
+     "target": 870.8283958462324,
+     "P": 51.336,
+     "G": 75.07200000000002,
+     "rngAtStart": 1474816013,
+     "heroHp": 6,
+     "monHp": 21,
+     "grade": "miss"
+    },
+    {
+     "n": 14,
+     "kind": "defend",
+     "mode": "sidestep",
+     "pattern": "normal",
+     "target": 798.8112,
+     "P": 61.603199999999994,
+     "G": 106.35200000000002,
+     "rngAtStart": 2674546156,
+     "heroHp": 6,
+     "monHp": 18,
+     "grade": "perfect"
+    },
+    {
+     "n": 15,
+     "kind": "defend",
+     "mode": "sidestep",
+     "pattern": "quick",
+     "target": 516.4032,
+     "P": 61.603199999999994,
+     "G": 106.35200000000002,
+     "rngAtStart": 2674546156,
+     "heroHp": 6,
+     "monHp": 5,
+     "grade": "perfect"
+    },
+    {
+     "n": 16,
+     "kind": "attack",
+     "mode": "combo",
+     "pattern": "normal",
+     "target": 720.349732120386,
+     "P": 49.104,
+     "G": 71.808,
+     "rngAtStart": 3874276299,
+     "heroHp": 6,
+     "monHp": 69,
+     "grade": "miss"
+    },
+    {
+     "n": 17,
+     "kind": "defend",
+     "mode": "sidestep",
+     "pattern": "normal",
+     "target": 600.24,
+     "P": 58.9248,
+     "G": 101.72800000000001,
+     "rngAtStart": 779039146,
+     "heroHp": 6,
+     "monHp": 66,
+     "grade": "good"
+    }
+   ],
+   "fights": [
+    {
+     "col": 4,
+     "row": 0,
+     "tier": 4,
+     "plan": "attack",
+     "turns": [
+      {
+       "action": "attack",
+       "rng": 2490298865,
+       "heroHp": 26,
+       "monHp": 29,
+       "phase2": false,
+       "status": "combat"
+      },
+      {
+       "action": "attack",
+       "rng": 1794521998,
+       "heroHp": 52,
+       "monHp": null,
+       "phase2": null,
+       "status": "exploring"
+      }
+     ],
+     "after": {
+      "rng": 1794521998,
+      "status": "exploring",
+      "pos": {
+       "col": 4,
+       "row": 0
+      },
+      "hero": {
+       "hp": 52,
+       "maxHp": 52,
+       "atk": 13,
+       "xp": 353,
+       "level": 4,
+       "treasure": 18
+      },
+      "stats": {
+       "steps": 0,
+       "defeated": 1,
+       "chests": 0,
+       "wisps": 0,
+       "crits": 3,
+       "dodges": 1,
+       "bossDmg": 0,
+       "bossHpLeft": null
+      },
+      "shards": 1,
+      "bossDown": false,
+      "killer": null,
+      "log": [
+       "Its ward is fed by your other big days. Banish 3 elites (Ghouls or Liches) to collect soul shards and break it.",
+       "Merge Conflict Lich is banished: +60 XP, +18 treasure.",
+       "Level up! You are now level 4. HP fully restored.",
+       "Soul shard 1/3 collected."
+      ]
+     }
+    },
+    {
+     "col": 1,
+     "row": 1,
+     "tier": 3,
+     "plan": "attack",
+     "turns": [
+      {
+       "action": "attack",
+       "rng": 2930310944,
+       "heroHp": 36,
+       "monHp": 29,
+       "phase2": false,
+       "status": "combat"
+      },
+      {
+       "action": "attack",
+       "rng": 402968264,
+       "heroHp": 19,
+       "monHp": 16,
+       "phase2": false,
+       "status": "combat"
+      },
+      {
+       "action": "attack",
+       "rng": 2802428550,
+       "heroHp": 19,
+       "monHp": null,
+       "phase2": null,
+       "status": "exploring"
+      }
+     ],
+     "after": {
+      "rng": 2802428550,
+      "status": "exploring",
+      "pos": {
+       "col": 1,
+       "row": 1
+      },
+      "hero": {
+       "hp": 19,
+       "maxHp": 52,
+       "atk": 13,
+       "xp": 403,
+       "level": 4,
+       "treasure": 32
+      },
+      "stats": {
+       "steps": 0,
+       "defeated": 2,
+       "chests": 0,
+       "wisps": 0,
+       "crits": 6,
+       "dodges": 1,
+       "bossDmg": 0,
+       "bossHpLeft": null
+      },
+      "shards": 2,
+      "bossDown": false,
+      "killer": null,
+      "log": [
+       "Level up! You are now level 4. HP fully restored.",
+       "Soul shard 1/3 collected.",
+       "Flaky Test Ghoul is banished: +45 XP, +14 treasure.",
+       "Soul shard 2/3 collected."
+      ]
+     }
+    },
+    {
+     "col": 0,
+     "row": 4,
+     "tier": 2,
+     "plan": "flee",
+     "turns": [
+      {
+       "action": "flee",
+       "rng": 2802428550,
+       "heroHp": 19,
+       "monHp": null,
+       "phase2": null,
+       "status": "exploring"
+      }
+     ],
+     "after": {
+      "rng": 2802428550,
+      "status": "exploring",
+      "pos": {
+       "col": 1,
+       "row": 1
+      },
+      "hero": {
+       "hp": 19,
+       "maxHp": 52,
+       "atk": 13,
+       "xp": 403,
+       "level": 4,
+       "treasure": 32
+      },
+      "stats": {
+       "steps": 0,
+       "defeated": 2,
+       "chests": 0,
+       "wisps": 0,
+       "crits": 6,
+       "dodges": 2,
+       "bossDmg": 0,
+       "bossHpLeft": null
+      },
+      "shards": 2,
+      "bossDown": false,
+      "killer": null,
+      "log": [
+       "Soul shard 1/3 collected.",
+       "Flaky Test Ghoul is banished: +45 XP, +14 treasure.",
+       "Soul shard 2/3 collected.",
+       "A perfect escape. It still haunts that day."
+      ]
+     }
+    },
+    {
+     "col": 0,
+     "row": 4,
+     "tier": 2,
+     "plan": "attack",
+     "turns": [
+      {
+       "action": "attack",
+       "rng": 275085870,
+       "heroHp": 6,
+       "monHp": 21,
+       "phase2": false,
+       "status": "combat"
+      },
+      {
+       "action": "attack",
+       "rng": 2674546156,
+       "heroHp": 6,
+       "monHp": null,
+       "phase2": null,
+       "status": "exploring"
+      }
+     ],
+     "after": {
+      "rng": 2674546156,
+      "status": "exploring",
+      "pos": {
+       "col": 0,
+       "row": 4
+      },
+      "hero": {
+       "hp": 6,
+       "maxHp": 52,
+       "atk": 13,
+       "xp": 436,
+       "level": 4,
+       "treasure": 41
+      },
+      "stats": {
+       "steps": 0,
+       "defeated": 3,
+       "chests": 0,
+       "wisps": 0,
+       "crits": 6,
+       "dodges": 4,
+       "bossDmg": 0,
+       "bossHpLeft": null
+      },
+      "shards": 2,
+      "bossDown": false,
+      "killer": null,
+      "log": [
+       "Flaky Test Ghoul is banished: +45 XP, +14 treasure.",
+       "Soul shard 2/3 collected.",
+       "A perfect escape. It still haunts that day.",
+       "Bug Imp is banished: +30 XP, +9 treasure."
+      ]
+     }
+    },
+    {
+     "col": 11,
+     "row": 2,
+     "tier": 5,
+     "plan": "attack",
+     "turns": [
+      {
+       "action": "attack",
+       "rng": 2610604959,
+       "heroHp": 0,
+       "monHp": 66,
+       "phase2": false,
+       "status": "lost"
+      }
+     ],
+     "after": {
+      "rng": 2610604959,
+      "status": "lost",
+      "pos": {
+       "col": 11,
+       "row": 2
+      },
+      "hero": {
+       "hp": 0,
+       "maxHp": 52,
+       "atk": 13,
+       "xp": 436,
+       "level": 4,
+       "treasure": 41
+      },
+      "stats": {
+       "steps": 0,
+       "defeated": 3,
+       "chests": 0,
+       "wisps": 0,
+       "crits": 6,
+       "dodges": 4,
+       "bossDmg": 22,
+       "bossHpLeft": null
+      },
+      "shards": 2,
+      "bossDown": false,
+      "killer": "The Phantom of Tue 3 Nov 2026",
+      "log": [
+       "Flaky Test Ghoul is banished: +45 XP, +14 treasure.",
+       "Soul shard 2/3 collected.",
+       "A perfect escape. It still haunts that day.",
+       "Bug Imp is banished: +30 XP, +9 treasure."
+      ]
+     }
+    }
+   ]
+  },
+  "mage": {
+   "seed": 722674249,
+   "hero": {
+    "name": "demo-necromancer",
+    "xp": 287,
+    "level": 3,
+    "startLevel": 3,
+    "aura": 2,
+    "trait": {
+     "name": "Tuesday Slayer",
+     "text": "Tuesday is your busiest day: +2 ATK when fighting in the Tuesday row.",
+     "rows": [
+      2
+     ],
+     "hp": 0
+    },
+    "treasure": 0,
+    "total91": 366,
+    "relics": [],
+    "cls": "mage",
+    "race": "human",
+    "maxHp": 47,
+    "atk": 13,
+    "hp": 47,
+    "omen": "blessed"
+   },
+   "snaps": [
+    {
+     "n": 0,
+     "kind": "attack",
+     "mode": "charge",
+     "pattern": "normal",
+     "target": 649.4399999999999,
+     "P": 64.8,
+     "G": 105.4,
+     "rngAtStart": 722674249,
+     "heroHp": 47,
+     "monHp": 41,
+     "grade": "good"
+    },
+    {
+     "n": 1,
+     "kind": "defend",
+     "mode": "ring",
+     "pattern": "normal",
+     "target": 747,
+     "P": 64.8,
+     "G": 105.4,
+     "rngAtStart": 90838579,
+     "heroHp": 47,
+     "monHp": 27,
+     "grade": "miss"
+    },
+    {
+     "n": 2,
+     "kind": "attack",
+     "mode": "charge",
+     "pattern": "normal",
+     "target": 649.4399999999999,
+     "P": 64.8,
+     "G": 105.4,
+     "rngAtStart": 1922404392,
+     "heroHp": 27,
+     "monHp": 27,
+     "grade": "perfect"
+    },
+    {
+     "n": 3,
+     "kind": "defend",
+     "mode": "ring",
+     "pattern": "conflict",
+     "target": 747,
+     "P": 64.8,
+     "G": 105.4,
+     "rngAtStart": 658733052,
+     "heroHp": 27,
+     "monHp": 3,
+     "grade": "perfect"
+    },
+    {
+     "n": 4,
+     "kind": "attack",
+     "mode": "charge",
+     "pattern": "normal",
+     "target": 667.55052,
+     "P": 62.855999999999995,
+     "G": 102.238,
+     "rngAtStart": 658733052,
+     "heroHp": 52,
+     "monHp": 32,
+     "grade": "miss"
+    },
+    {
+     "n": 5,
+     "kind": "defend",
+     "mode": "ring",
+     "pattern": "flaky",
+     "target": 1172.6625521586361,
+     "P": 62.855999999999995,
+     "G": 102.238,
+     "rngAtStart": 3690029008,
+     "heroHp": 52,
+     "monHp": 27,
+     "grade": "good"
+    },
+    {
+     "n": 6,
+     "kind": "attack",
+     "mode": "charge",
+     "pattern": "normal",
+     "target": 667.55052,
+     "P": 62.855999999999995,
+     "G": 102.238,
+     "rngAtStart": 1226627525,
+     "heroHp": 46,
+     "monHp": 27,
+     "grade": "good"
+    },
+    {
+     "n": 7,
+     "kind": "defend",
+     "mode": "ring",
+     "pattern": "normal",
+     "target": 814.086,
+     "P": 62.855999999999995,
+     "G": 102.238,
+     "rngAtStart": 594791855,
+     "heroHp": 46,
+     "monHp": 10,
+     "grade": "miss"
+    },
+    {
+     "n": 8,
+     "kind": "attack",
+     "mode": "charge",
+     "pattern": "normal",
+     "target": 667.55052,
+     "P": 62.855999999999995,
+     "G": 102.238,
+     "rngAtStart": 2426357668,
+     "heroHp": 31,
+     "monHp": 10,
+     "grade": "perfect"
+    },
+    {
+     "n": 9,
+     "kind": "defend",
+     "mode": "ring",
+     "pattern": "normal",
+     "target": 880.308,
+     "P": 60.912,
+     "G": 99.076,
+     "rngAtStart": 4257923481,
+     "heroHp": 31,
+     "monHp": 24,
+     "grade": "perfect"
+    },
+    {
+     "n": 10,
+     "kind": "attack",
+     "mode": "charge",
+     "pattern": "normal",
+     "target": 685.3953599999999,
+     "P": 60.912,
+     "G": 99.076,
+     "rngAtStart": 4257923481,
+     "heroHp": 31,
+     "monHp": 24,
+     "grade": "miss"
+    },
+    {
+     "n": 11,
+     "kind": "defend",
+     "mode": "ring",
+     "pattern": "normal",
+     "target": 880.308,
+     "P": 60.912,
+     "G": 99.076,
+     "rngAtStart": 1794521998,
+     "heroHp": 31,
+     "monHp": 18,
+     "grade": "good"
+    },
+    {
+     "n": 12,
+     "kind": "defend",
+     "mode": "ring",
+     "pattern": "quick",
+     "target": 569.088,
+     "P": 60.912,
+     "G": 99.076,
+     "rngAtStart": 3626087811,
+     "heroHp": 29,
+     "monHp": 18,
+     "grade": "good"
+    },
+    {
+     "n": 13,
+     "kind": "attack",
+     "mode": "charge",
+     "pattern": "normal",
+     "target": 685.3953599999999,
+     "P": 60.912,
+     "G": 99.076,
+     "rngAtStart": 1162686328,
+     "heroHp": 27,
+     "monHp": 18,
+     "grade": "miss"
+    },
+    {
+     "n": 14,
+     "kind": "defend",
+     "mode": "ring",
+     "pattern": "normal",
+     "target": 880.308,
+     "P": 60.912,
+     "G": 99.076,
+     "rngAtStart": 2994252141,
+     "heroHp": 27,
+     "monHp": 12,
+     "grade": "perfect"
+    },
+    {
+     "n": 15,
+     "kind": "defend",
+     "mode": "ring",
+     "pattern": "quick",
+     "target": 569.088,
+     "P": 60.912,
+     "G": 99.076,
+     "rngAtStart": 2994252141,
+     "heroHp": 27,
+     "monHp": 4,
+     "grade": "perfect"
+    },
+    {
+     "n": 16,
+     "kind": "attack",
+     "mode": "charge",
+     "pattern": "normal",
+     "target": 616.0086000000001,
+     "P": 58.968,
+     "G": 95.914,
+     "rngAtStart": 2994252141,
+     "heroHp": 27,
+     "monHp": 69,
+     "grade": "miss"
+    },
+    {
+     "n": 17,
+     "kind": "defend",
+     "mode": "ring",
+     "pattern": "normal",
+     "target": 662.8500000000001,
+     "P": 58.968,
+     "G": 95.914,
+     "rngAtStart": 530850658,
+     "heroHp": 27,
+     "monHp": 62,
+     "grade": "good"
+    },
+    {
+     "n": 18,
+     "kind": "defend",
+     "mode": "ring",
+     "pattern": "flaky",
+     "target": 983.9293051197708,
+     "P": 58.968,
+     "G": 95.914,
+     "rngAtStart": 1730580801,
+     "heroHp": 18,
+     "monHp": 62,
+     "grade": "good"
+    },
+    {
+     "n": 19,
+     "kind": "attack",
+     "mode": "charge",
+     "pattern": "normal",
+     "target": 616.0086000000001,
+     "P": 58.968,
+     "G": 95.914,
+     "rngAtStart": 3562146614,
+     "heroHp": 10,
+     "monHp": 62,
+     "grade": "miss"
+    },
+    {
+     "n": 20,
+     "kind": "defend",
+     "mode": "ring",
+     "pattern": "normal",
+     "target": 662.8500000000001,
+     "P": 58.968,
+     "G": 95.914,
+     "rngAtStart": 1098745131,
+     "heroHp": 10,
+     "monHp": 55,
+     "grade": "perfect"
+    },
+    {
+     "n": 21,
+     "kind": "defend",
+     "mode": "ring",
+     "pattern": "flaky",
+     "target": 1112.7685506194748,
+     "P": 58.968,
+     "G": 95.914,
+     "rngAtStart": 466909461,
+     "heroHp": 10,
+     "monHp": 47,
+     "grade": "perfect"
+    },
+    {
+     "n": 22,
+     "kind": "attack",
+     "mode": "charge",
+     "pattern": "normal",
+     "target": 616.0086000000001,
+     "P": 58.968,
+     "G": 95.914,
+     "rngAtStart": 466909461,
+     "heroHp": 10,
+     "monHp": 39,
+     "grade": "miss"
+    },
+    {
+     "n": 23,
+     "kind": "defend",
+     "mode": "ring",
+     "pattern": "conflict",
+     "target": 552.9802500000001,
+     "P": 53.0712,
+     "G": 86.32260000000001,
+     "rngAtStart": 1666639604,
+     "heroHp": 10,
+     "monHp": 32,
+     "grade": "good"
+    },
+    {
+     "n": 24,
+     "kind": "defend",
+     "mode": "ring",
+     "pattern": "flaky",
+     "target": 918.1263893364628,
+     "P": 53.0712,
+     "G": 86.32260000000001,
+     "rngAtStart": 2866369747,
+     "heroHp": 4,
+     "monHp": 32,
+     "grade": "good"
+    }
+   ],
+   "fights": [
+    {
+     "col": 4,
+     "row": 0,
+     "tier": 4,
+     "plan": "attack",
+     "turns": [
+      {
+       "action": "attack",
+       "rng": 1922404392,
+       "heroHp": 27,
+       "monHp": 27,
+       "phase2": false,
+       "status": "combat"
+      },
+      {
+       "action": "attack",
+       "rng": 658733052,
+       "heroHp": 52,
+       "monHp": null,
+       "phase2": null,
+       "status": "exploring"
+      }
+     ],
+     "after": {
+      "rng": 658733052,
+      "status": "exploring",
+      "pos": {
+       "col": 4,
+       "row": 0
+      },
+      "hero": {
+       "hp": 52,
+       "maxHp": 52,
+       "atk": 15,
+       "xp": 353,
+       "level": 4,
+       "treasure": 15
+      },
+      "stats": {
+       "steps": 0,
+       "defeated": 1,
+       "chests": 0,
+       "wisps": 0,
+       "crits": 1,
+       "dodges": 1,
+       "bossDmg": 0,
+       "bossHpLeft": null
+      },
+      "shards": 1,
+      "bossDown": false,
+      "killer": null,
+      "log": [
+       "Its ward is fed by your other big days. Banish 3 elites (Ghouls or Liches) to collect soul shards and break it.",
+       "Merge Conflict Lich is banished: +60 XP, +15 treasure.",
+       "Level up! You are now level 4. HP fully restored.",
+       "Soul shard 1/3 collected."
+      ]
+     }
+    },
+    {
+     "col": 1,
+     "row": 1,
+     "tier": 3,
+     "plan": "attack",
+     "turns": [
+      {
+       "action": "attack",
+       "rng": 1226627525,
+       "heroHp": 46,
+       "monHp": 27,
+       "phase2": false,
+       "status": "combat"
+      },
+      {
+       "action": "attack",
+       "rng": 2426357668,
+       "heroHp": 31,
+       "monHp": 10,
+       "phase2": false,
+       "status": "combat"
+      },
+      {
+       "action": "attack",
+       "rng": 4257923481,
+       "heroHp": 31,
+       "monHp": null,
+       "phase2": null,
+       "status": "exploring"
+      }
+     ],
+     "after": {
+      "rng": 4257923481,
+      "status": "exploring",
+      "pos": {
+       "col": 1,
+       "row": 1
+      },
+      "hero": {
+       "hp": 31,
+       "maxHp": 52,
+       "atk": 15,
+       "xp": 403,
+       "level": 4,
+       "treasure": 26
+      },
+      "stats": {
+       "steps": 0,
+       "defeated": 2,
+       "chests": 0,
+       "wisps": 0,
+       "crits": 2,
+       "dodges": 1,
+       "bossDmg": 0,
+       "bossHpLeft": null
+      },
+      "shards": 2,
+      "bossDown": false,
+      "killer": null,
+      "log": [
+       "Level up! You are now level 4. HP fully restored.",
+       "Soul shard 1/3 collected.",
+       "Flaky Test Ghoul is banished: +45 XP, +11 treasure.",
+       "Soul shard 2/3 collected."
+      ]
+     }
+    },
+    {
+     "col": 0,
+     "row": 4,
+     "tier": 2,
+     "plan": "flee",
+     "turns": [
+      {
+       "action": "flee",
+       "rng": 4257923481,
+       "heroHp": 31,
+       "monHp": null,
+       "phase2": null,
+       "status": "exploring"
+      }
+     ],
+     "after": {
+      "rng": 4257923481,
+      "status": "exploring",
+      "pos": {
+       "col": 1,
+       "row": 1
+      },
+      "hero": {
+       "hp": 31,
+       "maxHp": 52,
+       "atk": 15,
+       "xp": 403,
+       "level": 4,
+       "treasure": 26
+      },
+      "stats": {
+       "steps": 0,
+       "defeated": 2,
+       "chests": 0,
+       "wisps": 0,
+       "crits": 2,
+       "dodges": 2,
+       "bossDmg": 0,
+       "bossHpLeft": null
+      },
+      "shards": 2,
+      "bossDown": false,
+      "killer": null,
+      "log": [
+       "Soul shard 1/3 collected.",
+       "Flaky Test Ghoul is banished: +45 XP, +11 treasure.",
+       "Soul shard 2/3 collected.",
+       "A perfect escape. It still haunts that day."
+      ]
+     }
+    },
+    {
+     "col": 0,
+     "row": 4,
+     "tier": 2,
+     "plan": "attack",
+     "turns": [
+      {
+       "action": "attack",
+       "rng": 1162686328,
+       "heroHp": 27,
+       "monHp": 18,
+       "phase2": false,
+       "status": "combat"
+      },
+      {
+       "action": "attack",
+       "rng": 2994252141,
+       "heroHp": 27,
+       "monHp": null,
+       "phase2": null,
+       "status": "exploring"
+      }
+     ],
+     "after": {
+      "rng": 2994252141,
+      "status": "exploring",
+      "pos": {
+       "col": 0,
+       "row": 4
+      },
+      "hero": {
+       "hp": 27,
+       "maxHp": 52,
+       "atk": 15,
+       "xp": 436,
+       "level": 4,
+       "treasure": 34
+      },
+      "stats": {
+       "steps": 0,
+       "defeated": 3,
+       "chests": 0,
+       "wisps": 0,
+       "crits": 2,
+       "dodges": 4,
+       "bossDmg": 0,
+       "bossHpLeft": null
+      },
+      "shards": 2,
+      "bossDown": false,
+      "killer": null,
+      "log": [
+       "Flaky Test Ghoul is banished: +45 XP, +11 treasure.",
+       "Soul shard 2/3 collected.",
+       "A perfect escape. It still haunts that day.",
+       "Bug Imp is banished: +30 XP, +8 treasure."
+      ]
+     }
+    },
+    {
+     "col": 11,
+     "row": 2,
+     "tier": 5,
+     "plan": "attack",
+     "turns": [
+      {
+       "action": "attack",
+       "rng": 3562146614,
+       "heroHp": 10,
+       "monHp": 62,
+       "phase2": false,
+       "status": "combat"
+      },
+      {
+       "action": "attack",
+       "rng": 466909461,
+       "heroHp": 10,
+       "monHp": 39,
+       "phase2": false,
+       "status": "combat"
+      },
+      {
+       "action": "attack",
+       "rng": 402968264,
+       "heroHp": 0,
+       "monHp": 32,
+       "phase2": true,
+       "status": "lost"
+      }
+     ],
+     "after": {
+      "rng": 402968264,
+      "status": "lost",
+      "pos": {
+       "col": 11,
+       "row": 2
+      },
+      "hero": {
+       "hp": 0,
+       "maxHp": 52,
+       "atk": 15,
+       "xp": 436,
+       "level": 4,
+       "treasure": 34
+      },
+      "stats": {
+       "steps": 0,
+       "defeated": 3,
+       "chests": 0,
+       "wisps": 0,
+       "crits": 2,
+       "dodges": 6,
+       "bossDmg": 29,
+       "bossHpLeft": null
+      },
+      "shards": 2,
+      "bossDown": false,
+      "killer": "The Phantom of Tue 3 Nov 2026",
+      "log": [
+       "Flaky Test Ghoul is banished: +45 XP, +11 treasure.",
+       "Soul shard 2/3 collected.",
+       "A perfect escape. It still haunts that day.",
+       "Bug Imp is banished: +30 XP, +8 treasure."
+      ]
+     }
+    }
+   ]
+  }
+ }
+}
