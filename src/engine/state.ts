@@ -61,7 +61,7 @@ export type Hero = {
 export type Monster = { name: string; tier: Tier; hp: number; maxHp: number; dmg: number; xp: number; phase2: boolean };
 
 export type QteTest = {
-  kind: 'attack' | 'defend' | 'flee';
+  kind: 'attack' | 'defend';
   mode: Mode;
   pattern: Pattern;
   P: number;
@@ -88,8 +88,7 @@ export type FightNext =
   | { kind: 'strike'; i: number }
   | { kind: 'choose' }
   | { kind: 'win' }
-  | { kind: 'lose' }
-  | { kind: 'escape'; dmg: number };
+  | { kind: 'lose' };
 
 export type Fight = {
   col: number;
@@ -158,7 +157,6 @@ export type Action =
   | { type: 'chooseClass'; cls: ClassId }
   | { type: 'setOptions'; opts: RunOptions }
   | { type: 'attack' }
-  | { type: 'flee' }
   | { type: 'press'; t: number; key: string }
   | { type: 'release'; t: number; key: string }
   | { type: 'timeout'; t: number }
@@ -185,8 +183,6 @@ export type GameEvent =
   | { type: 'timing'; pct: number; maxed: boolean }
   | { type: 'shard'; have: number; need: number; shattered: boolean }
   | { type: 'monsterDown'; boss: boolean }
-  | { type: 'gateOpen' }
-  | { type: 'escaped'; dmg: number }
   | { type: 'won' }
   | { type: 'lost' }
   | { type: 'xp'; amount: number }

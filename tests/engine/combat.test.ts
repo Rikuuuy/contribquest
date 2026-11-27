@@ -221,42 +221,6 @@ describe('FR-REL-3: Rubber Duck', () => {
   });
 });
 
-describe('FR-COM-1: fleeing', () => {
-  it('logs the flee line and runs one normal guard test', () => {
-    const s = step(fightRun(4), { type: 'flee' });
-    expect(s.combat!.lines.at(-1)).toBe('You turn to run. Merge Conflict Lich strikes at your back!');
-    expect(s.combat!.test).toMatchObject({ kind: 'flee', mode: 'ring', pattern: 'normal' });
-  });
-
-  it('damage without the pattern multiplier; HP never below 1; back to prev; monster stays', () => {
-    const start = fightRun(2, { hero: { hp: 1 } });
-    const prev = { ...start.prev! };
-    const tile = { col: start.combat!.col, row: start.combat!.row };
-    let s = step(start, { type: 'flee' });
-    const [v] = peek(s, 1);
-    s = step(s, { type: 'forceGrade', grade: 'miss' });
-    const md = Math.round(7 * vary(v!));
-    expect(s.hero.hp).toBe(1);
-    expect(s.combat!.next).toEqual({ kind: 'escape', dmg: md });
-    s = step(s, { type: 'advance' });
-    expect(s.pos).toEqual(prev);
-    expect([s.status, s.combat]).toEqual(['exploring', null]);
-    expect(tileAt(s.map, tile.col, tile.row)!.resolved).toBe(false);
-    expect(s.log.at(-1)).toBe(`You escaped but took ${md} damage. It still haunts that day.`);
-    expect(s.events).toContainEqual({ type: 'escaped', dmg: md });
-  });
-
-  it('safe on Perfect (a dodge), or on Good with CI Cache', () => {
-    let s = act(fightRun(4), { type: 'flee' }, { type: 'forceGrade', grade: 'perfect' }, { type: 'advance' });
-    expect([s.hero.hp, s.stats.dodges]).toEqual([42, 1]);
-    expect(s.log.at(-1)).toBe('A perfect escape. It still haunts that day.');
-    s = act(fightRun(4, { relics: ['cache'] }), { type: 'flee' }, { type: 'forceGrade', grade: 'good' }, { type: 'advance' });
-    expect([s.hero.hp, s.stats.dodges]).toEqual([42, 0]);
-    s = act(fightRun(4), { type: 'flee' }, { type: 'forceGrade', grade: 'good' });
-    expect(s.hero.hp).toBeLessThan(42);
-  });
-});
-
 describe('FR-COM-1, FR-DIF-4, FR-PRO-3: end of a fight', () => {
   const killer = (tier: Tier, o: TestRunOptions = {}) => {
     const s = makeFightRun(tier, o);

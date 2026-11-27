@@ -1,15 +1,6 @@
 // The engine reducer: step(state, action) → new state, and nextDeadline(state).
 import { chooseClass } from './classes';
-import {
-  finishEscape,
-  loseFight,
-  resolveTest,
-  startFight,
-  startFlee,
-  startGuard,
-  startStrike,
-  winFight,
-} from './combat';
+import { loseFight, resolveTest, startFight, startGuard, startStrike, winFight } from './combat';
 import { applyMove, checkMove } from './explore';
 import { log } from './log';
 import { enterMap, offerBlessing } from './omen';
@@ -38,9 +29,6 @@ export function step(state: RunState, action: Action): RunState {
       break;
     case 'attack':
       if (s.status === 'combat' && s.combat?.phase === 'choose') startStrike(s);
-      break;
-    case 'flee':
-      if (s.status === 'combat' && s.combat?.phase === 'choose') startFlee(s);
       break;
     case 'press':
     case 'release':
@@ -140,9 +128,6 @@ function advance(s: RunState): void {
     case 'lose':
       loseFight(s);
       break;
-    case 'escape':
-      finishEscape(s, next.dmg);
-      break;
   }
 }
 
@@ -154,7 +139,7 @@ export function nextDeadline(state: RunState): { t: number; action: Action } | n
   return { t, action: { type: 'timeout', t } };
 }
 
-/** A restored run never resumes a timing test: the fight goes back to the Attack/Flee choice (FR-COM-7). */
+/** A restored run never resumes a timing test: the fight goes back to the Attack choice (FR-COM-7). */
 export function resumeFight(state: RunState): RunState {
   if (!state.combat) return state;
   const s = structuredClone(state);

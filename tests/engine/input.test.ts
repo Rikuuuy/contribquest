@@ -6,8 +6,8 @@ describe('FR-COM-6, FR-CLS-9: combat keys', () => {
     for (const k of [' ', 'Enter', 'a', 'A', 'j', 'J', 'k', 'K']) expect(combatKey(k), k).toBe('hit');
   });
 
-  it('F and Escape flee', () => {
-    for (const k of ['f', 'F', 'Escape']) expect(combatKey(k), k).toBe('flee');
+  it('v1.6: F and Escape have no fight action', () => {
+    for (const k of ['f', 'F', 'Escape']) expect(combatKey(k), k).toBeNull();
   });
 
   it('other keys do nothing', () => {

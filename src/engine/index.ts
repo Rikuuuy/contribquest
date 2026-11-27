@@ -16,8 +16,6 @@ export {
   resolveStrike,
   startGuard,
   resolveGuard,
-  startFlee,
-  resolveFlee,
   winFight,
   loseFight,
   applyDuck,

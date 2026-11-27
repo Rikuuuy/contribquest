@@ -1,5 +1,6 @@
-// Fight flow and damage (prototype startCombat, attack, resolveAttack, enemyTurn, resolveDefend, flee, resolveFlee,
-// winFight, lose, and finishQte's Rubber Duck). Every function mutates the reducer's draft.
+// Fight flow and damage (prototype startCombat, attack, resolveAttack, enemyTurn, resolveDefend, winFight, lose, and
+// finishQte's Rubber Duck). v1.6: there is no Flee, so every fight ends in a win or a loss. Every function mutates the
+// reducer's draft.
 import { tileAt, type DayTile } from '../mapgen';
 import { ATK_MULT, DEF_MULT, PHASE2, PRESSURE_EPS, QTE, RELIC_COMBAT, VARIANCE } from './balance';
 import { heroClass } from './classes';
@@ -102,13 +103,6 @@ export function startGuard(s: RunState, i: number): void {
   beginTest(s, 'defend', pattern, m.phase2 ? PHASE2.speed : 1);
 }
 
-/** Flee: one `normal` guard test. */
-export function startFlee(s: RunState): void {
-  const c = fight(s);
-  clog(c, `You turn to run. ${c.m.name} strikes at your back!`);
-  beginTest(s, 'flee', 'normal', 1);
-}
-
 // ---------- Resolve ----------
 
 /** Rubber Duck: the first Miss of a fight becomes Good (in a combo, the first missed hit only). */
@@ -142,8 +136,7 @@ export function resolveTest(s: RunState, raw: GradeResult): void {
   c.events = [];
   s.events.push({ type: 'graded', result: r, text: banner.text });
   if (test.kind === 'attack') resolveStrike(s, r);
-  else if (test.kind === 'defend') resolveGuard(s, r, c.strikeIdx);
-  else resolveFlee(s, r);
+  else resolveGuard(s, r, c.strikeIdx);
 }
 
 function enterPhase2(s: RunState): void {
@@ -235,29 +228,6 @@ export function resolveGuard(s: RunState, r: GradeResult, i: number): void {
     }
   }
   c.next = i + 1 < c.plan.length ? { kind: 'strike', i: i + 1 } : { kind: 'choose' };
-}
-
-export function resolveFlee(s: RunState, r: GradeResult): void {
-  const c = fight(s);
-  const h = s.hero;
-  const m = c.m;
-  const g: Grade = Array.isArray(r.grade) ? (r.grade[0] as Grade) : r.grade;
-  const safe = g === 'perfect' || (g === 'good' && modsOf(h).cache);
-  const md = safe ? 0 : Math.max(1, Math.round(m.dmg * DEF_MULT[heroClass(h).guard][g] * variance(s)));
-  h.hp = Math.max(1, h.hp - md);
-  if (g === 'perfect') s.stats.dodges++;
-  s.events.push({ type: 'monsterHit', grade: g, dmg: md, lethal: false });
-  c.phase = 'wait';
-  c.next = { kind: 'escape', dmg: md };
-}
-
-/** After a flee: back to the previous tile, the monster stays. */
-export function finishEscape(s: RunState, dmg: number): void {
-  s.pos = s.prev ?? s.pos;
-  s.combat = null;
-  s.status = 'exploring';
-  log(s, dmg ? `You escaped but took ${dmg} damage. It still haunts that day.` : 'A perfect escape. It still haunts that day.');
-  s.events.push({ type: 'escaped', dmg });
 }
 
 export function winFight(s: RunState): void {

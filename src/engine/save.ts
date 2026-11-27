@@ -79,7 +79,7 @@ const MonsterSchema = z.object({
 });
 
 const QteTestSchema = z.object({
-  kind: z.enum(['attack', 'defend', 'flee']),
+  kind: z.enum(['attack', 'defend']),
   mode: ModeSchema,
   pattern: PatternSchema,
   P: num,
@@ -99,7 +99,6 @@ const FightNextSchema = z.discriminatedUnion('kind', [
   z.object({ kind: z.literal('choose') }),
   z.object({ kind: z.literal('win') }),
   z.object({ kind: z.literal('lose') }),
-  z.object({ kind: z.literal('escape'), dmg: num }),
 ]);
 
 const FightSchema = z.object({
@@ -160,7 +159,7 @@ export function serialize(s: RunState): SavedRun {
 
 /**
  * The run in a save, or null for anything that fails the schema (a prototype save, a newer version, non-JSON).
- * A fight in a timing test resumes at the Attack/Flee choice (FR-COM-7); a fight in `wait` is kept.
+ * A fight in a timing test resumes at the Attack choice (FR-COM-7); a fight in `wait` is kept.
  */
 export function restore(json: unknown): RunState | null {
   const r = SavedRunSchema.safeParse(json);
