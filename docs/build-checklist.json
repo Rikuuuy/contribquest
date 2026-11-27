@@ -1455,7 +1455,7 @@
       "spec": "presentation",
       "task": "4.1",
       "title": "Implement `hudView` (v1.6: week label, shards `{ have, max: 3 }`, the four boss lines), `renderHud` (bump and level flash), `renderLog`, and the danger overlay in `src/render/hud.ts`; write `tests/render/hud.test.ts`",
-      "status": "todo",
+      "status": "done",
       "verify": "npx vitest --run tests/render/hud.test.ts"
     },
     {
