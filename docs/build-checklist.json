@@ -1047,7 +1047,7 @@
       "spec": "progression",
       "task": "11.2",
       "title": "Write `scripts/simulate.ts` (graphs, cells, 200 seeds, report, exit code, `--seeds` and `--cell` flags) and the `simulate` npm script",
-      "status": "todo",
+      "status": "done",
       "verify": "npm run simulate -- --seeds 5"
     },
     {
