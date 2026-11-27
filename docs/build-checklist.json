@@ -471,7 +471,7 @@
       "spec": "map-generation",
       "task": "8.1",
       "title": "Run the mapgen and explore suites and the type check; confirm `src/mapgen` imports nothing from `src/engine`, `src/render`, `src/audio`, or storage/fetch code in `src/data`",
-      "status": "todo",
+      "status": "done",
       "verify": "npm run typecheck && npx vitest --run tests/mapgen tests/engine/explore.test.ts && ! grep -rE \"from ['\\\"]\\.\\./(engine|render|audio)|data/(fetch|load|cache|storage|settings)\" src/mapgen"
     },
     {
