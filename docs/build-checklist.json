@@ -1319,7 +1319,7 @@
       "spec": "progression",
       "task": "13.4",
       "title": "Move the save to v2: `RUN_KEY = \"cq:v2:run\"` in `src/data/constants.ts`, the v1.6 `SavedRunSchema` and the `pos` check in `restore` (`src/engine/save.ts`), `runstore.ts` never touching `cq:v1:run`; update `tests/data/runstore.test.ts`, `tests/engine/save.test.ts` (v1.5 saves rejected, bad `pos` rejected), and `tests/engine/save.prop.test.ts` (P8, P19 on v1.6 states)",
-      "status": "todo",
+      "status": "done",
       "verify": "npx vitest --run tests/data/runstore.test.ts tests/engine/save.test.ts tests/engine/save.prop.test.ts && ! grep -rn \"cq:v1:run\" src"
     },
     {

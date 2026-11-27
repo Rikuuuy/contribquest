@@ -18,6 +18,7 @@ export const USERNAME_RE = /^[a-z\d](?:[a-z\d]|-(?=[a-z\d])){0,38}$/i;
 /** localStorage keys. Read and written only in src/data. */
 export const SETTINGS_KEY = 'cq:v1:settings';
 export const CACHE_KEY_PREFIX = 'cq:v1:cache:';
-export const RUN_KEY = 'cq:v1:run';
+/** v1.6: the run save moved to v2; the v1 run key belongs to the prototype on the same origin and is never touched. */
+export const RUN_KEY = 'cq:v2:run';
 export const TROPHIES_KEY = 'cq:v1:trophies';
 export const CLASSWINS_KEY = 'cq:v1:classwins';
