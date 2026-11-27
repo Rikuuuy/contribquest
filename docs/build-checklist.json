@@ -768,7 +768,7 @@
       "spec": "combat-timing",
       "task": "10.1",
       "title": "Run the engine suite and the type check; confirm `src/engine` has no `Math.random`, `Date.now`, `performance.now`, `document`, `window`, or `localStorage`, and imports nothing from `src/render`, `src/audio`, or `src/main.ts`",
-      "status": "todo",
+      "status": "done",
       "verify": "npm run typecheck && npx vitest --run tests/engine && ! grep -rnE \"Math\\.random|Date\\.now|performance\\.now|document\\.|window\\.|localStorage|from ['\\\"]\\.\\./(render|audio|main)\" src/engine"
     },
     {
