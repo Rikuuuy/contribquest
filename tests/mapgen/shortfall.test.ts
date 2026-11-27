@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { ContributionDay } from '../../src/data/schema';
 import { assignTiles, bestDayIndex } from '../../src/mapgen/assign';
+import { generateMap } from '../../src/mapgen/generate';
 import { layoutDays } from '../../src/mapgen/layout';
 import { fnv1a, makeRng } from '../../src/mapgen/rng';
 import { minFightRoute, routeMinFights } from '../../src/mapgen/routes';
@@ -8,7 +9,7 @@ import { MAP_RNG_SALT } from '../../src/mapgen/rules';
 import { applyRouteShortfall, applyShortfall } from '../../src/mapgen/shortfall';
 import type { DayTile, GameMap } from '../../src/mapgen/types';
 import { SATURDAY_END } from '../fixtures/profiles';
-import { windowDays } from '../fixtures/sets';
+import { makeSet, windowDays } from '../fixtures/sets';
 
 function tilesFor(days: ContributionDay[]): DayTile[] {
   const { cells } = layoutDays(days);
@@ -155,6 +156,16 @@ describe('applyRouteShortfall (route step, v1.6)', () => {
     const resumed = makeRng(afterCount);
     applyRouteShortfall(replay, resumed);
     expect(replay.tiles).toEqual(shared.tiles);
+  });
+
+  it('generateMap runs both steps on one map RNG instance', () => {
+    const map = rawMap(quietDays, 'Quiet-Dev');
+    const rng = mapRng(map);
+    map.quiet = applyShortfall(map.tiles, rng).quiet;
+    applyRouteShortfall(map, rng);
+    const r = generateMap(makeSet(quietDays, 'Quiet-Dev'));
+    expect(r.ok && r.value).toEqual(map);
+    expect(routeMinFights(map)).toBeGreaterThanOrEqual(4);
   });
 
   it('does not change quiet and leaves maps that already meet the minimum untouched', () => {

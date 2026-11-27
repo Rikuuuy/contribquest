@@ -5,7 +5,7 @@ import { assignTiles, bestDayIndex } from './assign';
 import { layoutDays } from './layout';
 import { fnv1a, makeRng } from './rng';
 import { MAP_RNG_SALT, ROWS } from './rules';
-import { applyShortfall } from './shortfall';
+import { applyRouteShortfall, applyShortfall } from './shortfall';
 import type { GameMap, MapError } from './types';
 import { MAP_ERROR_TEXT, mapError, validateMap } from './validate';
 
@@ -15,10 +15,10 @@ export function generateMap(set: ContributionSet): Result<GameMap, MapError> {
     const last = days[days.length - 1];
     if (!last) return { ok: false, error: mapError(MAP_ERROR_TEXT.missing) };
     const seed = fnv1a(set.username.toLowerCase() + '|' + last.date);
+    const rng = makeRng(seed ^ MAP_RNG_SALT); // one map RNG instance for both shortfall steps
     const { w0, cols, cells } = layoutDays(days);
     const best = bestDayIndex(days);
     const tiles = assignTiles(days, cells, best);
-    const rng = makeRng(seed ^ MAP_RNG_SALT);
     const { quiet } = applyShortfall(tiles, rng);
     const map: GameMap = {
       cols,
@@ -31,6 +31,7 @@ export function generateMap(set: ContributionSet): Result<GameMap, MapError> {
       emptyQuarter: best.emptyQuarter,
       quiet,
     };
+    applyRouteShortfall(map, rng);
     const error = validateMap(map);
     return error ? { ok: false, error } : { ok: true, value: map };
   } catch {

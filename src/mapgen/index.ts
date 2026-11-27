@@ -1,4 +1,4 @@
-// Map generation module: layout, tiles, shards, validation.
+// Map generation module: layout, tiles, routes, shortfall, validation.
 export const MODULE = 'mapgen';
 
 export { fnv1a, makeRng, nextFloat, shuffleInPlace, type Rng } from './rng';
@@ -9,5 +9,5 @@ export { layoutDays, tileAt, neighbours } from './layout';
 export { bestDayIndex, assignTiles } from './assign';
 export { applyShortfall, applyRouteShortfall } from './shortfall';
 export { nextOptions, routeMinFights, minFightRoute, reachableIdx } from './routes';
-export { reachable, validateMap } from './validate';
+export { validateMap } from './validate';
 export { generateMap, mapDateRange } from './generate';

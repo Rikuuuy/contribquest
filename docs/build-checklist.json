@@ -535,7 +535,7 @@
       "spec": "map-generation",
       "task": "9.5",
       "title": "Rewrite `validateMap` with the v1.6 checks and update `generateMap` (one map RNG, `bossNode`, route shortfall, no `shardsNeeded`); update `tests/mapgen/validate.test.ts` (missing start, duplicate date, a tile with no forward option, a route below 4 fights) and `tests/mapgen/fixtures.test.ts` (every fixture profile still `ok: true`)",
-      "status": "todo",
+      "status": "done",
       "verify": "npx vitest --run tests/mapgen/validate.test.ts tests/mapgen/fixtures.test.ts"
     },
     {
