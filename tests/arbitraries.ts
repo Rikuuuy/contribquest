@@ -66,9 +66,11 @@ const gradeArb = fc.constantFrom<Grade>('perfect', 'good', 'miss');
  * (progression design.md "Testing"). Moves and grades are weighted up so runs get into and through fights.
  */
 export const actionArb: fc.Arbitrary<Action> = fc.oneof(
-  { arbitrary: fc.constantFrom('up', 'down', 'left', 'right').map((dir): Action => ({ type: 'move', dir })), weight: 8 },
+  {
+    arbitrary: fc.record({ col: fc.integer({ min: 0, max: 14 }), row: fc.integer({ min: 0, max: 6 }) }).map((to): Action => ({ type: 'move', to })),
+    weight: 8,
+  },
   { arbitrary: fc.constant<Action>({ type: 'attack' }), weight: 3 },
-  { arbitrary: fc.constant<Action>({ type: 'flee' }), weight: 1 },
   {
     arbitrary: fc
       .oneof(gradeArb, fc.tuple(gradeArb, gradeArb, gradeArb))

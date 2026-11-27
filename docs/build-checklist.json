@@ -931,7 +931,7 @@
       "spec": "combat-timing",
       "task": "11.3",
       "title": "Change the `move` action to `{ type: \"move\"; to: Pos }` in `src/engine/state.ts` and `src/engine/step.ts`: status gate, `checkMove`/`applyMove`, `moved` event, `enterTile` for monster, chest, wisp, fog (`restDay` from progression task 13.1), and the boss node; remove the `blocked` event; extend `tests/engine/step.test.ts` with legal and refused moves and every entry kind",
-      "status": "todo",
+      "status": "done",
       "verify": "npx vitest --run tests/engine/step.test.ts"
     },
     {
@@ -1292,7 +1292,7 @@
       "spec": "progression",
       "task": "13.1",
       "title": "Add `REST_HEAL = 0.05`, `WISP_HEAL = 0.1`, `TROPHY_SPEED_FIGHTS = 6`, and `SIM.bossWeeks = 2` to `balance.ts` with assertions in `tests/engine/balance.test.ts`; implement `restDay` and the wisp heal in `src/engine/progression.ts` with the `rest` event and the new `wisp` event field; extend `tests/engine/progression.test.ts`",
-      "status": "todo",
+      "status": "done",
       "verify": "npx vitest --run tests/engine/progression.test.ts tests/engine/balance.test.ts"
     },
     {

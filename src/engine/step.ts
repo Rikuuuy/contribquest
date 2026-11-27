@@ -1,14 +1,14 @@
 // The engine reducer: step(state, action) → new state, and nextDeadline(state).
 import { chooseClass } from './classes';
-import { loseFight, resolveTest, startFight, startGuard, startStrike, winFight } from './combat';
+import { loseFight, resolveTest, startBossFight, startFight, startGuard, startStrike, winFight } from './combat';
 import { applyMove, checkMove } from './explore';
-import { log } from './log';
 import { enterMap, offerBlessing } from './omen';
-import { collectWisp, openChest } from './progression';
+import { collectWisp, openChest, restDay } from './progression';
 import { chooseRace } from './races';
-import { endRun, newRun } from './run';
+import { newRun } from './run';
 import { pickRelic } from './relics';
 import { grade, testDeadline } from './qte';
+import type { DayTile, Pos, RouteOption } from '../mapgen';
 import type { Action, RunState } from './state';
 
 /** Applies one action to a deep copy of `state`; the input is never mutated (FR-COM-5). */
@@ -19,7 +19,7 @@ export function step(state: RunState, action: Action): RunState {
   if (s.status === 'relic' && action.type !== 'pickRelic' && action.type !== 'setOptions') return s;
   switch (action.type) {
     case 'move':
-      move(s, action.dir);
+      move(s, action.to);
       break;
     case 'chooseClass':
       chooseClass(s, action.cls);
@@ -59,36 +59,41 @@ export function step(state: RunState, action: Action): RunState {
   return s;
 }
 
-function move(s: RunState, dir: Parameters<typeof checkMove>[1]): void {
+/**
+ * v1.6: forward-only moves. Accepted only while exploring and only onto a legal target; a refused move changes
+ * nothing and emits nothing (requirements 22.1, 22.4). Every tile entered resolves (22.2, 22.3).
+ */
+function move(s: RunState, to: Pos): void {
   if (s.status !== 'exploring') return;
-  const check = checkMove(s, dir);
-  if (!check.ok) {
-    if (check.reason !== 'void') {
-      const [dc, dr] = DELTA[dir];
-      log(s, check.message);
-      s.events.push({ type: 'blocked', col: s.pos.col + dc, row: s.pos.row + dr });
-    }
+  const check = checkMove(s, to);
+  if (!check.ok) return;
+  const from = { col: s.pos.col, row: s.pos.row };
+  applyMove(s, check);
+  s.events.push({ type: 'moved', from, to: { col: s.pos.col, row: s.pos.row } });
+  enterTile(s, check.target, check.tile);
+}
+
+function enterTile(s: RunState, target: RouteOption, tile: DayTile | null): void {
+  if (target.boss) {
+    startBossFight(s);
     return;
   }
-  const t = check.tile;
-  applyMove(s, t);
-  if (t.resolved) return;
-  switch (t.kind) {
+  // Columns are never revisited, so a legal target is unresolved; the check guards hand-built test states.
+  if (!tile || tile.resolved) return;
+  switch (tile.kind) {
     case 'monster':
-    case 'boss':
-      startFight(s, t);
-      break;
-    case 'gate':
-      if (t.boss) startFight(s, t);
-      else endRun(s, 'won');
-      break;
-    case 'wisp':
-      collectWisp(s, t);
+      startFight(s, tile);
       break;
     case 'chest':
-      openChest(s, t);
+      openChest(s, tile);
       break;
-    default:
+    case 'wisp':
+      collectWisp(s, tile);
+      break;
+    case 'fog':
+      restDay(s, tile);
+      break;
+    case 'start':
       break;
   }
 }
@@ -99,8 +104,6 @@ function retry(s: RunState): RunState {
   const r = newRun(s.set, s.heroSet, { heroClass: s.hero.cls, heroRace: s.hero.race, ...s.opts });
   return r.ok ? r.value : s;
 }
-
-const DELTA = { up: [0, -1], down: [0, 1], left: [-1, 0], right: [1, 0] } as const;
 
 function input(s: RunState, action: Extract<Action, { type: 'press' | 'release' | 'timeout' }>): void {
   const c = s.combat;
