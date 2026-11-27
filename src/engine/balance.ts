@@ -14,9 +14,9 @@ export {
   MIN_ROUTE_FIGHTS,
 } from '../mapgen/rules';
 
-/** Fog reveal radius squared (`dc² + dr²`), and with the Code Review relic. */
-export const REVEAL_R2 = 5;
-export const REVEAL_R2_REVIEW = 8;
+/** v1.6 visibility window: columns seen ahead of the hero, and with the Code Review relic. */
+export const VIEW_AHEAD = 2;
+export const VIEW_AHEAD_REVIEW = 3;
 
 // ---------- Timing tests (prototype QTE) ----------
 

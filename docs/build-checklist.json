@@ -562,7 +562,7 @@
       "spec": "map-generation",
       "task": "10.1",
       "title": "Add `VIEW_AHEAD = 2`, `VIEW_AHEAD_REVIEW = 3` to `balance.ts` (remove `REVEAL_R2`, `REVEAL_R2_REVIEW`) and the matching assertions in `tests/engine/balance.test.ts`",
-      "status": "todo",
+      "status": "done",
       "verify": "npx vitest --run tests/engine/balance.test.ts"
     },
     {

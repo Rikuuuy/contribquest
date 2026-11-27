@@ -28,6 +28,8 @@ import {
   SIM,
   START_XP_MUL,
   TEST_TIMING,
+  VIEW_AHEAD,
+  VIEW_AHEAD_REVIEW,
   TRAIT_ATK,
   VARIANCE,
   WEEKEND_SHARE,
@@ -213,6 +215,12 @@ describe('FR-DIF-1: balance.ts matches game-rules.md', () => {
     has(`below ${SIM.healBelow * 100}% HP (${SIM.healBeforeBoss * 100}% before the boss)`);
     has(`stops after ${SIM.maxActions} actions`);
     has(`\`makeRng(${SIM.mixedSeed})\``);
+  });
+
+  it('visibility window (v1.6)', () => {
+    const rows = Object.fromEntries(table('| Window constant | Value |').map(([k, v]) => [(k as string).replace(/`/g, ''), num(v as string)]));
+    expect(rows).toEqual({ VIEW_AHEAD, VIEW_AHEAD_REVIEW });
+    expect([VIEW_AHEAD, VIEW_AHEAD_REVIEW]).toEqual([2, 3]);
   });
 
   it('log lengths', () => {
