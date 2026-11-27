@@ -1400,7 +1400,7 @@
       "spec": "presentation",
       "task": "2.2",
       "title": "Implement `heroPixels`, `heroKey`, `heroFrame`, `heroFX` in `src/render/sprites/hero.ts`, using `RACE_INFO` from progression for face colours and features",
-      "status": "todo",
+      "status": "done",
       "verify": "npx vitest --run tests/render/hero-sprite.test.ts"
     },
     {
@@ -1409,7 +1409,7 @@
       "spec": "presentation",
       "task": "2.3",
       "title": "Write `tests/render/hero-sprite.test.ts`",
-      "status": "todo",
+      "status": "done",
       "verify": "npx vitest --run tests/render/hero-sprite.test.ts"
     },
     {
