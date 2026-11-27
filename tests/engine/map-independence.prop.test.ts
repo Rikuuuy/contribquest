@@ -6,17 +6,18 @@ import { generateMap } from '../../src/mapgen/generate';
 import { contributionSetArb } from '../arbitraries';
 
 describe('map independence', () => {
-  it('P18: for any set, class, race, and options, newRun(...).map deep-equals generateMap(set) (apart from the start tile flags)', () => {
+  it('P18: for any set, hero set, class, race, and options, newRun(...).map deep-equals generateMap(set) (apart from the start tile flags)', () => {
     expect(generateMap.length).toBe(1); // no hero parameter
     fc.assert(
       fc.property(
         contributionSetArb,
+        fc.option(contributionSetArb, { nil: null }),
         fc.constantFrom(...ClassIdSchema.options),
         fc.constantFrom(...RaceIdSchema.options),
         fc.boolean(),
         fc.boolean(),
-        (set, heroClass, heroRace, calm, assist) => {
-          const r = newRun(set, null, { heroClass, heroRace, calm, assist });
+        (set, heroSet, heroClass, heroRace, calm, assist) => {
+          const r = newRun(set, heroSet, { heroClass, heroRace, calm, assist });
           const g = generateMap(set);
           if (!r.ok || !g.ok) {
             expect(r.ok).toBe(g.ok);

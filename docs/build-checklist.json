@@ -462,7 +462,7 @@
       "spec": "map-generation",
       "task": "7.2",
       "title": "Write `tests/engine/map-independence.prop.test.ts`: for any set and any class and race, `newRun(...).map` deep-equals `generateMap(set).value` (needs `newRun` from the progression spec)",
-      "status": "todo",
+      "status": "done",
       "verify": "npx vitest --run tests/engine/map-independence.prop.test.ts"
     },
     {
