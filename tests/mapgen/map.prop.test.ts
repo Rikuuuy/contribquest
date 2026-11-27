@@ -1,5 +1,5 @@
 import fc from 'fast-check';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, expectTypeOf, it } from 'vitest';
 import type { ContributionSet } from '../../src/data/schema';
 import { assignTiles, bestDayIndex } from '../../src/mapgen/assign';
 import { generateMap } from '../../src/mapgen/generate';
@@ -15,6 +15,11 @@ function mapOf(set: ContributionSet): GameMap {
 }
 
 describe('map properties', () => {
+  it('P18: generateMap takes exactly one ContributionSet and no hero parameter', () => {
+    expectTypeOf(generateMap).parameters.toEqualTypeOf<[ContributionSet]>();
+    expect(generateMap.length).toBe(1);
+  });
+
   it('P1: generating the same set twice gives deeply equal results', () => {
     fc.assert(fc.property(contributionSetArb, (set) => {
         expect(generateMap(set)).toEqual(generateMap(set));

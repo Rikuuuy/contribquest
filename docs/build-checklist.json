@@ -453,7 +453,7 @@
       "spec": "map-generation",
       "task": "7.1",
       "title": "Add a type-level check in `tests/mapgen/map.prop.test.ts` that `generateMap` has exactly one parameter of type `ContributionSet` (`expectTypeOf(generateMap).parameters.toEqualTypeOf<[ContributionSet]>()`)",
-      "status": "todo",
+      "status": "done",
       "verify": "npx vitest --run tests/mapgen/map.prop.test.ts"
     },
     {
