@@ -1,7 +1,7 @@
 // v1.6 route exploration rules: the column view window, forward-only legal moves, soul shards
 // (map-generation design.md "Engine side"). These operate on the reducer's draft; step() clones its input first.
 import { nextOptions, tileAt, type DayTile, type GameMap, type Pos, type RouteOption } from '../mapgen';
-import { VIEW_AHEAD, VIEW_AHEAD_REVIEW } from './balance';
+import { SHARD_MAX, SHARD_NO_PHASE2, VIEW_AHEAD, VIEW_AHEAD_REVIEW } from './balance';
 
 export type ExploreState = {
   map: GameMap;
@@ -53,18 +53,19 @@ export function applyMove(s: ExploreState, m: Extract<MoveCheck, { ok: true }>):
   reveal(s);
 }
 
-/** After a banish: tiers 3 and 4 add a shard while the ward holds. (v1.5; rewritten for SHARD_MAX in map-generation 10.3) */
-export function collectShard(s: ExploreState, tier: number): { got: boolean; shattered: boolean } {
-  const need = s.map.shardsNeeded;
-  if (tier < 3 || tier >= 5 || s.shards >= need) return { got: false, shattered: false };
+/** After a banish: tiers 3 and 4 add a shard while `shards < SHARD_MAX`; `bound` when shards just reached SHARD_NO_PHASE2. */
+export function collectShard(s: ExploreState, tier: number): { got: boolean; bound: boolean } {
+  if ((tier !== 3 && tier !== 4) || s.shards >= SHARD_MAX) return { got: false, bound: false };
   s.shards++;
-  const shattered = s.shards === need;
+  const bound = s.shards === SHARD_NO_PHASE2;
   s.log.push(
-    shattered ? `Soul shard ${s.shards}/${need}. The Phantom's ward shatters!` : `Soul shard ${s.shards}/${need} collected.`,
+    bound
+      ? `Soul shard ${s.shards}/${SHARD_MAX}. The Phantom is bound: no Phase 2.`
+      : `Soul shard ${s.shards}/${SHARD_MAX}. The Phantom weakens.`,
   );
-  return { got: true, shattered };
+  return { got: true, bound };
 }
 
-export function shardStatus(s: Pick<ExploreState, 'map' | 'shards'>): { have: number; need: number } {
-  return { have: s.shards, need: s.map.shardsNeeded };
+export function shardStatus(s: Pick<ExploreState, 'shards'>): { have: number; max: typeof SHARD_MAX } {
+  return { have: s.shards, max: SHARD_MAX };
 }

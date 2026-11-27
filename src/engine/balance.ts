@@ -18,6 +18,10 @@ export {
 export const VIEW_AHEAD = 2;
 export const VIEW_AHEAD_REVIEW = 3;
 
+/** v1.6 soul shards: the most a run can hold, and the count at which the boss loses phase 2. */
+export const SHARD_MAX = 3;
+export const SHARD_NO_PHASE2 = 3;
+
 // ---------- Timing tests (prototype QTE) ----------
 
 /** Windows are ± ms around the target moment. */
