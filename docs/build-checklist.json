@@ -939,7 +939,7 @@
       "spec": "progression",
       "task": "7.2",
       "title": "Implement `SavedRunSchema`, `serialize`, `restore`, `continueLabel` in `src/engine/save.ts`",
-      "status": "todo",
+      "status": "done",
       "verify": "npx vitest --run tests/engine/save.test.ts"
     },
     {

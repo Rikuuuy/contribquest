@@ -31,3 +31,4 @@ export { omenFor, omenLog, enterMap, offerBlessing, BLESSING_TITLE } from './ome
 export { makeHero, newRun, type RunSettings } from './run';
 export { RACE_NAMES, RACE_INFO, chooseRace, type RaceInfo } from './races';
 export { RELICS, relicById, offerRelic, pickRelic, CHEST_TITLE, type Relic } from './relics';
+export { SavedRunSchema, serialize, restore, continueLabel, type SavedRun } from './save';
