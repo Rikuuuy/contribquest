@@ -1355,7 +1355,7 @@
       "spec": "progression",
       "task": "13.8",
       "title": "Re-measure on the v1.6 rules: run the full simulator and the grade-policy regression, record both tables in `docs/kiro-journal.md`, and hand any missed target to the `balance-tuner` agent, which may change only the v1.6 tunables (`REST_HEAL`, `WISP_HEAL`, `SHARD_BOSS_HP_CUT`, `RELIC_COMBAT.cacheHeal`, `TROPHY_SPEED_FIGHTS`) in `balance.ts` and `game-rules.md`; `DIFFICULTY` stays unchanged",
-      "status": "todo",
+      "status": "done",
       "verify": "npm run simulate && ! git diff main -- src/engine/balance.ts | grep -q \"pMul:\""
     },
     {
