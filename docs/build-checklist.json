@@ -1364,7 +1364,7 @@
       "spec": "presentation",
       "task": "1.1",
       "title": "Split the prototype's markup and CSS into `index.html` and `src/style.css` (screens, overlays, footer with \"Not affiliated with GitHub.\"), and add `src/render/dom.ts`, `src/render/motion.ts`, `src/render/palette.ts`",
-      "status": "todo",
+      "status": "done",
       "verify": "npm run build"
     },
     {

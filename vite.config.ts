@@ -27,6 +27,14 @@ export default defineConfig({
   build: {
     outDir: 'dist',
     emptyOutDir: true,
+    rolldownOptions: {
+      // Two pages: the root keeps redirecting players to the prototype until the cutover,
+      // and the TypeScript build is served at /contribquest/next/.
+      input: {
+        main: resolve(root, 'index.html'),
+        next: resolve(root, 'next/index.html'),
+      },
+    },
   },
   plugins: [copyPrototype()],
 });

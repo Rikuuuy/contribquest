@@ -1,0 +1,175 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ContribQuest: The Haunted Graph</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/src/style.css">
+</head>
+<body>
+<!--
+  The TypeScript build (presentation spec). Served at /contribquest/next/ while the site root keeps
+  redirecting players to /contribquest/prototype/ until the cutover.
+-->
+<canvas id="bg" aria-hidden="true"></canvas>
+<div id="danger" aria-hidden="true"></div>
+<div id="whiteout" aria-hidden="true"></div>
+<main>
+  <!-- START -->
+  <section id="screen-start" class="screen">
+    <h1 class="title">Contrib<span>Quest</span></h1>
+    <p class="tag">Your GitHub graph is haunted.</p>
+    <div id="teaser" class="teaser" role="img" aria-label="A contribution graph rising into a haunted map"></div>
+    <div class="card">
+      <form id="form" class="row" autocomplete="off">
+        <label for="username" class="sr" hidden>GitHub username</label>
+        <input id="username" type="text" placeholder="GitHub username" maxlength="39" spellcheck="false" aria-label="GitHub username">
+        <button type="submit">Raise my graph</button>
+        <button type="button" id="btn-demo" class="ghost">Play the demo</button>
+        <div class="raid-row">
+          <label for="vs">Raid a friend's graph (optional):</label>
+          <input id="vs" type="text" placeholder="friend's username" maxlength="39" spellcheck="false">
+        </div>
+      </form>
+      <p id="start-error" class="error" hidden></p>
+      <div class="row" id="continue-row" hidden style="margin-top:12px"><button type="button" id="btn-continue" class="alt">Continue run</button></div>
+      <p class="fine" id="start-trophies"></p>
+      <ul class="how">
+        <li><b>Every day is a tile.</b> Your last 13 weeks, laid out exactly like your graph.</li>
+        <li><b>Busy days fight back.</b> Monsters rise from them, labeled with the real date and count.</li>
+        <li><b>Your best day is the boss.</b> It waits after the last week. Your streak is your armor.</li>
+        <li><b>Every move is a timing test.</b> Strike in the gold zone for a critical. Only a perfect press dodges a hit completely.</li>
+      </ul>
+      <p class="fine">Each week, step up, ahead, or down with W, D, S or the arrow keys. In a fight press A to attack, then Space at the right moment.<br>
+      Your username is sent to a public community API that reads your contribution calendar. Nothing else leaves your browser.</p>
+    </div>
+  </section>
+
+  <!-- LOADING -->
+  <section id="screen-loading" class="screen loading" hidden>
+    <p class="pixel" id="loading-text">Summoning…</p>
+  </section>
+
+  <!-- SUMMARY -->
+  <section id="screen-summary" class="screen" hidden>
+    <h1 class="title" style="font-size:22px" id="sum-title">The graph of <span id="sum-name"></span></h1>
+    <p class="tag" id="sum-range"></p>
+    <div class="card summary">
+      <div class="portrait">
+        <div class="portrait-wrap"><div id="portrait-bubble" class="bubble" hidden></div><canvas id="hero-portrait" role="button" tabindex="0" aria-label="Your hero. Click to say hello."></canvas></div>
+        <div class="pixel" style="font-size:9px;color:var(--muted)" id="sum-identity"></div>
+        <img id="sum-avatar" class="avatar" alt="" hidden>
+        <div class="pixel" style="font-size:10px;color:var(--purple)" id="sum-aura"></div>
+      </div>
+      <div>
+        <div class="stats" id="sum-stats"></div>
+        <div class="stat trait"><div class="k">Trait from your weekday pattern</div><div class="v" id="sum-trait" style="font-size:16px"></div><div id="sum-trait-text" class="k"></div></div>
+        <div class="stat omen" id="sum-omen"><div class="k" id="sum-omen-k"></div><div class="v" id="sum-omen-v" style="font-size:16px"></div><div class="k" id="sum-omen-t"></div></div>
+        <p class="quiet" id="sum-quiet" hidden>A quiet graph. Few spirits stir here, so some lost ghosts have risen from your empty days.</p>
+        <h3 class="class-head">CHOOSE YOUR RACE</h3>
+        <div id="race-pick" role="radiogroup" aria-label="Hero race"></div>
+        <h3 class="class-head">CHOOSE YOUR CLASS</h3>
+        <div id="class-pick" role="radiogroup" aria-label="Hero class"></div>
+        <div class="xp-table" id="sum-xp"></div>
+        <div class="settings">
+          <label><input type="checkbox" id="opt-calm">Calm mode: slower timing, wider windows</label>
+          <label><input type="checkbox" id="opt-assist">Auto-timing: every timing press counts as Good</label>
+          <span class="calib">Timing offset <input type="range" id="opt-offset" min="-150" max="150" step="5" aria-label="Timing offset in milliseconds"> <b id="opt-offset-v"></b>
+          <button type="button" class="ghost sound-btn" id="btn-calib">Use my average</button> <span id="calib-note"></span></span>
+        </div>
+        <div class="row" style="justify-content:flex-start;margin-top:16px">
+          <button id="btn-enter">Enter the graph</button>
+          <button id="btn-back" class="ghost">Different username</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- MAP -->
+  <section id="screen-map" class="screen" hidden>
+    <div class="card hud" id="hud"></div>
+    <div class="board">
+      <div id="map-host" class="map-host" tabindex="0" role="group" aria-label="Game map. Use W, D, S or the arrow keys to pick the next tile."></div>
+      <div id="map-tip" hidden></div>
+      <div id="combat" hidden>
+        <div class="fight" role="dialog" aria-labelledby="m-name">
+          <div class="bossbar">
+            <canvas id="m-portrait" class="bb-port" aria-hidden="true"></canvas>
+            <div class="bb-main">
+              <div class="bb-name"><span class="skull" aria-hidden="true"></span><h3 id="m-name"></h3><span class="skull" aria-hidden="true"></span></div>
+              <div id="c-mon-hp"></div>
+            </div>
+          </div>
+          <div class="stage-wrap">
+            <div class="stage-inner"><div id="stage-slot" class="stage-slot" aria-hidden="true"></div><div class="plate" id="c-hero-hp"></div></div>
+            <div class="grade" id="qte-grade" aria-live="assertive"></div>
+            <canvas id="qte" aria-hidden="true"></canvas>
+          </div>
+          <div class="fight-bottom">
+            <div class="panel log-panel">
+              <h4>BATTLE LOG</h4>
+              <div class="clog" id="clog" aria-live="polite"></div>
+            </div>
+            <div class="panel side-panel">
+              <div class="tabs" role="tablist">
+                <button type="button" role="tab" data-tab="hero" id="tab-hero">HERO</button>
+                <button type="button" role="tab" data-tab="foe" id="tab-foe">FOE 1</button>
+              </div>
+              <div id="tab-body"></div>
+              <div class="row cmd" id="choose-row">
+                <button id="btn-attack">Attack (A)</button>
+              </div>
+              <div class="row cmd" id="qte-row" hidden>
+                <button id="btn-qte" class="alt">Now! (Space)</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div id="relic" hidden>
+      <div class="relic-box" role="dialog" aria-labelledby="relic-title">
+        <h3 id="relic-title">The chest holds a relic. Choose one.</h3>
+        <div id="relic-cards"></div>
+        <p class="fine">Press 1, 2, or 3, or tap a relic.</p>
+      </div>
+    </div>
+    <div class="legend">
+      <span>Brighter green = busier day</span><span>Fog hides the weeks ahead</span><span>Pale frames = your next steps</span><span>The altar = the boss</span>
+    </div>
+    <div class="dpad" id="branch-pad" aria-label="Route buttons">
+      <button type="button" data-branch="up" aria-label="Step up">↗ Up</button><button type="button" data-branch="ahead" aria-label="Step ahead">→ Ahead</button><button type="button" data-branch="down" aria-label="Step down">↘ Down</button>
+    </div>
+    <div class="card" id="log" aria-live="polite"></div>
+  </section>
+
+  <!-- END -->
+  <section id="screen-end" class="screen end" hidden>
+    <div class="card">
+      <h2 id="end-title"></h2>
+      <p class="center" id="end-sub" style="color:var(--muted)"></p>
+      <div class="compare">
+        <div class="card"><h3>IN THE GRAPH</h3><dl id="end-game"></dl></div>
+        <div class="card"><h3>ON GITHUB</h3><dl id="end-gh"></dl></div>
+      </div>
+      <p class="today" id="end-today"></p>
+      <div id="end-trophies-wrap"><h3 class="trophy-head" id="end-trophy-head"></h3><div id="end-trophies"></div></div>
+      <div class="row">
+        <button id="btn-again">Play this graph again</button>
+        <button id="btn-new" class="ghost">New username</button>
+        <button id="btn-share" class="alt">Copy challenge link</button>
+        <button id="btn-card" class="ghost">Save share card</button>
+      </div>
+      <p class="fine" id="share-note"></p>
+      <img id="share-img" alt="Share card preview" hidden>
+    </div>
+  </section>
+
+  <footer>ContribQuest for Kiroween 2026. Not affiliated with GitHub. · <button type="button" id="btn-sound" class="ghost sound-btn" aria-pressed="true">Sound: on (M)</button></footer>
+</main>
+<script type="module" src="/src/main.ts"></script>
+</body>
+</html>
