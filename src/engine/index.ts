@@ -34,3 +34,4 @@ export { RELICS, relicById, offerRelic, pickRelic, CHEST_TITLE, type Relic } fro
 export { SavedRunSchema, serialize, restore, continueLabel, type SavedRun } from './save';
 export { summaryView, resultsView } from './views';
 export { makeSkillBot, skillGrade, type SkillBot } from './skillbot';
+export { routeAction, playRun, MAX_ACTIONS, type Grader, type PlayResult } from './routebot';

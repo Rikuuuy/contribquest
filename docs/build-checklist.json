@@ -1038,7 +1038,7 @@
       "spec": "progression",
       "task": "11.1",
       "title": "Implement `routeAction` in `src/engine/routebot.ts` and write `tests/engine/routebot.test.ts`",
-      "status": "todo",
+      "status": "done",
       "verify": "npx vitest --run tests/engine/routebot.test.ts"
     },
     {
