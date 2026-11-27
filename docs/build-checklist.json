@@ -1310,7 +1310,7 @@
       "spec": "progression",
       "task": "13.3",
       "title": "Update `newRun` (`version: 2`, start resolved, column window, the always-shown shard log line) and `tests/engine/run.test.ts`; keep P18 green",
-      "status": "todo",
+      "status": "done",
       "verify": "npx vitest --run tests/engine/run.test.ts tests/engine/map-independence.prop.test.ts"
     },
     {

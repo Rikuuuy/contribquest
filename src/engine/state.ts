@@ -132,7 +132,7 @@ export type RunStats = {
 };
 
 export type RunState = {
-  version: 1;
+  version: 2;
   set: ContributionSet;
   heroSet: ContributionSet | null;
   map: GameMap;

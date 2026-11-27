@@ -66,7 +66,7 @@ export function makeTestRun(o: TestRunOptions = {}): RunState {
   const map = mapOf(set);
   const s0 = map.tiles[0] as DayTile;
   const s: RunState = {
-    version: 1,
+    version: 2,
     set,
     heroSet: null,
     map,
