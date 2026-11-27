@@ -5,6 +5,11 @@ import { loadDemo } from './data/demo';
 import { loadSettings } from './data/settings';
 import { combatKey, isVisible, legalMoves, newRun, nextDeadline, step, type Action, type RunState } from './engine';
 import { tileAt } from './mapgen';
+import { $, show } from './render/dom';
+import { onReducedChange, REDUCED } from './render/motion';
+import type { Renderer } from './render/renderer';
+import { renderEndPanel, renderFightPanel, renderRelicPanel } from './render/screens/debug-panels';
+import { createMapScreen } from './render/screens/map';
 
 let state: RunState | null = null;
 /** `performance.now()` when the current test (by `testId`) was first rendered. */
@@ -229,6 +234,110 @@ export function loadWorld(): Promise<typeof import('./render/world/index')> {
 const app = document.getElementById('app');
 if (app) mountPlain(app);
 
-// The /next/ page has a map host: start fetching the world chunk in the background (the renderer wiring follows).
-if (document.getElementById('map-host'))
-  loadWorld().catch((e: unknown) => console.warn('3D view unavailable:', e instanceof Error ? e.message : e));
+// ---------- The /next/ page (presentation spec, v1.6) ----------
+
+const BLESSING_DELAY_MS = 600;
+
+/**
+ * Wires the /next/ page: the demo starts from "Play the demo" or `?demo`, the map screen draws every state, and
+ * the plain fight, relic, and end panels stand in until their screens exist. The world renderer loads in the
+ * background; the map is playable with the HUD and the pad before it arrives.
+ */
+function mountNext(): void {
+  const settings = loadSettings(globalThis.localStorage ?? null);
+  const screen = createMapScreen({ dispatch });
+  let renderer: Renderer | null = null;
+  let fresh = false;
+  let blessing: ReturnType<typeof setTimeout> | null = null;
+  const teaser = document.getElementById('teaser');
+  const demoMap = newRun(loadDemo(() => Date.now()), null, settings);
+
+  loadWorld()
+    .then((w) => {
+      const coarse = globalThis.matchMedia?.('(pointer: coarse)').matches ?? false;
+      try {
+        renderer = w.createWorldRenderer(teaser ?? $('#map-host'), {
+          coarse,
+          reduced: REDUCED,
+          onFail: () => {
+            renderer = null;
+            screen.setRenderer(null);
+          },
+        });
+      } catch (e) {
+        console.warn('3D view unavailable:', e instanceof Error ? e.message : e);
+        return;
+      }
+      onReducedChange((on) => renderer?.setReduced(on));
+      if (state && !$('#screen-map').hidden) screen.setRenderer(renderer);
+      else if (teaser && demoMap.ok) {
+        renderer.mount(teaser);
+        renderer.showTeaser(demoMap.value.map);
+      }
+    })
+    .catch((e: unknown) => console.warn('3D view unavailable:', e instanceof Error ? e.message : e));
+
+  function start(): void {
+    const r = newRun(loadDemo(() => Date.now()), null, settings);
+    if (!r.ok) {
+      const err = $('#start-error');
+      err.textContent = r.error.message;
+      err.hidden = false;
+      return;
+    }
+    show('screen-map');
+    fresh = true;
+    if (renderer) screen.setRenderer(renderer);
+    setRun(r.value);
+    dispatch({ type: 'enterMap' });
+    $('#map-host').focus({ preventScroll: true });
+  }
+
+  onState((s) => {
+    if (s.status === 'won' || s.status === 'lost') {
+      renderEndPanel(document, s);
+      show('screen-end');
+      renderer?.stop();
+      return;
+    }
+    screen.update(s, fresh);
+    fresh = false;
+    renderFightPanel(document, s);
+    renderRelicPanel(document, s, (i) => dispatch({ type: 'pickRelic', i }));
+    if (s.events.some((e) => e.type === 'blessingDue')) {
+      if (blessing !== null) clearTimeout(blessing);
+      blessing = setTimeout(() => {
+        blessing = null;
+        dispatch({ type: 'offerBlessing' });
+      }, BLESSING_DELAY_MS);
+    }
+  });
+
+  $('#btn-demo').addEventListener('click', start);
+  $('#form').addEventListener('submit', (e) => {
+    // Live graphs need the start and summary screens (presentation tasks 5.x); the demo is playable now.
+    e.preventDefault();
+    const err = $('#start-error');
+    err.textContent = 'Live graphs arrive with the next build. Play the demo for now.';
+    err.hidden = false;
+  });
+  $('#btn-attack').addEventListener('click', () => dispatch({ type: 'attack' }));
+  bindPointer($('#btn-qte'));
+  $('#btn-again').addEventListener('click', () => {
+    show('screen-map');
+    fresh = true;
+    if (renderer) screen.setRenderer(renderer);
+    dispatch({ type: 'retry' });
+    dispatch({ type: 'enterMap' });
+  });
+  $('#btn-new').addEventListener('click', () => {
+    show('screen-start');
+    if (renderer && teaser && demoMap.ok) {
+      renderer.mount(teaser);
+      renderer.showTeaser(demoMap.value.map);
+    }
+  });
+  if (new URLSearchParams(location.search).has('demo')) start();
+}
+
+if (document.getElementById('map-host')) mountNext();

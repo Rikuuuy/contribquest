@@ -1446,7 +1446,7 @@
       "spec": "presentation",
       "task": "3.4",
       "title": "Add the map screen in `src/render/screens/map.ts`: the renderer host, pointer tap on a legal tile through `renderer.pick`, hero tap, hover tooltip (v1.6: `moved` comes from combat-timing task 11.3; no blocked feedback)",
-      "status": "todo",
+      "status": "done",
       "verify": "npm run build && npx vitest --run tests/engine/step.test.ts"
     },
     {
