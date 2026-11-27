@@ -1301,7 +1301,7 @@
       "spec": "progression",
       "task": "13.2",
       "title": "Change the Code Review and CI Cache texts in `RELICS`, and make `pickRelic` call the column-window `reveal` for Code Review; extend `tests/engine/relics.test.ts` and keep `tests/engine/relics.prop.test.ts` (P17, relic monotonicity with the CI Cache heal) green",
-      "status": "todo",
+      "status": "done",
       "verify": "npx vitest --run tests/engine/relics.test.ts tests/engine/relics.prop.test.ts"
     },
     {

@@ -1,4 +1,4 @@
-// Relics (prototype RELICS, relicById, offerRelic, pickRelic).
+// Relics (prototype RELICS, relicById, offerRelic, pickRelic). v1.6 texts for Code Review and CI Cache.
 import { COLD_BREW_HEAL, RELIC_OFFER } from './balance';
 import { applyStats } from './classes';
 import { reveal } from './explore';
@@ -17,8 +17,8 @@ export const RELICS: readonly Relic[] = [
   { id: 'coffee', name: 'Cold Brew', text: '+10 max HP, and heal 10 now.' },
   { id: 'blame', name: 'Git Blame', text: 'Counter-attacks deal full ATK instead of half.' },
   { id: 'pair', name: 'Pair Programmer', text: 'Glancing blows deal 60% more damage.' },
-  { id: 'review', name: 'Code Review', text: 'Your lantern reveals and lights a wider area.' },
-  { id: 'cache', name: 'CI Cache', text: 'Fleeing with a Good press takes no damage.' },
+  { id: 'review', name: 'Code Review', text: 'See one more week ahead.' },
+  { id: 'cache', name: 'CI Cache', text: 'After each won fight, heal 10% of max HP.' },
 ];
 
 export const CHEST_TITLE = 'The chest holds a relic. Choose one.';
@@ -56,6 +56,7 @@ export function pickRelic(s: RunState, i: number): void {
   applyStats(h);
   if (id === 'coffee') h.hp = Math.min(h.maxHp, h.hp + COLD_BREW_HEAL);
   h.hp = Math.min(h.hp, h.maxHp);
+  // v1.6: Code Review widens the column window at once (map-generation requirement 5.1).
   if (id === 'review') reveal(s);
   log(s, `Relic: ${r.name}. ${r.text}`);
   s.events.push({ type: 'relicPicked', id });
