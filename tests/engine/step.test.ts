@@ -36,6 +36,7 @@ describe('FR-COM-5: step is pure', () => {
       { type: 'forceGrade', grade: 'miss' },
       { type: 'advance' },
       { type: 'move', dir: 'down' },
+      { type: 'pickRelic', i: 0 },
       { type: 'setOptions', opts: { calm: true, assist: false } },
     ];
     for (const a of actions) s = deepFreeze(step(s, a));

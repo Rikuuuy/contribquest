@@ -14,6 +14,7 @@ import {
 import { applyMove, checkMove } from './explore';
 import { log } from './log';
 import { collectWisp, openChest } from './progression';
+import { pickRelic } from './relics';
 import { grade, testDeadline } from './qte';
 import type { Action, RunState } from './state';
 
@@ -21,6 +22,8 @@ import type { Action, RunState } from './state';
 export function step(state: RunState, action: Action): RunState {
   const s = structuredClone(state);
   s.events = [];
+  // While a relic offer is open, only the pick (and the settings toggles) are accepted (requirement 6.3).
+  if (s.status === 'relic' && action.type !== 'pickRelic' && action.type !== 'setOptions') return s;
   switch (action.type) {
     case 'move':
       move(s, action.dir);
@@ -47,6 +50,9 @@ export function step(state: RunState, action: Action): RunState {
       break;
     case 'advance':
       advance(s);
+      break;
+    case 'pickRelic':
+      pickRelic(s, action.i);
       break;
     case 'retry':
       // Needs newRun from the progression spec (Phase 2, task 9.3).

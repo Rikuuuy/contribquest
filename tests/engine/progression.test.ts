@@ -141,6 +141,7 @@ describe('FR-PRO-1: chests', () => {
     expect(s.events).toEqual([
       { type: 'chest', col: t.col, row: t.row, gold: 6, healed: heal },
       { type: 'xp', amount: 10 },
+      { type: 'relicOffer', ids: s.relicOffer, title: 'The chest holds a relic. Choose one.' },
     ]);
   });
 
@@ -168,7 +169,7 @@ describe('FR-PRO-1: chests', () => {
     expect(s.hero.level).toBe(4);
     expect(s.hero.hp).toBe(s.hero.maxHp);
     expect(s.log[1]).toBe('Level up! You are now level 4. HP fully restored.');
-    expect(s.events.map((e) => e.type)).toEqual(['chest', 'xp', 'levelUp']);
+    expect(s.events.map((e) => e.type)).toEqual(['chest', 'xp', 'levelUp', 'relicOffer']);
   });
 });
 
@@ -204,8 +205,8 @@ describe('step: moving onto wisps and chests', () => {
     const s0 = makeTestRun({ race: 'elf', level: 1 });
     const t = tileOf(s0, 'chest');
     const s = step(s0, { type: 'move', dir: nextTo(s0, t) });
-    expect([s.stats.chests, s.hero.xp]).toEqual([1, 10]);
-    expect(s.events.map((e) => e.type)).toEqual(['chest', 'xp']);
+    expect([s.stats.chests, s.hero.xp, s.status]).toEqual([1, 10, 'relic']);
+    expect(s.events.map((e) => e.type)).toEqual(['chest', 'xp', 'relicOffer']);
   });
 });
 

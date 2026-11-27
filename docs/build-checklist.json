@@ -858,7 +858,7 @@
       "spec": "progression",
       "task": "4.1",
       "title": "Implement `RELICS`, `relicById`, `offerRelic`, `pickRelic` in `src/engine/relics.ts`; replace the stub in `openChest`",
-      "status": "todo",
+      "status": "done",
       "verify": "npx vitest --run tests/engine/relics.test.ts"
     },
     {
@@ -867,7 +867,7 @@
       "spec": "progression",
       "task": "4.2",
       "title": "Handle `pickRelic` in `step`, and ignore every other gameplay action while `status === \"relic\"`",
-      "status": "todo",
+      "status": "done",
       "verify": "npx vitest --run tests/engine/relics.test.ts"
     },
     {
@@ -876,7 +876,7 @@
       "spec": "progression",
       "task": "4.3",
       "title": "Write `tests/engine/relics.test.ts`",
-      "status": "todo",
+      "status": "done",
       "verify": "npx vitest --run tests/engine/relics.test.ts"
     },
     {
