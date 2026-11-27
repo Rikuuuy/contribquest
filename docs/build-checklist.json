@@ -958,7 +958,7 @@
       "spec": "combat-timing",
       "task": "11.6",
       "title": "Update `tests/engine/rng-order.test.ts`: skip the recorded flee fights, drop flee from the coverage check, and replay the boss recording with `shards = 0`; do not re-record `demo-fight.json`",
-      "status": "todo",
+      "status": "done",
       "verify": "npx vitest --run tests/engine/rng-order.test.ts"
     },
     {
