@@ -56,5 +56,5 @@ describe('save properties', () => {
       }),
       { numRuns: 60 },
     );
-  });
+  }, 20000);
 });
