@@ -75,6 +75,25 @@ Wanderer grade policies on the demo graph (route target: 15–25 steps, 6–10 f
 - Rogue σ 60 wins 41.6% overall; the target is at most 40%.
 - The demo route is outside the PRD's 15–25 steps and 6–10 fights: All Perfect and Mixed take 11 fights, All Good takes 26 steps. The simulator prints this but does not fail on it.
 
+## Fri 27 Nov 2026: Phase 2 final gate, the rest of the pure game logic ported
+
+- **Kiro client:** Kiro Web, workflow run (one subagent per step, then this final gate step).
+- **Specs and tasks:** 25 of 26 phase-2 items done (see docs/build-checklist.json): progression 4.1–4.4 (relics), 5.1–5.2 (races), 6.1–6.2 (Commit Blessing), 7.1–7.4 (save/restore), 8.1 (run end), 9.1–9.2 (views), 11.1–11.3 (route bot, simulator, regression); combat-timing 9.1–9.3 (skill bot, retry), 10.1 (engine purity); map-generation 7.1–7.2 (map independence), 8.1 (module boundaries). Progression 11.4 stays `todo` because `npm run simulate` exits 1 on two balance misses (table below).
+- **Hooks and agents:** none fired. The final gate ran `npm run typecheck && npm test && npm run build` (457 of 457 tests in 49 files) and all 54 unique phase-1 and phase-2 verify commands; every one passed except `npm run simulate` (progression 11.4). The `balance-tuner` agent was not run.
+- **Commits / PRs:** `dcf5dc3`, `6184e8e` relics; `a8ec166` races; `57892e5` blessing; `2e0b914`, `d4c5103`, `5814744`, `fda5ee4` save/restore; `88c9d86` run end; `8b126ca`, `2a26e51` views; `65018e6`, `03a9afe`, `f0f302b` skill bot and retry; `c1a0551` engine purity; `0fba217`, `5d0ac01`, `e33298f` map independence and boundaries; `4a104f8`, `8bf5a62`, `6813e24`, `3593c8d` route bot, simulator, regression, balance run; PR *Port Phase 2 game logic to TypeScript with tests*.
+- **Notes:** properties P8, P17, P18 (map independence), P19 and the v1.4 relic monotonicity property are covered by fast-check tests. Phase 1 tests were updated where Phase 2 changed behaviour (chests now end in a relic offer, wins and losses now also emit `runEnded`). Balance numbers were not changed; the misses are the same follow-ups for the `balance-tuner` agent as in the entry above.
+
+`npm run simulate` (200 seeds per cell and graph, race Human, Calm and Auto-timing off), exit code 1, re-run in the final gate with identical results:
+
+| Class | σ (ms) | demo | allEmpty | singleActiveDay | veryDense | bestDayFirst | bestDayLast | lastDayZero | Overall | Target | Result |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| knight | 140 | 200/200 | 155/200 | 197/200 | 200/200 | 200/200 | 200/200 | 200/200 | 96.6% | ≥ 90% | PASS |
+| wanderer | 100 | 200/200 | 36/200 | 102/200 | 200/200 | 183/200 | 183/200 | 199/200 | 78.8% | ≥ 80% | FAIL |
+| mage | 100 | 137/200 | 7/200 | 18/200 | 61/200 | 70/200 | 63/200 | 149/200 | 36.1% | 15–50% | PASS |
+| mage | 60 | 194/200 | 74/200 | 109/200 | 193/200 | 171/200 | 164/200 | 198/200 | 78.8% | ≥ 60% | PASS |
+| rogue | 60 | 140/200 | 15/200 | 42/200 | 79/200 | 49/200 | 88/200 | 170/200 | 41.6% | ≤ 40% | FAIL |
+| rogue | 35 | 193/200 | 130/200 | 142/200 | 195/200 | 164/200 | 193/200 | 198/200 | 86.8% | ≥ 80% | PASS |
+
 <!--
 Template for future days. Copy the block below, newest day last.
 
