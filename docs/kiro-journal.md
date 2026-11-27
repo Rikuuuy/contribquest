@@ -41,6 +41,40 @@ A short log of how ContribQuest is built with Kiro, 3–5 lines per working day.
 - **Commits / PRs:** `ae2fb87` data import, `ca110f2` map generation, `31ae6a7` combat and timing, `3af4346` progression; PR *Port Phase 1 core logic to TypeScript with tests*.
 - **Notes:** golden fixtures recorded by running the prototype's own code in a Node `vm` (demo map, and demo fights for all four classes) match the port exactly, including RNG state. Spec text that disagreed with the prototype (boss entry line) followed the prototype. Rendering is still not ported; `index.html` still redirects to the prototype.
 
+## Fri 27 Nov 2026: Phase 2, the balance simulator's first full run
+
+- **Kiro client:** Kiro Web, workflow run (one subagent per step).
+- **Specs and tasks:** progression 11.1 (route bot), 11.2 (simulator), 11.3 (grade-policy regression) done. Progression 11.4 stays `todo`: its verify, `npm run simulate`, exits 1 because two balance targets are missed (below).
+- **Hooks and agents:** none fired. The `balance-tuner` agent was not run in this step; the misses are handed to it below.
+- **Commits / PRs:** `4a104f8` route bot, `8bf5a62` simulator, `6813e24` regression test, on branch `feature/phase-2-logic`.
+- **Notes:** the prototype has no route code (its bots were driven by hand), so `routeAction` follows the PRD v1.2 rule recorded in progression design.md. Balance numbers in `src/engine/balance.ts` were not changed.
+
+`npm run simulate` (200 seeds per cell and graph, race Human, Calm and Auto-timing off), exit code 1, 2 min 28 s:
+
+| Class | σ (ms) | demo | allEmpty | singleActiveDay | veryDense | bestDayFirst | bestDayLast | lastDayZero | Overall | Target | Result |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| knight | 140 | 200/200 | 155/200 | 197/200 | 200/200 | 200/200 | 200/200 | 200/200 | 96.6% | ≥ 90% | PASS |
+| wanderer | 100 | 200/200 | 36/200 | 102/200 | 200/200 | 183/200 | 183/200 | 199/200 | 78.8% | ≥ 80% | FAIL |
+| mage | 100 | 137/200 | 7/200 | 18/200 | 61/200 | 70/200 | 63/200 | 149/200 | 36.1% | 15–50% | PASS |
+| mage | 60 | 194/200 | 74/200 | 109/200 | 193/200 | 171/200 | 164/200 | 198/200 | 78.8% | ≥ 60% | PASS |
+| rogue | 60 | 140/200 | 15/200 | 42/200 | 79/200 | 49/200 | 88/200 | 170/200 | 41.6% | ≤ 40% | FAIL |
+| rogue | 35 | 193/200 | 130/200 | 142/200 | 195/200 | 164/200 | 193/200 | 198/200 | 86.8% | ≥ 80% | PASS |
+
+Wanderer grade policies on the demo graph (route target: 15–25 steps, 6–10 fights):
+
+| Policy | Expected | Outcome | Steps | Fights | Result |
+| --- | --- | --- | --- | --- | --- |
+| All Perfect | win | win | 22 | 11 | PASS |
+| All Good | win | win | 26 | 10 | PASS |
+| Mixed 25/50/25 | win | win | 22 | 11 | PASS |
+| All Miss | lose | lose | 6 | 3 | PASS |
+
+**Follow-up for the `balance-tuner` agent** (changes go to `src/engine/balance.ts` and `game-rules.md` only):
+
+- Wanderer σ 100 wins 78.8% overall; the target is at least 80%. The losses come from the all-empty fixture (36/200) and the single-active-day fixture (102/200).
+- Rogue σ 60 wins 41.6% overall; the target is at most 40%.
+- The demo route is outside the PRD's 15–25 steps and 6–10 fights: All Perfect and Mixed take 11 fights, All Good takes 26 steps. The simulator prints this but does not fail on it.
+
 <!--
 Template for future days. Copy the block below, newest day last.
 
