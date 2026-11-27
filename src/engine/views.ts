@@ -16,7 +16,7 @@ function bestDay(days: readonly ContributionDay[]): ContributionDay {
   return days.reduce((b, x) => (x.count >= b.count ? x : b), days[0] as ContributionDay);
 }
 
-/** The last day of the hero set's window. */
+/** Today's tile: the last day of the hero set. */
 function todayOf(s: RunState): ContributionDay {
   const hs: ContributionSet = s.heroSet ?? s.set;
   return hs.days[hs.days.length - 1] as ContributionDay;

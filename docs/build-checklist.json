@@ -1002,7 +1002,7 @@
       "spec": "progression",
       "task": "9.2",
       "title": "Write `tests/engine/views.test.ts`",
-      "status": "todo",
+      "status": "done",
       "verify": "npx vitest --run tests/engine/views.test.ts"
     },
     {
