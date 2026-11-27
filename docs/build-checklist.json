@@ -1373,7 +1373,7 @@
       "spec": "presentation",
       "task": "1.2",
       "title": "Implement `src/render/input.ts` (v1.6: `routeKey`, `isArrowKey`, no `moveKey`) and `src/render/layout.ts`; write `tests/render/input.test.ts` and `tests/render/layout.test.ts`",
-      "status": "todo",
+      "status": "done",
       "verify": "npx vitest --run tests/render/input.test.ts tests/render/layout.test.ts"
     },
     {
