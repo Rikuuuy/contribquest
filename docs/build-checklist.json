@@ -957,7 +957,7 @@
       "spec": "progression",
       "task": "7.4",
       "title": "Write `tests/engine/save.prop.test.ts` for P8 and P19 with the action-sequence arbitrary",
-      "status": "todo",
+      "status": "done",
       "verify": "npx vitest --run tests/engine/save.prop.test.ts"
     },
     {
