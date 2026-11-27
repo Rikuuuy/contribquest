@@ -1437,7 +1437,7 @@
       "spec": "presentation",
       "task": "3.3",
       "title": "Implement `tileInfo` and write `tests/render/tooltip.test.ts`",
-      "status": "todo",
+      "status": "done",
       "verify": "npx vitest --run tests/render/tooltip.test.ts"
     },
     {
