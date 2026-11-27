@@ -1663,7 +1663,7 @@
       "spec": "presentation",
       "task": "11.2",
       "title": "Implement the pure world maths in `src/render/world/math.ts` (`slabHeight`, `tileWorld`, `bossNodeWorld`, `spriteWorldSize`, `followAim`, `overviewAim`, `cameraFor`, `easeOutBack`, `riseDelay`) and the reduced-motion flags in `src/render/world/motion-flags.ts`; write `tests/render/world-math.test.ts` and `tests/render/motion-flags.test.ts`",
-      "status": "todo",
+      "status": "done",
       "verify": "npx vitest --run tests/render/world-math.test.ts tests/render/motion-flags.test.ts"
     },
     {
