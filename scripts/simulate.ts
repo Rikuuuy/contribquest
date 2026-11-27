@@ -137,7 +137,7 @@ function main(): number {
   }
 
   const demo = gs[0] as { set: ContributionSet };
-  console.log('\nWanderer grade policies on the demo graph (route target: 6–10 fights, the boss included; steps always equal cols):\n');
+  console.log('\nWanderer grade policies on the demo graph (route target: 8–13 fights, the boss included; steps always equal cols):\n');
   console.log('| Policy | Expected | Outcome | Fights | Shards | Steps | Result |');
   console.log('| --- | --- | --- | --- | --- | --- | --- |');
   for (const p of GRADE_POLICIES) {
