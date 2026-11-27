@@ -4,7 +4,7 @@ export const MODULE = 'mapgen';
 export { fnv1a, makeRng, nextFloat, shuffleInPlace, type Rng } from './rng';
 export { parseDate, weekday, addDays, fmtDate, fmtShort } from './dates';
 export * from './rules';
-export type { Pos, TileKind, Tier, DayTile, GameMap, MapError } from './types';
+export type { Pos, TileKind, Tier, DayTile, GameMap, MapError, RouteOption } from './types';
 export { layoutDays, tileAt, neighbours } from './layout';
 export { bestDayIndex, assignTiles } from './assign';
 export { applyShortfall } from './shortfall';

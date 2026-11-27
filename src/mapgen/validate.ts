@@ -31,10 +31,9 @@ export function reachable(map: GameMap, a: DayTile, b: DayTile): boolean {
 
 export function validateMap(map: GameMap): MapError | null {
   const s = map.tiles[0];
-  const g = map.tiles[map.gateIdx];
   const b = map.tiles[map.bossIdx];
-  if (!s || !g || !b) return mapError(MAP_ERROR_TEXT.missing);
-  if (!reachable(map, s, b) || !reachable(map, b, g)) return mapError(MAP_ERROR_TEXT.route);
+  if (!s || !b) return mapError(MAP_ERROR_TEXT.missing);
+  if (!reachable(map, s, b)) return mapError(MAP_ERROR_TEXT.route);
   if (new Set(map.tiles.map((t) => t.day.date)).size !== map.tiles.length) return mapError(MAP_ERROR_TEXT.duplicate);
   return null;
 }

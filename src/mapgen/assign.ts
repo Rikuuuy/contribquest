@@ -16,7 +16,6 @@ export function bestDayIndex(days: readonly ContributionDay[]): { idx: number; e
 }
 
 export function assignTiles(days: readonly ContributionDay[], cells: Cell[], best: number): DayTile[] {
-  const last = days.length - 1;
   return cells.map((c) => {
     const day = days[c.idx] as ContributionDay;
     const t: DayTile = {
@@ -32,11 +31,6 @@ export function assignTiles(days: readonly ContributionDay[], cells: Cell[], bes
     };
     const h = fnv1a(day.date);
     if (c.idx === 0) t.kind = 'start';
-    else if (c.idx === best) {
-      t.kind = c.idx === last ? 'gate' : 'boss';
-      t.tier = 5;
-      t.boss = true;
-    } else if (c.idx === last) t.kind = 'gate';
     else
       switch (day.level) {
         case 0:

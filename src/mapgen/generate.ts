@@ -4,7 +4,7 @@ import type { ContributionSet } from '../data/schema';
 import { assignTiles, bestDayIndex } from './assign';
 import { layoutDays } from './layout';
 import { fnv1a } from './rng';
-import { MAX_SHARDS, ROWS } from './rules';
+import { ROWS } from './rules';
 import { applyShortfall } from './shortfall';
 import type { GameMap, MapError } from './types';
 import { MAP_ERROR_TEXT, mapError, validateMap } from './validate';
@@ -19,7 +19,6 @@ export function generateMap(set: ContributionSet): Result<GameMap, MapError> {
     const best = bestDayIndex(days);
     const tiles = assignTiles(days, cells, best.idx);
     const { quiet } = applyShortfall(tiles, seed);
-    const elites = tiles.filter((t) => t.kind === 'monster' && t.tier >= 3).length;
     const map: GameMap = {
       cols,
       rows: ROWS as 7,
@@ -27,10 +26,9 @@ export function generateMap(set: ContributionSet): Result<GameMap, MapError> {
       tiles,
       seed,
       bossIdx: best.idx,
-      gateIdx: (days.length - 1) as 90,
+      bossNode: { col: cols, row: (tiles[best.idx] as GameMap['tiles'][number]).row },
       emptyQuarter: best.emptyQuarter,
       quiet,
-      shardsNeeded: Math.min(MAX_SHARDS, elites) as GameMap['shardsNeeded'],
     };
     const error = validateMap(map);
     return error ? { ok: false, error } : { ok: true, value: map };

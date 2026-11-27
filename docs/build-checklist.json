@@ -499,7 +499,7 @@
       "spec": "map-generation",
       "task": "9.1",
       "title": "Update `src/mapgen/types.ts` (remove the `boss` and `gate` kinds, `boss` flag, `gateIdx`, `shardsNeeded`; add `bestDay`, `bossNode`, `RouteOption`) and `src/mapgen/rules.ts` (add `ROUTE_REACH = 1`, `MIN_ROUTE_FIGHTS = 4`; remove `MAX_SHARDS`); update the re-export in `src/engine/balance.ts` and list the new constants in `game-rules.md`",
-      "status": "todo",
+      "status": "done",
       "verify": "! npx tsc --noEmit 2>&1 | grep -q \"^src/mapgen/\""
     },
     {
