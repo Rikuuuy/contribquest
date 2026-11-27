@@ -967,7 +967,7 @@
       "spec": "combat-timing",
       "task": "11.7",
       "title": "Add P23 to `tests/engine/combat.prop.test.ts` and write `tests/engine/step.prop.test.ts` for P24 (action sequences with random legal and illegal `move` targets)",
-      "status": "todo",
+      "status": "done",
       "verify": "npx vitest --run tests/engine/combat.prop.test.ts tests/engine/step.prop.test.ts"
     },
     {

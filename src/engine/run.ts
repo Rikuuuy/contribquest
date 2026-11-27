@@ -78,7 +78,9 @@ export function newRun(
     pendingBlessing: hero.omen === 'blessed',
     newTrophies: [],
   };
+  // v1.6: the start tile is resolved at run start (game-rules.md "Exploration").
   s0.visited = true;
+  s0.resolved = true;
   reveal(s);
   log(
     s,
