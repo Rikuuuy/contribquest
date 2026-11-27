@@ -571,7 +571,7 @@
       "spec": "map-generation",
       "task": "10.2",
       "title": "Rewrite `src/engine/explore.ts`: `viewAhead`, `reveal` (column window), `isVisible`, `legalMoves`, `checkMove(s, to)`, `applyMove`; remove the sealed and warded checks",
-      "status": "todo",
+      "status": "done",
       "verify": "npx vitest --run tests/engine/explore.test.ts"
     },
     {
@@ -580,7 +580,7 @@
       "spec": "map-generation",
       "task": "10.3",
       "title": "Rewrite `collectShard` and `shardStatus` for `SHARD_MAX` (bonus shards, `bound`, new log lines)",
-      "status": "todo",
+      "status": "done",
       "verify": "npx vitest --run tests/engine/explore.test.ts"
     },
     {
@@ -589,7 +589,7 @@
       "spec": "map-generation",
       "task": "10.4",
       "title": "Rewrite `tests/engine/explore.test.ts` for the v1.6 rules (window at start, after a move, with Code Review; refused moves behind, sideways, two ahead, void; boss node move; shard lines and `bound`; nothing past 3)",
-      "status": "todo",
+      "status": "done",
       "verify": "npx vitest --run tests/engine/explore.test.ts"
     },
     {
