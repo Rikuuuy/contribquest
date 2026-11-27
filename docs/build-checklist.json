@@ -1337,7 +1337,7 @@
       "spec": "progression",
       "task": "13.6",
       "title": "Rewrite `routeAction` and add `rankOption` in `src/engine/routebot.ts` (legal moves, heal mode, tier order, `SIM` constants, seen check), update `playRun` for the new `move` action, and rewrite `tests/engine/routebot.test.ts`",
-      "status": "todo",
+      "status": "done",
       "verify": "npx vitest --run tests/engine/routebot.test.ts"
     },
     {
