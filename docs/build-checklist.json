@@ -993,7 +993,7 @@
       "spec": "progression",
       "task": "9.1",
       "title": "Implement `summaryView` and `resultsView` in `src/engine/views.ts` (normal runs; the social spec adds raid branches)",
-      "status": "todo",
+      "status": "done",
       "verify": "npx vitest --run tests/engine/views.test.ts"
     },
     {

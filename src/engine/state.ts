@@ -198,3 +198,28 @@ export type GameEvent =
   | { type: 'raceChosen'; race: RaceId }
   | { type: 'blessingDue' }
   | { type: 'runEnded'; won: boolean };
+
+/** Plain data for the hero-summary screen (progression requirement 13). */
+export type SummaryView = {
+  title: string;
+  range: string;
+  identity: string;
+  aura: string;
+  avatarUrl: string | null;
+  stats: { k: string; v: string; sub: string }[];
+  trait: { name: string; text: string };
+  omen: { kind: Omen; k: string; v: string; text: string };
+  quiet: string | null;
+  xpTable: { level: number; xp: number; current: boolean }[];
+};
+
+/** Plain data for the results screen (progression requirement 8). */
+export type ResultsView = {
+  won: boolean;
+  title: string;
+  sub: string;
+  game: [string, string][];
+  ghTitle: string;
+  gh: [string, string][];
+  today: string;
+};
