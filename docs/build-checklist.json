@@ -1237,7 +1237,7 @@
       "spec": "progression",
       "task": "10.3",
       "title": "Add `tests/privacy.test.ts`: every `https://` URL in `src/` is `API_BASE` or `https://github.com/`, and `src/` has no `document.cookie`, `sendBeacon`, or analytics import",
-      "status": "todo",
+      "status": "done",
       "verify": "npm run build && npx vitest --run tests/privacy.test.ts"
     },
     {

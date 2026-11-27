@@ -3,7 +3,7 @@
 // `#app` element gets a plain-text DOM view of the run (presentation task 1.3).
 import { loadDemo } from './data/demo';
 import { loadSettings } from './data/settings';
-import { combatKey, isVisible, newRun, nextDeadline, step, type Action, type Dir, type RunState } from './engine';
+import { combatKey, isVisible, legalMoves, newRun, nextDeadline, step, type Action, type RunState } from './engine';
 import { tileAt } from './mapgen';
 
 let state: RunState | null = null;
@@ -82,16 +82,24 @@ function schedule(): void {
 const inTest = (): boolean => state?.status === 'combat' && state.combat?.phase === 'test';
 const testTime = (timeStamp: number): number => timeStamp - testStart;
 
-const MOVE_KEYS: Readonly<Record<string, Dir>> = {
+/** Phase 1 debug input until presentation task 12.2: up, right, and down pick the upper, middle, or lower legal move. */
+type Pick = 'up' | 'right' | 'down';
+const MOVE_KEYS: Readonly<Record<string, Pick>> = {
   arrowup: 'up',
   w: 'up',
   arrowdown: 'down',
   s: 'down',
-  arrowleft: 'left',
-  a: 'left',
   arrowright: 'right',
   d: 'right',
 };
+
+/** The v1.6 `move` action for a pick, or null when there is no legal move. A single option takes any pick. */
+function moveFor(s: RunState, pick: Pick): Action | null {
+  const opts = legalMoves(s);
+  if (!opts.length) return null;
+  const o = pick === 'up' ? opts[0] : pick === 'down' ? opts[opts.length - 1] : opts[Math.floor((opts.length - 1) / 2)];
+  return o ? { type: 'move', to: { col: o.col, row: o.row } } : null;
+}
 
 /**
  * Combat keys go through `combatKey` while a fight is shown and movement keys are ignored (FR-COM-6);
@@ -106,13 +114,14 @@ function onKeyDown(e: KeyboardEvent): void {
     if (e.repeat) return;
     if (inTest()) {
       if (k === 'hit') dispatch({ type: 'press', t: testTime(e.timeStamp), key: e.key.toLowerCase() });
-    } else if (state.combat?.phase === 'choose') dispatch({ type: k === 'flee' ? 'flee' : 'attack' });
+    } else if (state.combat?.phase === 'choose') dispatch({ type: 'attack' });
     return;
   }
-  const dir = MOVE_KEYS[e.key.toLowerCase()];
-  if (dir && state.status === 'exploring') {
+  const pick = MOVE_KEYS[e.key.toLowerCase()];
+  const a = pick && state.status === 'exploring' ? moveFor(state, pick) : null;
+  if (a) {
     e.preventDefault();
-    dispatch({ type: 'move', dir });
+    dispatch(a);
   }
 }
 
@@ -138,8 +147,9 @@ export function bindPointer(el: HTMLElement): void {
 export function bindDpad(root: ParentNode): void {
   root.querySelectorAll<HTMLButtonElement>('button[data-dir]').forEach((b) =>
     b.addEventListener('click', () => {
-      const dir = b.dataset['dir'] as Dir | undefined;
-      if (dir && state?.status === 'exploring') dispatch({ type: 'move', dir });
+      const pick = b.dataset['dir'] as Pick | undefined;
+      const a = pick && state?.status === 'exploring' ? moveFor(state, pick) : null;
+      if (a) dispatch(a);
     }),
   );
 }
@@ -149,14 +159,13 @@ document.addEventListener('keyup', onKeyUp);
 
 // ---------- Plain DOM view (Phase 1 only; replaced by the presentation spec's screens) ----------
 
-/** One character per tile: @ hero, ? unseen, . empty or resolved, w wisp, c chest, 1–4 monster tier, B boss, G Gate, S start. */
+/** One character per cell: @ hero, ? unseen, . empty or resolved, w wisp, c chest, 1–4 monster tier, S start, B the boss node. */
 function tileChar(s: RunState, col: number, row: number): string {
   if (s.pos.col === col && s.pos.row === row) return '@';
+  if (col === s.map.bossNode.col) return row === s.map.bossNode.row && !s.bossDown ? 'B' : ' ';
   const t = tileAt(s.map, col, row);
   if (!t) return ' ';
   if (!isVisible(t)) return '?';
-  if (t.boss && !t.resolved) return 'B';
-  if (t.kind === 'gate') return 'G';
   if (t.kind === 'start') return 'S';
   if (t.resolved || t.kind === 'fog') return '.';
   if (t.kind === 'wisp') return 'w';
@@ -169,11 +178,11 @@ function plainText(s: RunState): string {
   const rows: string[] = [];
   for (let r = 0; r < s.map.rows; r++) {
     let line = '';
-    for (let c = 0; c < s.map.cols; c++) line += tileChar(s, c, r) + ' ';
+    for (let c = 0; c <= s.map.cols; c++) line += tileChar(s, c, r) + ' ';
     rows.push(line);
   }
   const out = [
-    `${h.name} · level ${h.level} · XP ${h.xp} · HP ${h.hp}/${h.maxHp} · ATK ${h.atk} · treasure ${h.treasure} · shards ${s.shards}/${s.map.shardsNeeded} · ${s.status}`,
+    `${h.name} · level ${h.level} · XP ${h.xp} · HP ${h.hp}/${h.maxHp} · ATK ${h.atk} · treasure ${h.treasure} · shards ${s.shards}/3 · ${s.status}`,
     '',
     ...rows,
     '',
@@ -182,10 +191,10 @@ function plainText(s: RunState): string {
   const f = s.combat;
   if (f) {
     out.push('', `${f.m.name}: HP ${f.m.hp}/${f.m.maxHp}`, ...f.lines);
-    if (f.phase === 'choose') out.push('Attack (A) or Flee (F).');
+    if (f.phase === 'choose') out.push('Attack (A).');
     if (f.phase === 'test' && f.test) out.push(`${f.test.kind} test: ${f.test.mode} (${f.test.pattern}). Press Space on the beat.`);
   }
-  if (s.status === 'won') out.push('', 'The Gate opens. Your graph is exorcised.');
+  if (s.status === 'won') out.push('', 'The Phantom is banished. Your graph is exorcised.');
   if (s.status === 'lost') out.push('', 'You became part of the graph.');
   return out.join('\n');
 }
@@ -198,17 +207,14 @@ function mountPlain(app: HTMLElement): void {
     return;
   }
   app.innerHTML = `<pre id="cq-view" aria-live="polite"></pre>
-<div class="dpad" aria-label="Direction buttons">
-  <span></span><button data-dir="up" aria-label="Up">▲</button><span></span>
-  <button data-dir="left" aria-label="Left">◀</button><span></span><button data-dir="right" aria-label="Right">▶</button>
-  <span></span><button data-dir="down" aria-label="Down">▼</button><span></span>
+<div class="dpad" aria-label="Route buttons">
+  <button data-dir="up" aria-label="Upper path">↗</button><button data-dir="right" aria-label="Middle path">→</button><button data-dir="down" aria-label="Lower path">↘</button>
 </div>
-<p><button id="cq-attack" type="button">Attack (A)</button> <button id="cq-flee" type="button">Flee (F)</button> <button id="cq-now" type="button">Now! (Space)</button></p>`;
+<p><button id="cq-attack" type="button">Attack (A)</button> <button id="cq-now" type="button">Now! (Space)</button></p>`;
   const view = app.querySelector('#cq-view') as HTMLElement;
   bindDpad(app);
   bindPointer(app.querySelector('#cq-now') as HTMLElement);
   (app.querySelector('#cq-attack') as HTMLElement).addEventListener('click', () => dispatch({ type: 'attack' }));
-  (app.querySelector('#cq-flee') as HTMLElement).addEventListener('click', () => dispatch({ type: 'flee' }));
   onState((s) => {
     view.textContent = plainText(s);
   });
