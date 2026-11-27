@@ -598,7 +598,7 @@
       "spec": "map-generation",
       "task": "10.5",
       "title": "Write `tests/engine/explore.prop.test.ts` for P22 over action sequences from `newRun` (needs combat-timing task 11.3 and progression task 13.3)",
-      "status": "todo",
+      "status": "done",
       "verify": "npx vitest --run tests/engine/explore.prop.test.ts"
     },
     {
