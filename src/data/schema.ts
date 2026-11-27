@@ -48,3 +48,38 @@ export type ClassId = z.infer<typeof ClassIdSchema>;
 
 export const RaceIdSchema = z.enum(['human', 'elf', 'orc', 'skeleton', 'vampire']);
 export type RaceId = z.infer<typeof RaceIdSchema>;
+
+export const TrophyIdSchema = z.enum([
+  'first',
+  'self',
+  'raider',
+  'blessed',
+  'cursed',
+  'flawless',
+  'close',
+  'dodges',
+  'crits',
+  'relics',
+  'speed',
+  'nochest',
+  'nightmare',
+  'fullstack',
+]);
+
+/** `cq:v1:trophies`: trophy id → the `YYYY-MM-DD` it was earned. Unknown keys are stripped. */
+export const TrophyHaveSchema = z.object(
+  Object.fromEntries(TrophyIdSchema.options.map((id) => [id, DateString.optional()])) as Record<
+    z.infer<typeof TrophyIdSchema>,
+    z.ZodOptional<typeof DateString>
+  >,
+);
+export type TrophyHave = z.infer<typeof TrophyHaveSchema>;
+
+/** `cq:v1:classwins`: class id → true once a run was won with it. Unknown keys are stripped. */
+export const ClassWinsSchema = z.object(
+  Object.fromEntries(ClassIdSchema.options.map((id) => [id, z.literal(true).optional()])) as Record<
+    ClassId,
+    z.ZodOptional<z.ZodLiteral<true>>
+  >,
+);
+export type ClassWins = z.infer<typeof ClassWinsSchema>;
