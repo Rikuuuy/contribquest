@@ -750,7 +750,7 @@
       "spec": "combat-timing",
       "task": "9.2",
       "title": "Write `tests/engine/skillbot.test.ts`: seeding, combo gives three grades, charge overload limit, conflict and flaky miss rates within \u00b12 points of `\u03c3/600` and `\u03c3/700` over 10 000 draws, shield rescue near 0.7",
-      "status": "todo",
+      "status": "done",
       "verify": "npx vitest --run tests/engine/skillbot.test.ts"
     },
     {
