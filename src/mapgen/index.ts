@@ -8,5 +8,6 @@ export type { Pos, TileKind, Tier, DayTile, GameMap, MapError, RouteOption } fro
 export { layoutDays, tileAt, neighbours } from './layout';
 export { bestDayIndex, assignTiles } from './assign';
 export { applyShortfall } from './shortfall';
+export { nextOptions, routeMinFights, minFightRoute, reachableIdx } from './routes';
 export { reachable, validateMap } from './validate';
 export { generateMap, mapDateRange } from './generate';

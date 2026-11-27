@@ -517,7 +517,7 @@
       "spec": "map-generation",
       "task": "9.3",
       "title": "Implement `nextOptions`, `routeMinFights`, `minFightRoute`, `reachableIdx` in `src/mapgen/routes.ts`; write `tests/mapgen/routes.test.ts` (three options, rows 0 and 6, the demo fallback column 12 rows 3\u20136 \u2192 (13, 1), a 13-column map, last column \u2192 boss node, boss node \u2192 `[]`, a hand-built DP case)",
-      "status": "todo",
+      "status": "done",
       "verify": "npx vitest --run tests/mapgen/routes.test.ts"
     },
     {
