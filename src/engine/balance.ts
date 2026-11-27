@@ -250,9 +250,23 @@ export const WEEKEND_SHARE = 0.4;
 export const RELIC_OFFER = 3;
 /** Cold Brew: HP healed on pick. */
 export const COLD_BREW_HEAL = 10;
+/** v1.6 quiet day (fog): heal `ceil(maxHp × REST_HEAL)`. */
+export const REST_HEAL = 0.05;
+/** v1.6 wisp: heal `ceil(maxHp × WISP_HEAL)` before the XP. */
+export const WISP_HEAL = 0.1;
+/** v1.6 Speedrun trophy: won with `defeated ≤ TROPHY_SPEED_FIGHTS`, the boss included. */
+export const TROPHY_SPEED_FIGHTS = 6;
 
 /** Balance simulator settings. */
-export const SIM = { seeds: 200, maxActions: 2000, healBelow: 0.45, healBeforeBoss: 0.75, mixedSeed: 1234 } as const;
+export const SIM = {
+  seeds: 200,
+  maxActions: 2000,
+  healBelow: 0.45,
+  healBeforeBoss: 0.75,
+  mixedSeed: 1234,
+  /** v1.6: "before the boss" means the move's target column is `≥ cols − bossWeeks`. */
+  bossWeeks: 2,
+} as const;
 
 // ---------- Logs ----------
 

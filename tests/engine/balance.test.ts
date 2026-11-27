@@ -25,6 +25,7 @@ import {
   QTE,
   RELIC_COMBAT,
   RELIC_OFFER,
+  REST_HEAL,
   SHARD_BOSS_HP_CUT,
   SHARD_MAX,
   SHARD_NO_PHASE2,
@@ -34,8 +35,10 @@ import {
   VIEW_AHEAD,
   VIEW_AHEAD_REVIEW,
   TRAIT_ATK,
+  TROPHY_SPEED_FIGHTS,
   VARIANCE,
   WEEKEND_SHARE,
+  WISP_HEAL,
   WISP_XP,
   WINDOW_RULES,
   XP_BASE,
@@ -233,6 +236,14 @@ describe('FR-DIF-1: balance.ts matches game-rules.md', () => {
     has(`(1 − SHARD_BOSS_HP_CUT × shards)`);
     has(`With \`shards ≥ SHARD_NO_PHASE2\` (${SHARD_NO_PHASE2}) the boss never enters phase 2`);
     has(`heal \`ceil(maxHp × ${RELIC_COMBAT.cacheHeal})\` (\`RELIC_COMBAT.cacheHeal\`)`);
+  });
+
+  it('rests, wisp heal, Speedrun, and the simulator boss weeks (v1.6)', () => {
+    const rows = Object.fromEntries(table('| Rest constant | Value |').map(([k, v]) => [(k as string).replace(/`/g, ''), num(v as string)]));
+    expect(rows).toEqual({ REST_HEAL, WISP_HEAL });
+    expect([REST_HEAL, WISP_HEAL, TROPHY_SPEED_FIGHTS, SIM.bossWeeks]).toEqual([0.05, 0.1, 6, 2]);
+    has(`\`defeated ≤ TROPHY_SPEED_FIGHTS\` (${TROPHY_SPEED_FIGHTS}, the boss included)`);
+    has(`\`SIM.bossWeeks\` = ${SIM.bossWeeks} columns (\`col ≥ cols − ${SIM.bossWeeks}\`)`);
   });
 
   it('log lengths', () => {

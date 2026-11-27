@@ -8,7 +8,9 @@ import {
   CHEST_XP,
   HUMAN_XP,
   MAX_LEVEL,
+  REST_HEAL,
   START_XP_MUL,
+  WISP_HEAL,
   WISP_XP,
   XP_BASE,
 } from './balance';
@@ -54,12 +56,33 @@ export function gainXp(s: Pick<RunState, 'hero' | 'log' | 'events'>, amount: num
 
 const plural = (n: number) => (n === 1 ? '' : 's');
 
+/** Heals `ceil(maxHp × frac)` up to max HP; returns the HP restored. */
+function healBy(h: RunState['hero'], frac: number): number {
+  const n = Math.min(h.maxHp - h.hp, Math.ceil(h.maxHp * frac));
+  h.hp += n;
+  return n;
+}
+
+/** v1.6: the wisp heal comes before the XP, so a level-up from the XP still ends at full HP. */
 export function collectWisp(s: RunState, tile: DayTile): void {
   tile.resolved = true;
   s.stats.wisps++;
-  log(s, `A soul wisp from ${fmtShort(tile.day.date)} (${tile.day.count} contribution${plural(tile.day.count)}): +${WISP_XP} XP.`);
-  s.events.push({ type: 'wisp', col: tile.col, row: tile.row, xp: WISP_XP });
+  const healed = healBy(s.hero, WISP_HEAL);
+  log(
+    s,
+    `A soul wisp from ${fmtShort(tile.day.date)} (${tile.day.count} contribution${plural(tile.day.count)}): +${WISP_XP} XP${healed > 0 ? `, +${healed} HP` : ''}.`,
+  );
+  s.events.push({ type: 'wisp', col: tile.col, row: tile.row, xp: WISP_XP, healed });
   gainXp(s, WISP_XP);
+}
+
+/** v1.6 quiet day (fog): a small rest, no XP, no RNG draw. */
+export function restDay(s: RunState, tile: DayTile): void {
+  tile.resolved = true;
+  const healed = healBy(s.hero, REST_HEAL);
+  const day = fmtShort(tile.day.date);
+  log(s, healed > 0 ? `A quiet day (${day}). You catch your breath: +${healed} HP.` : `A quiet day (${day}). Nothing stirs.`);
+  s.events.push({ type: 'rest', col: tile.col, row: tile.row, healed });
 }
 
 /** Heal, treasure, log, XP, then the relic offer, in the prototype's order. */

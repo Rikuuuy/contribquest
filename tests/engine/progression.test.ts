@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { auraTier, collectWisp, gainXp, levelFor, openChest, startingXp, xpForLevel } from '../../src/engine/progression';
+import { auraTier, collectWisp, gainXp, levelFor, openChest, restDay, startingXp, xpForLevel } from '../../src/engine/progression';
 import { makeHero as buildHero } from '../../src/engine/run';
 import type { Dir } from '../../src/engine/explore';
 import { step } from '../../src/engine/step';
@@ -116,9 +116,32 @@ describe('FR-PRO-1: wisps', () => {
     expect([t.resolved, s.stats.wisps, s.hero.xp]).toEqual([true, 1, 5]);
     expect(s.log).toEqual([`A soul wisp from ${short(t.day.date)} (3 contributions): +5 XP.`]);
     expect(s.events).toEqual([
-      { type: 'wisp', col: t.col, row: t.row, xp: 5 },
+      { type: 'wisp', col: t.col, row: t.row, xp: 5, healed: 0 },
       { type: 'xp', amount: 5 },
     ]);
+  });
+
+  it('v1.6: heals ceil(maxHp × 0.1) before the XP, clamped to max HP, and logs the HP', () => {
+    const s = makeTestRun({ race: 'elf', level: 1, hero: { hp: 10 } });
+    const t = tileOf(s, 'wisp');
+    t.day = { ...t.day, count: 3 };
+    const heal = Math.ceil(s.hero.maxHp * 0.1);
+    collectWisp(s, t);
+    expect(s.hero.hp).toBe(10 + heal);
+    expect(s.log).toEqual([`A soul wisp from ${short(t.day.date)} (3 contributions): +5 XP, +${heal} HP.`]);
+    expect(s.events[0]).toEqual({ type: 'wisp', col: t.col, row: t.row, xp: 5, healed: heal });
+    const c = makeTestRun({ race: 'elf' });
+    c.hero.hp = c.hero.maxHp - 1;
+    collectWisp(c, tileOf(c, 'wisp'));
+    expect(c.hero.hp).toBe(c.hero.maxHp);
+    expect(c.events[0]).toMatchObject({ healed: 1 });
+  });
+
+  it('v1.6: a level-up from the wisp XP still ends at full HP', () => {
+    const s = makeTestRun({ race: 'elf', level: 3, hero: { xp: 298, hp: 3 } });
+    collectWisp(s, tileOf(s, 'wisp'));
+    expect([s.hero.level, s.hero.hp]).toEqual([4, s.hero.maxHp]);
+    expect(s.events.map((e) => e.type)).toEqual(['wisp', 'xp', 'levelUp']);
   });
 
   it('says "contribution" for a count of 1', () => {
@@ -127,6 +150,33 @@ describe('FR-PRO-1: wisps', () => {
     t.day = { ...t.day, count: 1 };
     collectWisp(s, t);
     expect(s.log[0]).toBe(`A soul wisp from ${short(t.day.date)} (1 contribution): +5 XP.`);
+  });
+});
+
+describe('v1.6 FR-PRO-1, FR-MOV-3: quiet days (restDay)', () => {
+  it('resolves the fog tile, heals ceil(maxHp × 0.05), logs it, emits rest, no XP and no RNG draw', () => {
+    const s = makeTestRun({ race: 'elf', level: 2, hero: { hp: 10 } });
+    const t = tileOf(s, 'fog');
+    const heal = Math.ceil(s.hero.maxHp * 0.05);
+    const { rng, hero } = s;
+    const xp = hero.xp;
+    restDay(s, t);
+    expect([t.resolved, s.hero.hp, s.hero.xp, s.rng]).toEqual([true, 10 + heal, xp, rng]);
+    expect(s.log).toEqual([`A quiet day (${short(t.day.date)}). You catch your breath: +${heal} HP.`]);
+    expect(s.events).toEqual([{ type: 'rest', col: t.col, row: t.row, healed: heal }]);
+  });
+
+  it('at full HP: "Nothing stirs." and healed 0; near max the heal is clamped', () => {
+    const s = makeTestRun({ race: 'elf' });
+    const t = tileOf(s, 'fog');
+    restDay(s, t);
+    expect(s.log).toEqual([`A quiet day (${short(t.day.date)}). Nothing stirs.`]);
+    expect(s.events).toEqual([{ type: 'rest', col: t.col, row: t.row, healed: 0 }]);
+    const c = makeTestRun({ race: 'elf' });
+    c.hero.hp = c.hero.maxHp - 1;
+    restDay(c, tileOf(c, 'fog'));
+    expect(c.hero.hp).toBe(c.hero.maxHp);
+    expect(c.events[0]).toMatchObject({ healed: 1 });
   });
 });
 

@@ -187,7 +187,8 @@ export type GameEvent =
   | { type: 'lost' }
   | { type: 'xp'; amount: number }
   | { type: 'levelUp'; level: number }
-  | { type: 'wisp'; col: number; row: number; xp: number }
+  | { type: 'wisp'; col: number; row: number; xp: number; healed: number }
+  | { type: 'rest'; col: number; row: number; healed: number }
   | { type: 'chest'; col: number; row: number; gold: number; healed: number }
   | { type: 'relicOffer'; ids: RelicId[]; title: string }
   | { type: 'relicPicked'; id: RelicId }
