@@ -607,7 +607,7 @@
       "spec": "map-generation",
       "task": "11.1",
       "title": "Run the mapgen and explore suites and the type check; confirm `src/mapgen` still imports nothing from `src/engine`, `src/render`, `src/audio`, or storage/fetch code, and that no `gateIdx`, `shardsNeeded`, or `\"gate\"` tile kind is left in `src/`",
-      "status": "todo",
+      "status": "done",
       "verify": "npm run typecheck && npx vitest --run tests/mapgen tests/engine/explore.test.ts tests/engine/explore.prop.test.ts && ! grep -rE \"from ['\\\"]\\.\\./(engine|render|audio)|data/(fetch|load|cache|storage|settings)\" src/mapgen && ! grep -rnE \"gateIdx|shardsNeeded|kind === ['\\\"]gate['\\\"]\" src"
     },
     {
@@ -976,7 +976,7 @@
       "spec": "combat-timing",
       "task": "12.1",
       "title": "Run the engine suite and the type check; confirm the engine purity rules still hold and that no Flee or Gate code is left in `src/engine`",
-      "status": "todo",
+      "status": "done",
       "verify": "npm run typecheck && npx vitest --run tests/engine && ! grep -rnE \"Math\\.random|Date\\.now|performance\\.now|document\\.|window\\.|localStorage|from ['\\\"]\\.\\./(render|audio|main)\" src/engine && ! grep -rnE \"'flee'|resolveFlee|gateOpen|gateIdx\" src/engine"
     },
     {
@@ -1283,7 +1283,7 @@
       "spec": "progression",
       "task": "12.1",
       "title": "Run the engine and data suites and the type check; confirm the progression files obey the engine rules",
-      "status": "todo",
+      "status": "done",
       "verify": "npm run typecheck && npx vitest --run tests/engine tests/data tests/sim && ! grep -rnE \"Math\\.random|Date\\.now|performance\\.now|document\\.|window\\.|localStorage\" src/engine"
     },
     {
