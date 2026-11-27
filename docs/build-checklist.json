@@ -940,7 +940,7 @@
       "spec": "combat-timing",
       "task": "11.4",
       "title": "Implement `makeBoss` and `bossShardLine` in `src/engine/monsters.ts` (and the risen-label rule in `sourceLabel`), `startBossFight` in `src/engine/combat.ts`, `bound` in `checkPhase2`; extend `tests/engine/monsters.test.ts` (69, 62, 56, 49 HP at start level 3 for 0\u20133 shards) and `tests/engine/patterns.test.ts` (bound boss at half HP stays in phase 1)",
-      "status": "todo",
+      "status": "done",
       "verify": "npx vitest --run tests/engine/monsters.test.ts tests/engine/patterns.test.ts"
     },
     {
