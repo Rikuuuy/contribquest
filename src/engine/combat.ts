@@ -13,6 +13,7 @@ import { gainXp } from './progression';
 import { createTest, gradeText, type TestContext } from './qte';
 import { RACE_NAMES } from './races';
 import { rand, randOf } from './rand';
+import { endRun } from './run';
 import type { ComboGrade, Fight, Grade, GradeResult, Pattern, QteTest, RunState } from './state';
 
 const variance = (s: RunState) => VARIANCE.base + VARIANCE.spread * rand(s);
@@ -289,18 +290,10 @@ export function winFight(s: RunState): void {
     s.stats.bossHpLeft = h.hp;
     log(s, 'The Phantom falls. The Gate is unsealed!');
     s.events.push({ type: 'gateOpen' });
-    if (t.kind === 'gate') winRun(s);
+    if (t.kind === 'gate') endRun(s, 'won');
   }
 }
 
 export function loseFight(s: RunState): void {
-  const c = fight(s);
-  s.status = 'lost';
-  s.killer = c.m.name;
-  s.events.push({ type: 'lost' });
-}
-
-export function winRun(s: RunState): void {
-  s.status = 'won';
-  s.events.push({ type: 'won' });
+  endRun(s, 'lost', fight(s).m.name);
 }

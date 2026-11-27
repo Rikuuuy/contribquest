@@ -241,7 +241,7 @@ describe('FR-MOV, FR-CLS-1: moves and class change', () => {
     open.pos = { col: g.col, row: g.row - 1 };
     const w = step(open, { type: 'move', dir: 'down' });
     expect(w.status).toBe('won');
-    expect(w.events).toEqual([{ type: 'won' }]);
+    expect(w.events).toEqual([{ type: 'won' }, { type: 'runEnded', won: true }]);
   });
 
   it('no moves during a fight', () => {

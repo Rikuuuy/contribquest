@@ -966,7 +966,7 @@
       "spec": "progression",
       "task": "8.1",
       "title": "Implement `endRun` in `src/engine/run.ts` and hand it to combat-timing's `winFight`, Gate entry, and `loseFight`",
-      "status": "todo",
+      "status": "done",
       "verify": "npx vitest --run tests/engine/trophies.test.ts"
     },
     {

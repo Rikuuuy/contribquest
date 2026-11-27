@@ -28,7 +28,7 @@ export { checkMove, applyMove, reveal, isVisible, collectShard, type Dir } from 
 export { xpForLevel, levelFor, startingXp, auraTier, gainXp, collectWisp, openChest } from './progression';
 export { makeTrait } from './trait';
 export { omenFor, omenLog, enterMap, offerBlessing, BLESSING_TITLE } from './omen';
-export { makeHero, newRun, type RunSettings } from './run';
+export { makeHero, newRun, endRun, type RunSettings } from './run';
 export { RACE_NAMES, RACE_INFO, chooseRace, type RaceInfo } from './races';
 export { RELICS, relicById, offerRelic, pickRelic, CHEST_TITLE, type Relic } from './relics';
 export { SavedRunSchema, serialize, restore, continueLabel, type SavedRun } from './save';

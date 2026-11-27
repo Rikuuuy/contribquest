@@ -9,13 +9,13 @@ import {
   startGuard,
   startStrike,
   winFight,
-  winRun,
 } from './combat';
 import { applyMove, checkMove } from './explore';
 import { log } from './log';
 import { enterMap, offerBlessing } from './omen';
 import { collectWisp, openChest } from './progression';
 import { chooseRace } from './races';
+import { endRun } from './run';
 import { pickRelic } from './relics';
 import { grade, testDeadline } from './qte';
 import type { Action, RunState } from './state';
@@ -93,7 +93,7 @@ function move(s: RunState, dir: Parameters<typeof checkMove>[1]): void {
       break;
     case 'gate':
       if (t.boss) startFight(s, t);
-      else winRun(s);
+      else endRun(s, 'won');
       break;
     case 'wisp':
       collectWisp(s, t);
