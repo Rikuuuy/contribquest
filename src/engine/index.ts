@@ -33,3 +33,4 @@ export { RACE_NAMES, RACE_INFO, chooseRace, type RaceInfo } from './races';
 export { RELICS, relicById, offerRelic, pickRelic, CHEST_TITLE, type Relic } from './relics';
 export { SavedRunSchema, serialize, restore, continueLabel, type SavedRun } from './save';
 export { summaryView, resultsView } from './views';
+export { makeSkillBot, skillGrade, type SkillBot } from './skillbot';

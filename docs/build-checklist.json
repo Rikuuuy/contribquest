@@ -741,7 +741,7 @@
       "spec": "combat-timing",
       "task": "9.1",
       "title": "Implement `makeSkillBot` and `skillGrade` in `src/engine/skillbot.ts`, ported from `simulateGrade` and `gauss`",
-      "status": "todo",
+      "status": "done",
       "verify": "npx vitest --run tests/engine/skillbot.test.ts"
     },
     {
