@@ -48,7 +48,7 @@ export function routeView(s: RunState): RouteView {
       monster: o.boss || (tile?.kind === 'monster' && !tile.resolved),
     };
   });
-  let fogFrom = map.cols;
+  let fogFrom: number = map.cols;
   for (const t of map.tiles) if (!t.seen && t.col < fogFrom) fogFrom = t.col;
   const best = map.emptyQuarter ? undefined : map.tiles.find((t) => t.bestDay);
   return {
