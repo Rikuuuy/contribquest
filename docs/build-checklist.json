@@ -759,7 +759,7 @@
       "spec": "combat-timing",
       "task": "9.3",
       "title": "Add the `retry` action (needs `newRun` from the progression spec): a lost run restarts on the same `set` and `heroSet` with no fetch; test it in `tests/engine/step.test.ts`",
-      "status": "todo",
+      "status": "done",
       "verify": "npx vitest --run tests/engine/step.test.ts"
     },
     {

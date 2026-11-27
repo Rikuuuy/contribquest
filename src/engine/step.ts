@@ -15,7 +15,7 @@ import { log } from './log';
 import { enterMap, offerBlessing } from './omen';
 import { collectWisp, openChest } from './progression';
 import { chooseRace } from './races';
-import { endRun } from './run';
+import { endRun, newRun } from './run';
 import { pickRelic } from './relics';
 import { grade, testDeadline } from './qte';
 import type { Action, RunState } from './state';
@@ -66,8 +66,7 @@ export function step(state: RunState, action: Action): RunState {
       offerBlessing(s);
       break;
     case 'retry':
-      // Needs newRun from the progression spec (Phase 2, task 9.3).
-      break;
+      return retry(s);
   }
   return s;
 }
@@ -104,6 +103,13 @@ function move(s: RunState, dir: Parameters<typeof checkMove>[1]): void {
     default:
       break;
   }
+}
+
+/** A finished run restarts on the same set and hero set from memory, with the hero's class and race and the current options (requirement 17.5). */
+function retry(s: RunState): RunState {
+  if (s.status !== 'won' && s.status !== 'lost') return s;
+  const r = newRun(s.set, s.heroSet, { heroClass: s.hero.cls, heroRace: s.hero.race, ...s.opts });
+  return r.ok ? r.value : s;
 }
 
 const DELTA = { up: [0, -1], down: [0, 1], left: [-1, 0], right: [1, 0] } as const;

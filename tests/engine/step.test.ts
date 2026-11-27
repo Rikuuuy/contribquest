@@ -1,8 +1,10 @@
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
+import type { ContributionSet } from '../../src/data/schema';
+import { endRun, newRun } from '../../src/engine/run';
 import { nextDeadline, resumeFight, step } from '../../src/engine/step';
 import type { Action, RunState } from '../../src/engine/state';
 import { tileAt } from '../../src/mapgen/layout';
-import { makeFightRun, makeTestRun } from '../fixtures/run';
+import { demoSet, makeFightRun, makeTestRun } from '../fixtures/run';
 
 function deepFreeze<T>(o: T): T {
   if (o && typeof o === 'object' && !Object.isFrozen(o)) {
@@ -199,6 +201,55 @@ describe('FR-COM-7: restore', () => {
     expect(step(r, { type: 'attack' }).combat!.phase).toBe('test');
     const exploring = makeTestRun();
     expect(resumeFight(exploring)).toBe(exploring);
+  });
+});
+
+describe('FR-COM-4: retry', () => {
+  const settings = { heroClass: 'mage', heroRace: 'elf', calm: true, assist: false } as const;
+  const fresh = (heroSet: ContributionSet | null) => {
+    const r = newRun(demoSet(), heroSet, settings);
+    if (!r.ok) throw new Error(r.error.message);
+    return r.value;
+  };
+  const lose = (s: RunState): RunState => {
+    const d = structuredClone(s);
+    d.pos = { ...d.map.tiles[5]! };
+    d.stats.steps = 12;
+    d.stats.defeated = 3;
+    d.hero.hp = 0;
+    d.shards = 1;
+    endRun(d, 'lost', 'Imp');
+    return d;
+  };
+
+  afterEach(() => vi.unstubAllGlobals());
+
+  it('a lost run restarts on the same set and heroSet, with the same class, race, and options, and no fetch', () => {
+    const fetch = vi.fn();
+    vi.stubGlobal('fetch', fetch);
+    const raider = { ...demoSet(), username: 'raider' };
+    for (const heroSet of [null, raider]) {
+      const lost = deepFreeze(lose(fresh(heroSet)));
+      expect(lost.status).toBe('lost');
+      const r = step(lost, { type: 'retry' });
+      expect(r).toEqual(fresh(heroSet));
+      expect(r.set).toEqual(lost.set);
+      expect(r.heroSet).toEqual(lost.heroSet);
+      expect(r.status).toBe('exploring');
+    }
+    expect(fetch).not.toHaveBeenCalled();
+  });
+
+  it('keeps the options changed during the run', () => {
+    const lost = lose(step(fresh(null), { type: 'setOptions', opts: { calm: false, assist: true } }));
+    expect(step(lost, { type: 'retry' }).opts).toEqual({ calm: false, assist: true });
+  });
+
+  it('is ignored while the run is still going', () => {
+    const s = fresh(null);
+    expect(step(s, { type: 'retry' })).toEqual({ ...s, events: [] });
+    const f = makeFightRun(2);
+    expect(step(f, { type: 'retry' })).toEqual({ ...f, events: [] });
   });
 });
 
