@@ -221,5 +221,14 @@ function mountPlain(app: HTMLElement): void {
   setRun(r.value);
 }
 
+/** Loads the world renderer chunk (and `three`) on demand; the start screen never waits for it (requirement 25.7). */
+export function loadWorld(): Promise<typeof import('./render/world/index')> {
+  return import('./render/world/index');
+}
+
 const app = document.getElementById('app');
 if (app) mountPlain(app);
+
+// The /next/ page has a map host: start fetching the world chunk in the background (the renderer wiring follows).
+if (document.getElementById('map-host'))
+  loadWorld().catch((e: unknown) => console.warn('3D view unavailable:', e instanceof Error ? e.message : e));

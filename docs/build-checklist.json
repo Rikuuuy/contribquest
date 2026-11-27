@@ -1654,7 +1654,7 @@
       "spec": "presentation",
       "task": "11.1",
       "title": "Add `three` (`^0.187.0`) to `dependencies` and `@types/three` (`^0.187.0`) to `devDependencies`; put `three` in its own chunk named `three` with `build.rolldownOptions.output.codeSplitting.groups` (`{ name: \"three\", test: /node_modules[\\\\/]three[\\\\/]/ }`) in `vite.config.ts` (Vite 8 uses Rolldown, where `manualChunks` is deprecated); add the empty `src/render/world/index.ts` entry loaded with a dynamic `import()`",
-      "status": "todo",
+      "status": "done",
       "verify": "npm ls three @types/three && npm run build && f=$(ls dist/assets/three-*.js) && test \"$(gzip -9c $f | wc -c)\" -le 184320"
     },
     {

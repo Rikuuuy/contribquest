@@ -34,6 +34,13 @@ export default defineConfig({
         main: resolve(root, 'index.html'),
         next: resolve(root, 'next/index.html'),
       },
+      // `three` goes into its own lazily loaded chunk (`dist/assets/three-[hash].js`, budget 180 KB gzip).
+      // Vite 8 bundles with Rolldown, where `manualChunks` is deprecated.
+      output: {
+        codeSplitting: {
+          groups: [{ name: 'three', test: /node_modules[\\/]three[\\/]/ }],
+        },
+      },
     },
   },
   plugins: [copyPrototype()],
