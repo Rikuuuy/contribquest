@@ -894,7 +894,7 @@
       "spec": "progression",
       "task": "5.1",
       "title": "Implement `RACE_INFO` (names, texts, lines, and the face colours and flags from the prototype's `RACES`) and `chooseRace` in `src/engine/races.ts`; handle `chooseRace` in `step`",
-      "status": "todo",
+      "status": "done",
       "verify": "npx vitest --run tests/engine/races.test.ts"
     },
     {
@@ -903,7 +903,7 @@
       "spec": "progression",
       "task": "5.2",
       "title": "Write `tests/engine/races.test.ts`",
-      "status": "todo",
+      "status": "done",
       "verify": "npx vitest --run tests/engine/races.test.ts"
     },
     {
