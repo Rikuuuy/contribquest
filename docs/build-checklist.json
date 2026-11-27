@@ -1735,7 +1735,7 @@
       "spec": "presentation",
       "task": "12.1",
       "title": "Implement `routeView` and `targetFor` in `src/render/map/route-view.ts`; write `tests/render/route-view.test.ts`",
-      "status": "todo",
+      "status": "done",
       "verify": "npx vitest --run tests/render/route-view.test.ts"
     },
     {
