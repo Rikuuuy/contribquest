@@ -3,8 +3,8 @@ import type { Result } from '../data/errors';
 import type { ContributionSet } from '../data/schema';
 import { assignTiles, bestDayIndex } from './assign';
 import { layoutDays } from './layout';
-import { fnv1a } from './rng';
-import { ROWS } from './rules';
+import { fnv1a, makeRng } from './rng';
+import { MAP_RNG_SALT, ROWS } from './rules';
 import { applyShortfall } from './shortfall';
 import type { GameMap, MapError } from './types';
 import { MAP_ERROR_TEXT, mapError, validateMap } from './validate';
@@ -18,7 +18,8 @@ export function generateMap(set: ContributionSet): Result<GameMap, MapError> {
     const { w0, cols, cells } = layoutDays(days);
     const best = bestDayIndex(days);
     const tiles = assignTiles(days, cells, best);
-    const { quiet } = applyShortfall(tiles, seed);
+    const rng = makeRng(seed ^ MAP_RNG_SALT);
+    const { quiet } = applyShortfall(tiles, rng);
     const map: GameMap = {
       cols,
       rows: ROWS as 7,

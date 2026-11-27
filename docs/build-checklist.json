@@ -526,7 +526,7 @@
       "spec": "map-generation",
       "task": "9.4",
       "title": "Change `applyShortfall` to take the shared map RNG, add `applyRouteShortfall` in `src/mapgen/shortfall.ts`, and extend `tests/mapgen/shortfall.test.ts` (fight-free route lifted to 4, fog before wisp before chest, shared RNG instance, `quiet` unchanged by the route step)",
-      "status": "todo",
+      "status": "done",
       "verify": "npx vitest --run tests/mapgen/shortfall.test.ts"
     },
     {
