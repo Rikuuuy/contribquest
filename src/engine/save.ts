@@ -1,6 +1,6 @@
 // Pure save and restore of a run (progression design.md "save.ts"). Storage lives in src/data/runstore.ts.
-// v1.6: save version 2. The objects below are strict, so a v1.5 shape (a `boss` tile flag, `gateIdx`,
-// `shardsNeeded`) is rejected instead of being stripped.
+// v1.6: save version 2. The objects below are strict, so a v1.5 shape (a `boss` tile flag, the Gate index,
+// the ward's shard count) is rejected instead of being stripped.
 import { z } from 'zod';
 import {
   ClassIdSchema,
