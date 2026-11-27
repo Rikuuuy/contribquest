@@ -2,7 +2,8 @@ import { describe, expect, it } from 'vitest';
 import type { ContributionSet } from '../../src/data/schema';
 import { generateMap, mapDateRange } from '../../src/mapgen/generate';
 import type { DayTile, GameMap } from '../../src/mapgen/types';
-import { reachable, validateMap } from '../../src/mapgen/validate';
+import { routeMinFights } from '../../src/mapgen/routes';
+import { validateMap } from '../../src/mapgen/validate';
 import { makeSet, windowDays } from '../fixtures/sets';
 
 function goodMap(): GameMap {
@@ -26,11 +27,32 @@ describe('validateMap', () => {
     expect(validateMap({ ...goodMap(), tiles: [] })).toEqual(err('The map could not be raised.'));
   });
 
-  it('a map with a column cut out has no route', () => {
+  it('a map whose index 0 is not the start, or whose bossIdx is out of range, cannot be raised', () => {
     const map = goodMap();
-    // Remove every tile of column 5 so nothing connects the left half to the right half.
-    map.tiles = map.tiles.map((t) => (t.col === 5 ? (undefined as unknown as DayTile) : t));
-    expect(reachable(map, map.tiles[0]!, map.tiles[map.bossIdx]!)).toBe(map.tiles[map.bossIdx]!.col < 5);
+    map.tiles[0]!.kind = 'fog';
+    expect(validateMap(map)).toEqual(err('The map could not be raised.'));
+    expect(validateMap({ ...goodMap(), bossIdx: 0 })).toEqual(err('The map could not be raised.'));
+  });
+
+  it('a tile with no forward option has no route', () => {
+    // One column too many: the real last column now points at an empty column instead of the boss node.
+    const map = goodMap();
+    map.cols = (map.cols + 1) as GameMap['cols'];
+    map.bossNode = { ...map.bossNode, col: map.cols };
+    expect(validateMap(map)).toEqual(err('The map has no route.'));
+  });
+
+  it('a boss node out of place has no route', () => {
+    const map = goodMap();
+    map.bossNode = { col: map.cols + 1, row: map.bossNode.row };
+    expect(validateMap(map)).toEqual(err('The map has no route.'));
+  });
+
+  it('a route below 4 fights has no route', () => {
+    const map = goodMap();
+    expect(routeMinFights(map)).toBeGreaterThanOrEqual(4);
+    for (const t of map.tiles) if (t.kind === 'monster') Object.assign(t, { kind: 'fog', tier: 0 });
+    expect(routeMinFights(map)).toBe(0);
     expect(validateMap(map)).toEqual(err('The map has no route.'));
   });
 

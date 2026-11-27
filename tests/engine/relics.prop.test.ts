@@ -2,7 +2,7 @@ import fc from 'fast-check';
 import { describe, expect, it } from 'vitest';
 import type { ClassId, RaceId } from '../../src/data/schema';
 import { heroClass } from '../../src/engine/classes';
-import { resolveFlee, resolveGuard, resolveStrike } from '../../src/engine/combat';
+import { resolveGuard, resolveStrike } from '../../src/engine/combat';
 import { RELICS, offerRelic } from '../../src/engine/relics';
 import { step } from '../../src/engine/step';
 import type { ComboGrade, Grade, GradeResult, RelicId, RunState } from '../../src/engine/state';
@@ -58,18 +58,15 @@ const caseArb = fc
   .filter((f) => !f.relics.includes(f.extra));
 type Case = typeof caseArb extends fc.Arbitrary<infer T> ? T : never;
 
-/** The same fight with and without one more relic, at the strike, guard, or flee test, with the RNG fixed. */
-function pair(f: Case, at: 'strike' | 'guard' | 'flee'): [RunState, RunState] {
+/** The same fight with and without one more relic, at the strike or guard test, with the RNG fixed. */
+function pair(f: Case, at: 'strike' | 'guard'): [RunState, RunState] {
   return [f.relics, [...f.relics, f.extra]].map((relics) => {
     let s = makeFightRun(f.tier, { cls: f.cls, race: f.race, relics, level: f.level, aura: f.aura });
     const c = s.combat!;
     c.m.hp = c.m.maxHp = 10000;
     if (f.trait) s.hero.trait = { name: 'Row', text: '', rows: [c.row], hp: 0 };
-    if (at === 'flee') s = step(s, { type: 'flee' });
-    else {
-      s = step(s, { type: 'attack' });
-      if (at === 'guard') s = step(step(s, { type: 'forceGrade', grade: 'miss' }), { type: 'advance' });
-    }
+    s = step(s, { type: 'attack' });
+    if (at === 'guard') s = step(step(s, { type: 'forceGrade', grade: 'miss' }), { type: 'advance' });
     s.combat!.m.hp = 10000;
     s.hero.maxHp = 10000;
     s.hero.hp = 5000;
@@ -103,18 +100,6 @@ describe('v1.4: owning another relic never lowers damage dealt or raises damage 
         });
         expect(out[1]!.taken).toBeLessThanOrEqual(out[0]!.taken);
         expect(out[1]!.dealt).toBeGreaterThanOrEqual(out[0]!.dealt);
-      }),
-    );
-  });
-
-  it('flee: damage taken with the extra relic ≤ without it', () => {
-    fc.assert(
-      fc.property(caseArb, (f) => {
-        const taken = pair(f, 'flee').map((s) => {
-          resolveFlee(s, { grade: f.grades[0] });
-          return 5000 - s.hero.hp;
-        });
-        expect(taken[1]).toBeLessThanOrEqual(taken[0]!);
       }),
     );
   });

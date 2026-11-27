@@ -23,8 +23,9 @@ describe('map independence', () => {
             expect(r.ok).toBe(g.ok);
             return;
           }
-          // newRun marks the start visited and reveals the lantern radius; strip those run-time flags.
-          const strip = (tiles: typeof g.value.tiles) => tiles.map(({ visited: _v, seen: _s, ...t }) => t);
+          // newRun marks the start visited and resolved (v1.6) and reveals the view window; strip those run-time flags.
+          const strip = (tiles: typeof g.value.tiles) =>
+            tiles.map(({ visited: _v, seen: _s, resolved, ...t }) => ({ ...t, resolved: t.idx === 0 ? null : resolved }));
           expect({ ...r.value.map, tiles: strip(r.value.map.tiles) }).toEqual({ ...g.value, tiles: strip(g.value.tiles) });
           const other = newRun(set, null, { heroClass: 'rogue', heroRace: 'orc', calm: !calm, assist: !assist });
           expect(other.ok && other.value.map).toEqual(r.value.map);

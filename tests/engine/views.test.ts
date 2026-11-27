@@ -54,7 +54,7 @@ describe('FR-PRO-4: resultsView on the demo run', () => {
     s.status = 'won';
     expect(resultsView(s)).toEqual({
       won: true,
-      title: 'The Gate opens. Your graph is exorcised.',
+      title: 'The Phantom is banished. Your graph is exorcised.',
       sub: 'demo-necromancer survived 91 haunted days.',
       game: [
         ['Class', 'Wanderer'],

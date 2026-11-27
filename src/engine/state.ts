@@ -1,7 +1,6 @@
 // Run state, actions, and events for the engine reducer (combat-timing design.md "Types").
 import type { ClassId, ContributionSet, RaceId } from '../data/schema';
 import type { GameMap, Pos, Tier } from '../mapgen';
-import type { Dir } from './explore';
 
 export type Grade = 'perfect' | 'good' | 'miss';
 export type ComboGrade = [Grade, Grade, Grade];
@@ -58,10 +57,20 @@ export type Hero = {
   omen: Omen;
 };
 
-export type Monster = { name: string; tier: Tier; hp: number; maxHp: number; dmg: number; xp: number; phase2: boolean };
+export type Monster = {
+  name: string;
+  tier: Tier;
+  hp: number;
+  maxHp: number;
+  dmg: number;
+  xp: number;
+  phase2: boolean;
+  /** v1.6: true only for a boss fought with SHARD_NO_PHASE2 shards; it never enters phase 2. */
+  bound: boolean;
+};
 
 export type QteTest = {
-  kind: 'attack' | 'defend' | 'flee';
+  kind: 'attack' | 'defend';
   mode: Mode;
   pattern: Pattern;
   P: number;
@@ -88,8 +97,7 @@ export type FightNext =
   | { kind: 'strike'; i: number }
   | { kind: 'choose' }
   | { kind: 'win' }
-  | { kind: 'lose' }
-  | { kind: 'escape'; dmg: number };
+  | { kind: 'lose' };
 
 export type Fight = {
   col: number;
@@ -124,7 +132,7 @@ export type RunStats = {
 };
 
 export type RunState = {
-  version: 1;
+  version: 2;
   set: ContributionSet;
   heroSet: ContributionSet | null;
   map: GameMap;
@@ -154,11 +162,11 @@ export type RunState = {
 };
 
 export type Action =
-  | { type: 'move'; dir: Dir }
+  /** v1.6: a target from `legalMoves` (map-generation); anything else is ignored. */
+  | { type: 'move'; to: Pos }
   | { type: 'chooseClass'; cls: ClassId }
   | { type: 'setOptions'; opts: RunOptions }
   | { type: 'attack' }
-  | { type: 'flee' }
   | { type: 'press'; t: number; key: string }
   | { type: 'release'; t: number; key: string }
   | { type: 'timeout'; t: number }
@@ -172,26 +180,25 @@ export type Action =
   | { type: 'trophiesAwarded'; ids: TrophyId[] };
 
 export type GameEvent =
-  | { type: 'blocked'; col: number; row: number }
+  | { type: 'moved'; from: Pos; to: Pos }
   | { type: 'fightStart'; boss: boolean }
   | { type: 'testStart'; testId: number; mode: Mode; pattern: Pattern }
   | { type: 'graded'; result: GradeResult; text: string }
   | { type: 'heroHit'; grades: Grade[]; dmgs: number[]; killed: boolean }
   | { type: 'monsterHit'; grade: Grade; dmg: number; lethal: boolean }
   | { type: 'counter'; dmg: number; killed: boolean }
-  | { type: 'heal'; amount: number; source: 'vampire' | 'hotfix' }
+  | { type: 'heal'; amount: number; source: 'vampire' | 'hotfix' | 'cache' }
   | { type: 'undying' }
   | { type: 'phase2' }
   | { type: 'timing'; pct: number; maxed: boolean }
-  | { type: 'shard'; have: number; need: number; shattered: boolean }
+  | { type: 'shard'; have: number; max: 3; bound: boolean }
   | { type: 'monsterDown'; boss: boolean }
-  | { type: 'gateOpen' }
-  | { type: 'escaped'; dmg: number }
   | { type: 'won' }
   | { type: 'lost' }
   | { type: 'xp'; amount: number }
   | { type: 'levelUp'; level: number }
-  | { type: 'wisp'; col: number; row: number; xp: number }
+  | { type: 'wisp'; col: number; row: number; xp: number; healed: number }
+  | { type: 'rest'; col: number; row: number; healed: number }
   | { type: 'chest'; col: number; row: number; gold: number; healed: number }
   | { type: 'relicOffer'; ids: RelicId[]; title: string }
   | { type: 'relicPicked'; id: RelicId }

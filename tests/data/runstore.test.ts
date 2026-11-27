@@ -12,14 +12,25 @@ import { ClassWinsSchema, TrophyHaveSchema } from '../../src/data/schema';
 import { memoryStorage, throwingStorage } from '../fixtures/storage';
 
 describe('runstore', () => {
-  it('FR-SAV-1: writes, reads, and clears the run at cq:v1:run', () => {
+  it('FR-SAV-1: writes, reads, and clears the run at cq:v2:run (v1.6)', () => {
     const s = memoryStorage();
-    writeRun(s, { version: 1 });
-    expect(JSON.parse(s.data.get('cq:v1:run') ?? 'null')).toEqual({ version: 1 });
-    expect(readRun(s)).toEqual({ version: 1 });
+    writeRun(s, { version: 2 });
+    expect(JSON.parse(s.data.get('cq:v2:run') ?? 'null')).toEqual({ version: 2 });
+    expect(readRun(s)).toEqual({ version: 2 });
     clearRun(s);
-    expect(s.data.has('cq:v1:run')).toBe(false);
+    expect(s.data.has('cq:v2:run')).toBe(false);
     expect(readRun(s)).toBeNull();
+  });
+
+  it('FR-SAV-3: never reads, writes, or removes the prototype key cq:v1:run (v1.6)', () => {
+    const old = '{"version":1,"from":"prototype"}';
+    const s = memoryStorage({ 'cq:v1:run': old });
+    expect(readRun(s)).toBeNull();
+    writeRun(s, { version: 2 });
+    expect(s.data.get('cq:v1:run')).toBe(old);
+    clearRun(s);
+    expect(s.data.get('cq:v1:run')).toBe(old);
+    expect(s.data.has('cq:v2:run')).toBe(false);
   });
 
   it('FR-TRO-1: trophies at cq:v1:trophies and class wins at cq:v1:classwins', () => {
@@ -33,7 +44,7 @@ describe('runstore', () => {
   });
 
   it('FR-SAV-1: corrupt JSON and missing keys read as null', () => {
-    const s = memoryStorage({ 'cq:v1:run': '{oops', 'cq:v1:trophies': 'nope', 'cq:v1:classwins': '{' });
+    const s = memoryStorage({ 'cq:v2:run': '{oops', 'cq:v1:trophies': 'nope', 'cq:v1:classwins': '{' });
     expect(readRun(s)).toBeNull();
     expect(readTrophies(s)).toBeNull();
     expect(readClassWins(s)).toBeNull();
@@ -45,7 +56,7 @@ describe('runstore', () => {
       expect(readRun(st)).toBeNull();
       expect(readTrophies(st)).toBeNull();
       expect(readClassWins(st)).toBeNull();
-      expect(() => writeRun(st, { version: 1 })).not.toThrow();
+      expect(() => writeRun(st, { version: 2 })).not.toThrow();
       expect(() => clearRun(st)).not.toThrow();
       expect(() => writeTrophies(st, {})).not.toThrow();
       expect(() => writeClassWins(st, {})).not.toThrow();

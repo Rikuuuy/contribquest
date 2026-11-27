@@ -1,6 +1,8 @@
 // Headless balance simulator (progression requirement 14, design "Balance simulator").
 // Plays skill-bot runs through the engine's `step` on the demo graph and six fixture graphs and prints
 // win rates per class and skill next to the targets in game-rules.md. Exits 1 if any overall target is missed.
+// v1.6: each cell also reports the average fights per run and the average shards held at the boss
+// (informational, not pass/fail).
 //
 // Usage: npm run simulate [-- --seeds n] [-- --cell class:σ]
 import { loadDemo } from '../src/data/demo';
@@ -44,6 +46,9 @@ function start(set: ContributionSet, cls: ClassId): RunState {
   if (!r.ok) throw new Error(r.error.message);
   return r.value;
 }
+
+/** The run got to the boss node (the boss fight started), so `shards` is the count the boss was fought with. */
+const reachedBoss = (s: RunState): boolean => s.pos.col === s.map.bossNode.col && s.pos.row === s.map.bossNode.row;
 
 const targetText = (t: Target): string =>
   t.min !== undefined && t.max !== undefined ? `${t.min}–${t.max}%` : t.min !== undefined ? `≥ ${t.min}%` : `≤ ${t.max}%`;
@@ -99,37 +104,48 @@ function main(): number {
   let failed = false;
 
   console.log(`Balance simulator: ${seeds} seeds per cell and graph, race Human, Calm and Auto-timing off.\n`);
-  console.log(`| Class | σ (ms) | ${gs.map((g) => g.name).join(' | ')} | Overall | Target | Result |`);
-  console.log(`| --- | --- | ${gs.map(() => '---').join(' | ')} | --- | --- | --- |`);
+  console.log(`| Class | σ (ms) | ${gs.map((g) => g.name).join(' | ')} | Overall | Target | Result | Avg fights | Avg shards at boss |`);
+  console.log(`| --- | --- | ${gs.map(() => '---').join(' | ')} | --- | --- | --- | --- | --- |`);
   for (const cell of cells) {
     let total = 0;
+    let fights = 0;
+    let shards = 0;
+    let atBoss = 0;
     const per = gs.map(({ set }) => {
       let wins = 0;
       for (let seed = 0; seed < seeds; seed++) {
         const bot = makeSkillBot(cell.sigma, seed);
-        if (playRun(start(set, cell.cls), (t) => skillGrade(t, bot)).won) wins++;
+        const r = playRun(start(set, cell.cls), (t) => skillGrade(t, bot));
+        if (r.won) wins++;
+        fights += r.fights;
+        if (reachedBoss(r.state)) {
+          atBoss++;
+          shards += r.state.shards;
+        }
       }
       total += wins;
       return wins;
     });
-    const pct = (100 * total) / (seeds * gs.length);
+    const runs = seeds * gs.length;
+    const pct = (100 * total) / runs;
     const ok = meets(cell.target, pct);
     if (!ok) failed = true;
+    const avgShards = atBoss ? (shards / atBoss).toFixed(2) : '–';
     console.log(
-      `| ${cell.cls} | ${cell.sigma} | ${per.map((w) => `${w}/${seeds}`).join(' | ')} | ${pct.toFixed(1)}% | ${targetText(cell.target)} | ${ok ? 'PASS' : 'FAIL'} |`,
+      `| ${cell.cls} | ${cell.sigma} | ${per.map((w) => `${w}/${seeds}`).join(' | ')} | ${pct.toFixed(1)}% | ${targetText(cell.target)} | ${ok ? 'PASS' : 'FAIL'} | ${(fights / runs).toFixed(2)} | ${avgShards} |`,
     );
   }
 
   const demo = gs[0] as { set: ContributionSet };
-  console.log('\nWanderer grade policies on the demo graph (route target: 15–25 steps, 6–10 fights):\n');
-  console.log('| Policy | Expected | Outcome | Steps | Fights | Result |');
-  console.log('| --- | --- | --- | --- | --- | --- |');
+  console.log('\nWanderer grade policies on the demo graph (route target: 6–10 fights, the boss included; steps always equal cols):\n');
+  console.log('| Policy | Expected | Outcome | Fights | Shards | Steps | Result |');
+  console.log('| --- | --- | --- | --- | --- | --- | --- |');
   for (const p of GRADE_POLICIES) {
     const r = playRun(start(demo.set, 'wanderer'), p.grader());
     const ok = r.won === p.wins;
     if (!ok) failed = true;
     console.log(
-      `| ${p.name} | ${p.wins ? 'win' : 'lose'} | ${r.won ? 'win' : 'lose'} | ${r.state.stats.steps} | ${r.fights} | ${ok ? 'PASS' : 'FAIL'} |`,
+      `| ${p.name} | ${p.wins ? 'win' : 'lose'} | ${r.won ? 'win' : 'lose'} | ${r.fights} | ${r.state.shards} | ${r.state.stats.steps} | ${ok ? 'PASS' : 'FAIL'} |`,
     );
   }
 

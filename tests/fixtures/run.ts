@@ -2,7 +2,7 @@
 import { loadDemo } from '../../src/data/demo';
 import type { ClassId, ContributionSet, RaceId } from '../../src/data/schema';
 import { applyStats } from '../../src/engine/classes';
-import { startFight } from '../../src/engine/combat';
+import { startBossFight, startFight } from '../../src/engine/combat';
 import { reveal } from '../../src/engine/explore';
 import type { Hero, RelicId, RunOptions, RunState, Trait } from '../../src/engine/state';
 import { generateMap } from '../../src/mapgen/generate';
@@ -66,7 +66,7 @@ export function makeTestRun(o: TestRunOptions = {}): RunState {
   const map = mapOf(set);
   const s0 = map.tiles[0] as DayTile;
   const s: RunState = {
-    version: 1,
+    version: 2,
     set,
     heroSet: null,
     map,
@@ -90,6 +90,7 @@ export function makeTestRun(o: TestRunOptions = {}): RunState {
     newTrophies: [],
   };
   s0.visited = true;
+  s0.resolved = true;
   reveal(s);
   return s;
 }
@@ -112,10 +113,23 @@ export function fightOn(s: RunState, tile: DayTile): RunState {
   return s;
 }
 
-/** A run already in a fight with a monster of the given tier (5 = the boss). */
+/** Puts the hero on the boss node (as if from the last column) and starts the boss fight with the shards held. */
+export function bossFightOn(s: RunState, shards = s.shards): RunState {
+  const last = s.map.tiles.find((t) => t.col === s.map.cols - 1 && t.row === s.map.bossNode.row) ?? s.map.tiles[90]!;
+  s.prev = { col: last.col, row: last.row };
+  s.pos = { ...s.map.bossNode };
+  s.shards = shards;
+  reveal(s);
+  startBossFight(s);
+  s.events = [];
+  return s;
+}
+
+/** A run already in a fight with a monster of the given tier (5 = the boss on the boss node, 0 shards). */
 export function makeFightRun(tier: Tier, o: TestRunOptions = {}): RunState {
   const s = makeTestRun(o);
-  const match = (t: DayTile) => (tier === 5 ? t.boss === true : t.kind === 'monster' && t.tier === tier);
+  if (tier === 5) return bossFightOn(s);
+  const match = (t: DayTile) => t.kind === 'monster' && t.tier === tier;
   if (tier === 1 && !s.map.tiles.some(match)) {
     // The demo map has no Lost Ghost: raise one from a fog tile, as the shortfall would.
     const fog = findTile(s, (t) => t.kind === 'fog');

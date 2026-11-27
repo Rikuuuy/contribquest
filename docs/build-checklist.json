@@ -499,7 +499,7 @@
       "spec": "map-generation",
       "task": "9.1",
       "title": "Update `src/mapgen/types.ts` (remove the `boss` and `gate` kinds, `boss` flag, `gateIdx`, `shardsNeeded`; add `bestDay`, `bossNode`, `RouteOption`) and `src/mapgen/rules.ts` (add `ROUTE_REACH = 1`, `MIN_ROUTE_FIGHTS = 4`; remove `MAX_SHARDS`); update the re-export in `src/engine/balance.ts` and list the new constants in `game-rules.md`",
-      "status": "todo",
+      "status": "done",
       "verify": "! npx tsc --noEmit 2>&1 | grep -q \"^src/mapgen/\""
     },
     {
@@ -508,7 +508,7 @@
       "spec": "map-generation",
       "task": "9.2",
       "title": "Change `assignTiles` to the v1.6 table (best day and index 90 by level, `bestDay` flag, no boss or gate) and update `tests/mapgen/assign.test.ts`",
-      "status": "todo",
+      "status": "done",
       "verify": "npx vitest --run tests/mapgen/assign.test.ts"
     },
     {
@@ -517,7 +517,7 @@
       "spec": "map-generation",
       "task": "9.3",
       "title": "Implement `nextOptions`, `routeMinFights`, `minFightRoute`, `reachableIdx` in `src/mapgen/routes.ts`; write `tests/mapgen/routes.test.ts` (three options, rows 0 and 6, the demo fallback column 12 rows 3\u20136 \u2192 (13, 1), a 13-column map, last column \u2192 boss node, boss node \u2192 `[]`, a hand-built DP case)",
-      "status": "todo",
+      "status": "done",
       "verify": "npx vitest --run tests/mapgen/routes.test.ts"
     },
     {
@@ -526,7 +526,7 @@
       "spec": "map-generation",
       "task": "9.4",
       "title": "Change `applyShortfall` to take the shared map RNG, add `applyRouteShortfall` in `src/mapgen/shortfall.ts`, and extend `tests/mapgen/shortfall.test.ts` (fight-free route lifted to 4, fog before wisp before chest, shared RNG instance, `quiet` unchanged by the route step)",
-      "status": "todo",
+      "status": "done",
       "verify": "npx vitest --run tests/mapgen/shortfall.test.ts"
     },
     {
@@ -535,7 +535,7 @@
       "spec": "map-generation",
       "task": "9.5",
       "title": "Rewrite `validateMap` with the v1.6 checks and update `generateMap` (one map RNG, `bossNode`, route shortfall, no `shardsNeeded`); update `tests/mapgen/validate.test.ts` (missing start, duplicate date, a tile with no forward option, a route below 4 fights) and `tests/mapgen/fixtures.test.ts` (every fixture profile still `ok: true`)",
-      "status": "todo",
+      "status": "done",
       "verify": "npx vitest --run tests/mapgen/validate.test.ts tests/mapgen/fixtures.test.ts"
     },
     {
@@ -544,7 +544,7 @@
       "spec": "map-generation",
       "task": "9.6",
       "title": "Record `tests/fixtures/golden/demo-map-v2.json` from the port; update `tests/mapgen/golden.test.ts` to the v1.6 summary facts (14 cols, seed 722674249, `bossIdx` 77 with `bestDay`, `bossNode` (14, 2), not quiet, `routeMin \u2265 4`) and to prototype parity on every tile except index 77, index 90, and route-shortfall tiles; keep `demo-map.json` unchanged",
-      "status": "todo",
+      "status": "done",
       "verify": "npx vitest --run tests/mapgen/golden.test.ts"
     },
     {
@@ -553,7 +553,7 @@
       "spec": "map-generation",
       "task": "9.7",
       "title": "Update `tests/mapgen/map.prop.test.ts`: P3 and P4 to their v1.6 statements, remove P10 (leave a comment naming it retired), add P20 and P21 (random walks plus an independent recursive minimum)",
-      "status": "todo",
+      "status": "done",
       "verify": "npx vitest --run tests/mapgen/map.prop.test.ts"
     },
     {
@@ -562,7 +562,7 @@
       "spec": "map-generation",
       "task": "10.1",
       "title": "Add `VIEW_AHEAD = 2`, `VIEW_AHEAD_REVIEW = 3` to `balance.ts` (remove `REVEAL_R2`, `REVEAL_R2_REVIEW`) and the matching assertions in `tests/engine/balance.test.ts`",
-      "status": "todo",
+      "status": "done",
       "verify": "npx vitest --run tests/engine/balance.test.ts"
     },
     {
@@ -571,7 +571,7 @@
       "spec": "map-generation",
       "task": "10.2",
       "title": "Rewrite `src/engine/explore.ts`: `viewAhead`, `reveal` (column window), `isVisible`, `legalMoves`, `checkMove(s, to)`, `applyMove`; remove the sealed and warded checks",
-      "status": "todo",
+      "status": "done",
       "verify": "npx vitest --run tests/engine/explore.test.ts"
     },
     {
@@ -580,7 +580,7 @@
       "spec": "map-generation",
       "task": "10.3",
       "title": "Rewrite `collectShard` and `shardStatus` for `SHARD_MAX` (bonus shards, `bound`, new log lines)",
-      "status": "todo",
+      "status": "done",
       "verify": "npx vitest --run tests/engine/explore.test.ts"
     },
     {
@@ -589,7 +589,7 @@
       "spec": "map-generation",
       "task": "10.4",
       "title": "Rewrite `tests/engine/explore.test.ts` for the v1.6 rules (window at start, after a move, with Code Review; refused moves behind, sideways, two ahead, void; boss node move; shard lines and `bound`; nothing past 3)",
-      "status": "todo",
+      "status": "done",
       "verify": "npx vitest --run tests/engine/explore.test.ts"
     },
     {
@@ -598,7 +598,7 @@
       "spec": "map-generation",
       "task": "10.5",
       "title": "Write `tests/engine/explore.prop.test.ts` for P22 over action sequences from `newRun` (needs combat-timing task 11.3 and progression task 13.3)",
-      "status": "todo",
+      "status": "done",
       "verify": "npx vitest --run tests/engine/explore.prop.test.ts"
     },
     {
@@ -607,7 +607,7 @@
       "spec": "map-generation",
       "task": "11.1",
       "title": "Run the mapgen and explore suites and the type check; confirm `src/mapgen` still imports nothing from `src/engine`, `src/render`, `src/audio`, or storage/fetch code, and that no `gateIdx`, `shardsNeeded`, or `\"gate\"` tile kind is left in `src/`",
-      "status": "todo",
+      "status": "done",
       "verify": "npm run typecheck && npx vitest --run tests/mapgen tests/engine/explore.test.ts tests/engine/explore.prop.test.ts && ! grep -rE \"from ['\\\"]\\.\\./(engine|render|audio)|data/(fetch|load|cache|storage|settings)\" src/mapgen && ! grep -rnE \"gateIdx|shardsNeeded|kind === ['\\\"]gate['\\\"]\" src"
     },
     {
@@ -913,7 +913,7 @@
       "spec": "combat-timing",
       "task": "11.1",
       "title": "Add `SHARD_MAX = 3`, `SHARD_BOSS_HP_CUT = 0.1`, `SHARD_NO_PHASE2 = 3`, and `RELIC_COMBAT.cacheHeal = 0.1` to `src/engine/balance.ts`, with assertions in `tests/engine/balance.test.ts` that read them from `game-rules.md`",
-      "status": "todo",
+      "status": "done",
       "verify": "npx vitest --run tests/engine/balance.test.ts"
     },
     {
@@ -922,7 +922,7 @@
       "spec": "combat-timing",
       "task": "11.2",
       "title": "Remove Flee: the `flee` action, `startFlee`, `resolveFlee`, `finishEscape`, `FightNext` `escape`, the `flee` test kind, the `escaped` and `gateOpen` events, `FLEE_KEYS` in `input.ts`; delete the flee cases from `tests/engine/combat.test.ts` and update `tests/engine/input.test.ts`",
-      "status": "todo",
+      "status": "done",
       "verify": "npx vitest --run tests/engine/combat.test.ts tests/engine/input.test.ts && ! grep -rnE \"'flee'|startFlee|resolveFlee|finishEscape|'escape'|gateOpen\" src/engine"
     },
     {
@@ -931,7 +931,7 @@
       "spec": "combat-timing",
       "task": "11.3",
       "title": "Change the `move` action to `{ type: \"move\"; to: Pos }` in `src/engine/state.ts` and `src/engine/step.ts`: status gate, `checkMove`/`applyMove`, `moved` event, `enterTile` for monster, chest, wisp, fog (`restDay` from progression task 13.1), and the boss node; remove the `blocked` event; extend `tests/engine/step.test.ts` with legal and refused moves and every entry kind",
-      "status": "todo",
+      "status": "done",
       "verify": "npx vitest --run tests/engine/step.test.ts"
     },
     {
@@ -940,7 +940,7 @@
       "spec": "combat-timing",
       "task": "11.4",
       "title": "Implement `makeBoss` and `bossShardLine` in `src/engine/monsters.ts` (and the risen-label rule in `sourceLabel`), `startBossFight` in `src/engine/combat.ts`, `bound` in `checkPhase2`; extend `tests/engine/monsters.test.ts` (69, 62, 56, 49 HP at start level 3 for 0\u20133 shards) and `tests/engine/patterns.test.ts` (bound boss at half HP stays in phase 1)",
-      "status": "todo",
+      "status": "done",
       "verify": "npx vitest --run tests/engine/monsters.test.ts tests/engine/patterns.test.ts"
     },
     {
@@ -949,7 +949,7 @@
       "spec": "combat-timing",
       "task": "11.5",
       "title": "Change `winFight`: the CI Cache heal after non-boss wins, and the boss win (bossDown, bossHpLeft, new log line, `monsterDown`, `endRun(\"won\")`, no Gate); extend `tests/engine/combat.test.ts`",
-      "status": "todo",
+      "status": "done",
       "verify": "npx vitest --run tests/engine/combat.test.ts"
     },
     {
@@ -958,7 +958,7 @@
       "spec": "combat-timing",
       "task": "11.6",
       "title": "Update `tests/engine/rng-order.test.ts`: skip the recorded flee fights, drop flee from the coverage check, and replay the boss recording with `shards = 0`; do not re-record `demo-fight.json`",
-      "status": "todo",
+      "status": "done",
       "verify": "npx vitest --run tests/engine/rng-order.test.ts"
     },
     {
@@ -967,7 +967,7 @@
       "spec": "combat-timing",
       "task": "11.7",
       "title": "Add P23 to `tests/engine/combat.prop.test.ts` and write `tests/engine/step.prop.test.ts` for P24 (action sequences with random legal and illegal `move` targets)",
-      "status": "todo",
+      "status": "done",
       "verify": "npx vitest --run tests/engine/combat.prop.test.ts tests/engine/step.prop.test.ts"
     },
     {
@@ -976,7 +976,7 @@
       "spec": "combat-timing",
       "task": "12.1",
       "title": "Run the engine suite and the type check; confirm the engine purity rules still hold and that no Flee or Gate code is left in `src/engine`",
-      "status": "todo",
+      "status": "done",
       "verify": "npm run typecheck && npx vitest --run tests/engine && ! grep -rnE \"Math\\.random|Date\\.now|performance\\.now|document\\.|window\\.|localStorage|from ['\\\"]\\.\\./(render|audio|main)\" src/engine && ! grep -rnE \"'flee'|resolveFlee|gateOpen|gateIdx\" src/engine"
     },
     {
@@ -1237,7 +1237,7 @@
       "spec": "progression",
       "task": "10.3",
       "title": "Add `tests/privacy.test.ts`: every `https://` URL in `src/` is `API_BASE` or `https://github.com/`, and `src/` has no `document.cookie`, `sendBeacon`, or analytics import",
-      "status": "todo",
+      "status": "done",
       "verify": "npm run build && npx vitest --run tests/privacy.test.ts"
     },
     {
@@ -1283,7 +1283,7 @@
       "spec": "progression",
       "task": "12.1",
       "title": "Run the engine and data suites and the type check; confirm the progression files obey the engine rules",
-      "status": "todo",
+      "status": "done",
       "verify": "npm run typecheck && npx vitest --run tests/engine tests/data tests/sim && ! grep -rnE \"Math\\.random|Date\\.now|performance\\.now|document\\.|window\\.|localStorage\" src/engine"
     },
     {
@@ -1292,7 +1292,7 @@
       "spec": "progression",
       "task": "13.1",
       "title": "Add `REST_HEAL = 0.05`, `WISP_HEAL = 0.1`, `TROPHY_SPEED_FIGHTS = 6`, and `SIM.bossWeeks = 2` to `balance.ts` with assertions in `tests/engine/balance.test.ts`; implement `restDay` and the wisp heal in `src/engine/progression.ts` with the `rest` event and the new `wisp` event field; extend `tests/engine/progression.test.ts`",
-      "status": "todo",
+      "status": "done",
       "verify": "npx vitest --run tests/engine/progression.test.ts tests/engine/balance.test.ts"
     },
     {
@@ -1301,7 +1301,7 @@
       "spec": "progression",
       "task": "13.2",
       "title": "Change the Code Review and CI Cache texts in `RELICS`, and make `pickRelic` call the column-window `reveal` for Code Review; extend `tests/engine/relics.test.ts` and keep `tests/engine/relics.prop.test.ts` (P17, relic monotonicity with the CI Cache heal) green",
-      "status": "todo",
+      "status": "done",
       "verify": "npx vitest --run tests/engine/relics.test.ts tests/engine/relics.prop.test.ts"
     },
     {
@@ -1310,7 +1310,7 @@
       "spec": "progression",
       "task": "13.3",
       "title": "Update `newRun` (`version: 2`, start resolved, column window, the always-shown shard log line) and `tests/engine/run.test.ts`; keep P18 green",
-      "status": "todo",
+      "status": "done",
       "verify": "npx vitest --run tests/engine/run.test.ts tests/engine/map-independence.prop.test.ts"
     },
     {
@@ -1319,7 +1319,7 @@
       "spec": "progression",
       "task": "13.4",
       "title": "Move the save to v2: `RUN_KEY = \"cq:v2:run\"` in `src/data/constants.ts`, the v1.6 `SavedRunSchema` and the `pos` check in `restore` (`src/engine/save.ts`), `runstore.ts` never touching `cq:v1:run`; update `tests/data/runstore.test.ts`, `tests/engine/save.test.ts` (v1.5 saves rejected, bad `pos` rejected), and `tests/engine/save.prop.test.ts` (P8, P19 on v1.6 states)",
-      "status": "todo",
+      "status": "done",
       "verify": "npx vitest --run tests/data/runstore.test.ts tests/engine/save.test.ts tests/engine/save.prop.test.ts && ! grep -rn \"cq:v1:run\" src"
     },
     {
@@ -1328,7 +1328,7 @@
       "spec": "progression",
       "task": "13.5",
       "title": "Change the won title in `resultsView` and update `tests/engine/views.test.ts`",
-      "status": "todo",
+      "status": "done",
       "verify": "npx vitest --run tests/engine/views.test.ts"
     },
     {
@@ -1337,7 +1337,7 @@
       "spec": "progression",
       "task": "13.6",
       "title": "Rewrite `routeAction` and add `rankOption` in `src/engine/routebot.ts` (legal moves, heal mode, tier order, `SIM` constants, seen check), update `playRun` for the new `move` action, and rewrite `tests/engine/routebot.test.ts`",
-      "status": "todo",
+      "status": "done",
       "verify": "npx vitest --run tests/engine/routebot.test.ts"
     },
     {
@@ -1346,7 +1346,7 @@
       "spec": "progression",
       "task": "13.7",
       "title": "Add the average fights and shards columns to `scripts/simulate.ts`, and change `tests/sim/regression.test.ts` to print fights, shards, and steps for the demo route instead of checking the 15\u201325 steps target",
-      "status": "todo",
+      "status": "done",
       "verify": "npx vitest --run tests/sim/regression.test.ts && npm run simulate -- --seeds 5 | grep -qi \"fights\""
     },
     {
@@ -1355,7 +1355,7 @@
       "spec": "progression",
       "task": "13.8",
       "title": "Re-measure on the v1.6 rules: run the full simulator and the grade-policy regression, record both tables in `docs/kiro-journal.md`, and hand any missed target to the `balance-tuner` agent, which may change only the v1.6 tunables (`REST_HEAL`, `WISP_HEAL`, `SHARD_BOSS_HP_CUT`, `RELIC_COMBAT.cacheHeal`, `TROPHY_SPEED_FIGHTS`) in `balance.ts` and `game-rules.md`; `DIFFICULTY` stays unchanged",
-      "status": "todo",
+      "status": "done",
       "verify": "npm run simulate && ! git diff main -- src/engine/balance.ts | grep -q \"pMul:\""
     },
     {

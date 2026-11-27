@@ -1,13 +1,14 @@
-// Fight flow and damage (prototype startCombat, attack, resolveAttack, enemyTurn, resolveDefend, flee, resolveFlee,
-// winFight, lose, and finishQte's Rubber Duck). Every function mutates the reducer's draft.
+// Fight flow and damage (prototype startCombat, attack, resolveAttack, enemyTurn, resolveDefend, winFight, lose, and
+// finishQte's Rubber Duck). v1.6: there is no Flee, so every fight ends in a win or a loss. Every function mutates the
+// reducer's draft.
 import { tileAt, type DayTile } from '../mapgen';
 import { ATK_MULT, DEF_MULT, PHASE2, PRESSURE_EPS, QTE, RELIC_COMBAT, VARIANCE } from './balance';
 import { heroClass } from './classes';
 import { classDiff, pressure, timingPercent } from './difficulty';
-import { collectShard } from './explore';
+import { collectShard, shardStatus } from './explore';
 import { clog, log, trimLog } from './log';
 import { modsOf } from './mods';
-import { fightTreasure, makeMonster, sourceLabel } from './monsters';
+import { bossShardLine, fightTreasure, makeBoss, makeMonster, sourceLabel } from './monsters';
 import { PHASE2_LINE, STRIKE_LINE, checkPhase2, patternDamageMult, strikePlan } from './patterns';
 import { gainXp } from './progression';
 import { createTest, gradeText, type TestContext } from './qte';
@@ -23,22 +24,24 @@ function fight(s: RunState): Fight {
   return s.combat;
 }
 
+/** The day tile of a monster fight. The boss is fought on the boss node, which is not a tile. */
 function fightTile(s: RunState, c: Fight): DayTile {
   const t = tileAt(s.map, c.col, c.row);
   if (!t) throw new Error('The fight tile is missing.');
   return t;
 }
 
+const isBoss = (c: Fight) => c.m.tier === 5;
+
 // ---------- Start ----------
 
-export function startFight(s: RunState, tile: DayTile): void {
+function openFight(s: RunState, at: { col: number; row: number }, m: Fight['m'], arrival: (string | null)[]): void {
   const h = s.hero;
-  const m = makeMonster(tile, h, s.map);
   const boss = m.tier === 5;
   s.status = 'combat';
   s.combat = {
-    col: tile.col,
-    row: tile.row,
+    col: at.col,
+    row: at.row,
     m,
     phase: 'choose',
     test: null,
@@ -52,10 +55,22 @@ export function startFight(s: RunState, tile: DayTile): void {
     last: null,
   };
   const c = s.combat;
-  clog(c, boss ? `The air turns cold. ${m.name} rises from your best day!` : `A ${m.name} appears. ${sourceLabel(tile, s.map)}.`);
+  for (const line of arrival) if (line) clog(c, line);
   clog(c, `${h.name} steps into the battle as a ${RACE_NAMES[h.race] ?? RACE_NAMES.human} ${heroClass(h).name}.`);
   clog(c, heroClass(h).hint);
   s.events.push({ type: 'fightStart', boss });
+}
+
+/** A fight on a `monster` tile (tiers 1–4). */
+export function startFight(s: RunState, tile: DayTile): void {
+  const m = makeMonster(tile, s.hero, s.map);
+  openFight(s, tile, m, [`A ${m.name} appears. ${sourceLabel(tile, s.map)}.`]);
+}
+
+/** v1.6: the boss fight on the boss node, weakened by the shards held now (requirements 1.1, 2.6). */
+export function startBossFight(s: RunState): void {
+  const m = makeBoss(s.map, s.hero, s.shards);
+  openFight(s, s.map.bossNode, m, ['The air turns cold. Your best day has come back for you.', bossShardLine(s.shards)]);
 }
 
 function testContext(s: RunState, kind: QteTest['kind'], pattern: Pattern, patSpeed: number): TestContext {
@@ -102,13 +117,6 @@ export function startGuard(s: RunState, i: number): void {
   beginTest(s, 'defend', pattern, m.phase2 ? PHASE2.speed : 1);
 }
 
-/** Flee: one `normal` guard test. */
-export function startFlee(s: RunState): void {
-  const c = fight(s);
-  clog(c, `You turn to run. ${c.m.name} strikes at your back!`);
-  beginTest(s, 'flee', 'normal', 1);
-}
-
 // ---------- Resolve ----------
 
 /** Rubber Duck: the first Miss of a fight becomes Good (in a combo, the first missed hit only). */
@@ -142,8 +150,7 @@ export function resolveTest(s: RunState, raw: GradeResult): void {
   c.events = [];
   s.events.push({ type: 'graded', result: r, text: banner.text });
   if (test.kind === 'attack') resolveStrike(s, r);
-  else if (test.kind === 'defend') resolveGuard(s, r, c.strikeIdx);
-  else resolveFlee(s, r);
+  else resolveGuard(s, r, c.strikeIdx);
 }
 
 function enterPhase2(s: RunState): void {
@@ -157,9 +164,9 @@ export function resolveStrike(s: RunState, r: GradeResult): void {
   const c = fight(s);
   const h = s.hero;
   const m = c.m;
-  const t = fightTile(s, c);
   const mods = modsOf(h);
-  const bonus = h.trait.rows.includes(t.row) ? RELIC_COMBAT.trait : 0;
+  // The boss fight's row is bossNode.row, the best day's row (game-rules.md "Combat").
+  const bonus = h.trait.rows.includes(c.row) ? RELIC_COMBAT.trait : 0;
   const mode = heroClass(h).strike;
   const grades: Grade[] = Array.isArray(r.grade) ? r.grade : [r.grade];
   const dmgs = grades.map((g) => {
@@ -237,37 +244,14 @@ export function resolveGuard(s: RunState, r: GradeResult, i: number): void {
   c.next = i + 1 < c.plan.length ? { kind: 'strike', i: i + 1 } : { kind: 'choose' };
 }
 
-export function resolveFlee(s: RunState, r: GradeResult): void {
-  const c = fight(s);
-  const h = s.hero;
-  const m = c.m;
-  const g: Grade = Array.isArray(r.grade) ? (r.grade[0] as Grade) : r.grade;
-  const safe = g === 'perfect' || (g === 'good' && modsOf(h).cache);
-  const md = safe ? 0 : Math.max(1, Math.round(m.dmg * DEF_MULT[heroClass(h).guard][g] * variance(s)));
-  h.hp = Math.max(1, h.hp - md);
-  if (g === 'perfect') s.stats.dodges++;
-  s.events.push({ type: 'monsterHit', grade: g, dmg: md, lethal: false });
-  c.phase = 'wait';
-  c.next = { kind: 'escape', dmg: md };
-}
-
-/** After a flee: back to the previous tile, the monster stays. */
-export function finishEscape(s: RunState, dmg: number): void {
-  s.pos = s.prev ?? s.pos;
-  s.combat = null;
-  s.status = 'exploring';
-  log(s, dmg ? `You escaped but took ${dmg} damage. It still haunts that day.` : 'A perfect escape. It still haunts that day.');
-  s.events.push({ type: 'escaped', dmg });
-}
-
 export function winFight(s: RunState): void {
   const c = fight(s);
   const h = s.hero;
   const m = c.m;
-  const t = fightTile(s, c);
+  const boss = isBoss(c);
   // FR-DIF-4: "before" is read before `defeated` is incremented (the prototype read it after).
   const before = pressure(s);
-  t.resolved = true;
+  if (!boss) fightTile(s, c).resolved = true;
   s.stats.defeated++;
   const gold = fightTreasure(m.tier, h.cls);
   h.treasure += gold;
@@ -276,21 +260,30 @@ export function winFight(s: RunState): void {
   log(s, `${m.name} is banished: +${m.xp} XP, +${gold} treasure.`);
   gainXp(s, m.xp);
   const after = pressure(s);
-  if (!t.boss && after < before - PRESSURE_EPS) {
+  if (!boss && after < before - PRESSURE_EPS) {
     const { pct, maxed } = timingPercent(s);
     log(s, `The graph grows restless: timing windows ${pct}%.`);
     s.events.push({ type: 'timing', pct, maxed });
   }
-  s.events.push({ type: 'monsterDown', boss: !!t.boss });
-  const shard = collectShard(s, m.tier);
-  trimLog(s);
-  if (shard.got) s.events.push({ type: 'shard', have: s.shards, need: s.map.shardsNeeded, shattered: shard.shattered });
-  if (t.boss) {
+  s.events.push({ type: 'monsterDown', boss });
+  if (boss) {
     s.bossDown = true;
     s.stats.bossHpLeft = h.hp;
-    log(s, 'The Phantom falls. The Gate is unsealed!');
-    s.events.push({ type: 'gateOpen' });
-    if (t.kind === 'gate') endRun(s, 'won');
+    log(s, 'The Phantom falls. Your graph is exorcised.');
+    endRun(s, 'won');
+    return;
+  }
+  const shard = collectShard(s, m.tier);
+  trimLog(s);
+  if (shard.got) s.events.push({ type: 'shard', ...shardStatus(s), bound: shard.bound });
+  // v1.6 CI Cache: a heal after each won non-boss fight, no RNG draw (requirement 17.6).
+  if (modsOf(h).cache) {
+    const n = Math.min(h.maxHp - h.hp, Math.ceil(h.maxHp * RELIC_COMBAT.cacheHeal));
+    if (n > 0) {
+      h.hp += n;
+      log(s, `CI Cache: +${n} HP.`);
+      s.events.push({ type: 'heal', amount: n, source: 'cache' });
+    }
   }
 }
 

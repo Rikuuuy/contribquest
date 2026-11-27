@@ -3,6 +3,7 @@ import type { Result } from '../data/errors';
 import { ClassIdSchema, RaceIdSchema, type ContributionSet } from '../data/schema';
 import type { Settings } from '../data/settings';
 import { fmtDate, generateMap, type DayTile, type MapError } from '../mapgen';
+import { SHARD_MAX } from './balance';
 import { applyStats } from './classes';
 import { reveal } from './explore';
 import { log } from './log';
@@ -41,7 +42,10 @@ export function makeHero(heroSet: ContributionSet, settings: RunSettings): Hero 
   return h;
 }
 
-/** A new run on `set`; `heroSet` is a raid only when its username differs ignoring case. No RNG draw happens here. */
+/**
+ * A new run on `set`; `heroSet` is a raid only when its username differs ignoring case. No RNG draw happens here.
+ * v1.6: `version: 2`, the start tile resolved, the column window revealed, and the shard line always logged.
+ */
 export function newRun(
   set: ContributionSet,
   heroSet: ContributionSet | null,
@@ -55,7 +59,7 @@ export function newRun(
   const hero = makeHero(hs, settings);
   const s0 = map.tiles[0] as DayTile;
   const s: RunState = {
-    version: 1,
+    version: 2,
     set,
     heroSet: raid,
     map,
@@ -78,7 +82,9 @@ export function newRun(
     pendingBlessing: hero.omen === 'blessed',
     newTrophies: [],
   };
+  // v1.6: the start tile is resolved at run start (game-rules.md "Exploration").
   s0.visited = true;
+  s0.resolved = true;
   reveal(s);
   log(
     s,
@@ -87,15 +93,12 @@ export function newRun(
       : `You wake in a crypt on ${fmtDate(s0.day.date)}. Somewhere ahead waits the Phantom of your best day.`,
   );
   log(s, omenLog(hero.omen, hs.username));
-  const n = map.shardsNeeded;
-  if (n > 0)
-    log(s, `Its ward is fed by your other big days. Banish ${n} elite${n > 1 ? 's' : ''} (Ghouls or Liches) to collect soul shards and break it.`);
+  log(s, `Banish Ghouls or Liches for soul shards: each one weakens the Phantom (up to ${SHARD_MAX}).`);
   return { ok: true, value: s };
 }
 
 /**
- * Ends the run (requirement 8.1), called by combat-timing: `winFight` on a boss on the Gate, entering the
- * open Gate, and `loseFight`. Storage and trophies are handled by main.ts on the `runEnded` event.
+ * Ends the run (requirement 8.1), called by combat-timing: `winFight` on the boss (v1.6) and `loseFight`. Storage and trophies are handled by main.ts on the `runEnded` event.
  */
 export function endRun(s: RunState, outcome: 'won' | 'lost', killer?: string): void {
   s.status = outcome;

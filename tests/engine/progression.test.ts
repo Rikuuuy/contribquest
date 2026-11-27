@@ -1,10 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import { auraTier, collectWisp, gainXp, levelFor, openChest, startingXp, xpForLevel } from '../../src/engine/progression';
+import { auraTier, collectWisp, gainXp, levelFor, openChest, restDay, startingXp, xpForLevel } from '../../src/engine/progression';
 import { makeHero as buildHero } from '../../src/engine/run';
-import type { Dir } from '../../src/engine/explore';
 import { step } from '../../src/engine/step';
-import type { RunState } from '../../src/engine/state';
-import { neighbours } from '../../src/mapgen/layout';
+import type { Action, RunState } from '../../src/engine/state';
+import { nextOptions } from '../../src/mapgen/routes';
 import type { DayTile } from '../../src/mapgen/types';
 import { makeSet, windowDays } from '../fixtures/sets';
 import { findTile, makeTestRun } from '../fixtures/run';
@@ -116,9 +115,32 @@ describe('FR-PRO-1: wisps', () => {
     expect([t.resolved, s.stats.wisps, s.hero.xp]).toEqual([true, 1, 5]);
     expect(s.log).toEqual([`A soul wisp from ${short(t.day.date)} (3 contributions): +5 XP.`]);
     expect(s.events).toEqual([
-      { type: 'wisp', col: t.col, row: t.row, xp: 5 },
+      { type: 'wisp', col: t.col, row: t.row, xp: 5, healed: 0 },
       { type: 'xp', amount: 5 },
     ]);
+  });
+
+  it('v1.6: heals ceil(maxHp × 0.1) before the XP, clamped to max HP, and logs the HP', () => {
+    const s = makeTestRun({ race: 'elf', level: 1, hero: { hp: 10 } });
+    const t = tileOf(s, 'wisp');
+    t.day = { ...t.day, count: 3 };
+    const heal = Math.ceil(s.hero.maxHp * 0.1);
+    collectWisp(s, t);
+    expect(s.hero.hp).toBe(10 + heal);
+    expect(s.log).toEqual([`A soul wisp from ${short(t.day.date)} (3 contributions): +5 XP, +${heal} HP.`]);
+    expect(s.events[0]).toEqual({ type: 'wisp', col: t.col, row: t.row, xp: 5, healed: heal });
+    const c = makeTestRun({ race: 'elf' });
+    c.hero.hp = c.hero.maxHp - 1;
+    collectWisp(c, tileOf(c, 'wisp'));
+    expect(c.hero.hp).toBe(c.hero.maxHp);
+    expect(c.events[0]).toMatchObject({ healed: 1 });
+  });
+
+  it('v1.6: a level-up from the wisp XP still ends at full HP', () => {
+    const s = makeTestRun({ race: 'elf', level: 3, hero: { xp: 298, hp: 3 } });
+    collectWisp(s, tileOf(s, 'wisp'));
+    expect([s.hero.level, s.hero.hp]).toEqual([4, s.hero.maxHp]);
+    expect(s.events.map((e) => e.type)).toEqual(['wisp', 'xp', 'levelUp']);
   });
 
   it('says "contribution" for a count of 1', () => {
@@ -127,6 +149,33 @@ describe('FR-PRO-1: wisps', () => {
     t.day = { ...t.day, count: 1 };
     collectWisp(s, t);
     expect(s.log[0]).toBe(`A soul wisp from ${short(t.day.date)} (1 contribution): +5 XP.`);
+  });
+});
+
+describe('v1.6 FR-PRO-1, FR-MOV-3: quiet days (restDay)', () => {
+  it('resolves the fog tile, heals ceil(maxHp × 0.05), logs it, emits rest, no XP and no RNG draw', () => {
+    const s = makeTestRun({ race: 'elf', level: 2, hero: { hp: 10 } });
+    const t = tileOf(s, 'fog');
+    const heal = Math.ceil(s.hero.maxHp * 0.05);
+    const { rng, hero } = s;
+    const xp = hero.xp;
+    restDay(s, t);
+    expect([t.resolved, s.hero.hp, s.hero.xp, s.rng]).toEqual([true, 10 + heal, xp, rng]);
+    expect(s.log).toEqual([`A quiet day (${short(t.day.date)}). You catch your breath: +${heal} HP.`]);
+    expect(s.events).toEqual([{ type: 'rest', col: t.col, row: t.row, healed: heal }]);
+  });
+
+  it('at full HP: "Nothing stirs." and healed 0; near max the heal is clamped', () => {
+    const s = makeTestRun({ race: 'elf' });
+    const t = tileOf(s, 'fog');
+    restDay(s, t);
+    expect(s.log).toEqual([`A quiet day (${short(t.day.date)}). Nothing stirs.`]);
+    expect(s.events).toEqual([{ type: 'rest', col: t.col, row: t.row, healed: 0 }]);
+    const c = makeTestRun({ race: 'elf' });
+    c.hero.hp = c.hero.maxHp - 1;
+    restDay(c, tileOf(c, 'fog'));
+    expect(c.hero.hp).toBe(c.hero.maxHp);
+    expect(c.events[0]).toMatchObject({ healed: 1 });
   });
 });
 
@@ -174,44 +223,39 @@ describe('FR-PRO-1: chests', () => {
 });
 
 describe('step: moving onto wisps and chests', () => {
-  const DIRS: [Dir, number, number][] = [
-    ['up', 0, -1],
-    ['down', 0, 1],
-    ['left', -1, 0],
-    ['right', 1, 0],
-  ];
+  const fromOf = (s: RunState, t: DayTile) =>
+    s.map.tiles.find((p) => p.col === t.col - 1 && nextOptions(s.map, p).some((o) => o.col === t.col && o.row === t.row));
+  /** An unresolved tile of `kind` that some tile in the previous column can move onto. */
+  const target = (s: RunState, kind: DayTile['kind']) => findTile(s, (x) => x.kind === kind && !!fromOf(s, x));
 
-  /** Places the hero next to `t` on a plain tile and returns the move onto it. */
-  function nextTo(s: RunState, t: DayTile): Dir {
-    const from = neighbours(s.map, t).find((n) => n.kind === 'fog' || n.kind === 'wisp' || n.kind === 'start');
-    if (!from) throw new Error('No plain neighbour.');
+  /** Places the hero on a tile in the previous column from which `t` is a legal move. */
+  function moveOnto(s: RunState, t: DayTile): Action {
+    const from = fromOf(s, t);
+    if (!from) throw new Error('No tile before the target.');
     s.pos = { col: from.col, row: from.row };
-    const d = DIRS.find(([, dc, dr]) => from.col + dc === t.col && from.row + dr === t.row);
-    return (d as [Dir, number, number])[0];
+    return { type: 'move', to: { col: t.col, row: t.row } };
   }
 
   it('a wisp is collected once', () => {
     const s0 = makeTestRun({ race: 'elf', level: 1 });
-    const t = tileOf(s0, 'wisp');
-    const dir = nextTo(s0, t);
-    const s = step(s0, { type: 'move', dir });
+    const t = target(s0, 'wisp');
+    const s = step(s0, moveOnto(s0, t));
     expect([s.stats.wisps, s.hero.xp, s.status]).toEqual([1, 5, 'exploring']);
-    expect(s.events.map((e) => e.type)).toEqual(['wisp', 'xp']);
-    const back = step(step(s, { type: 'move', dir: opposite(dir) }), { type: 'move', dir });
+    expect(s.events.map((e) => e.type)).toEqual(['moved', 'wisp', 'xp']);
+    const again = structuredClone(s);
+    const back = step(again, moveOnto(again, t));
     expect([back.stats.wisps, back.hero.xp]).toEqual([1, 5]);
   });
 
   it('a chest is opened once', () => {
     const s0 = makeTestRun({ race: 'elf', level: 1 });
-    const t = tileOf(s0, 'chest');
-    const s = step(s0, { type: 'move', dir: nextTo(s0, t) });
+    const t = target(s0, 'chest');
+    const s = step(s0, moveOnto(s0, t));
     expect([s.stats.chests, s.hero.xp, s.status]).toEqual([1, 10, 'relic']);
-    expect(s.events.map((e) => e.type)).toEqual(['chest', 'xp', 'relicOffer']);
+    expect(s.events.map((e) => e.type)).toEqual(['moved', 'chest', 'xp', 'relicOffer']);
   });
 });
 
-const OPP: Record<Dir, Dir> = { up: 'down', down: 'up', left: 'right', right: 'left' };
-const opposite = (d: Dir) => OPP[d];
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 const short = (date: string) => {
   const d = new Date(date + 'T00:00:00Z');

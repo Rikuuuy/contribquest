@@ -3,7 +3,10 @@ import type { ContributionSet } from '../../src/data/schema';
 import { endRun, newRun } from '../../src/engine/run';
 import { nextDeadline, resumeFight, step } from '../../src/engine/step';
 import type { Action, RunState } from '../../src/engine/state';
+import { legalMoves } from '../../src/engine/explore';
 import { tileAt } from '../../src/mapgen/layout';
+import { nextOptions } from '../../src/mapgen/routes';
+import type { DayTile, Pos } from '../../src/mapgen/types';
 import { demoSet, makeFightRun, makeTestRun } from '../fixtures/run';
 
 function deepFreeze<T>(o: T): T {
@@ -26,23 +29,22 @@ function perfectInputs(s: RunState): Action[] {
 
 describe('FR-COM-5: step is pure', () => {
   it('never mutates its input (deep-frozen) through a whole fight and a move', () => {
-    let s = deepFreeze(makeFightRun(4));
-    const actions: Action[] = [
-      { type: 'attack' },
-      { type: 'press', t: 50, key: 'k' },
-      { type: 'timeout', t: 5000 },
-      { type: 'advance' },
-      { type: 'forceGrade', grade: 'good' },
-      { type: 'advance' },
-      { type: 'flee' },
-      { type: 'forceGrade', grade: 'miss' },
-      { type: 'advance' },
-      { type: 'move', dir: 'down' },
-      { type: 'pickRelic', i: 0 },
-      { type: 'setOptions', opts: { calm: true, assist: false } },
+    const f = makeFightRun(4);
+    f.combat!.m.hp = 1; // the timeout's glancing blow wins the fight
+    let s = deepFreeze(f);
+    const actions: ((s: RunState) => Action)[] = [
+      () => ({ type: 'attack' }),
+      () => ({ type: 'press', t: 50, key: 'k' }),
+      () => ({ type: 'timeout', t: 5000 }),
+      () => ({ type: 'advance' }),
+      () => ({ type: 'forceGrade', grade: 'good' }),
+      () => ({ type: 'advance' }),
+      (x) => ({ type: 'move', to: legalMoves(x)[0]! }),
+      () => ({ type: 'pickRelic', i: 0 }),
+      () => ({ type: 'setOptions', opts: { calm: true, assist: false } }),
     ];
-    for (const a of actions) s = deepFreeze(step(s, a));
-    expect(s.status).toBe('exploring');
+    for (const a of actions) s = deepFreeze(step(s, a(s)));
+    expect([s.stats.defeated, s.stats.steps, s.opts.calm]).toEqual([1, 1, true]);
   });
 
   it('FR-MAP-3: the same state and actions give the same states, RNG included', () => {
@@ -71,11 +73,10 @@ describe('FR-COM-5: step is pure', () => {
 });
 
 describe('FR-COM-1: actions by phase', () => {
-  it('Attack and Flee only in choose; presses only during a test', () => {
+  it('Attack only in choose; presses only during a test', () => {
     const s = makeFightRun(2);
     expect(step(s, { type: 'press', t: 500, key: 'k' })).toEqual({ ...s, events: [] });
     const t = step(s, { type: 'attack' });
-    expect(step(t, { type: 'flee' }).combat).toEqual(t.combat);
     expect(step(t, { type: 'attack' }).combat!.testId).toBe(1);
     expect(step(t, { type: 'advance' }).combat).toEqual(t.combat);
   });
@@ -178,7 +179,7 @@ describe('FR-COM-1: scripted fights', () => {
         s = step(s, { type: 'forceGrade', grade: c.test!.kind === 'attack' ? 'good' : 'perfect' });
       }
     }
-    expect(s.bossDown).toBe(true);
+    expect([s.bossDown, s.status]).toEqual([true, 'won']);
     // Phase 1 plans normal + flaky; phase 2 plans conflict + flaky + quick.
     expect(seen.has('1:normal')).toBe(true);
     expect(seen.has('2:conflict')).toBe(true);
@@ -253,50 +254,141 @@ describe('FR-COM-4: retry', () => {
   });
 });
 
-describe('FR-MOV, FR-CLS-1: moves and class change', () => {
-  it('a move counts a step; class change is refused afterwards', () => {
-    let s = makeTestRun();
-    s = step(s, { type: 'move', dir: 'down' });
-    expect(s.stats.steps).toBe(1);
-    expect(step(s, { type: 'chooseClass', cls: 'rogue' }).hero.cls).toBe('wanderer');
+describe('v1.6 FR-MOV-1, FR-MOV-3, FR-MOV-8: forward-only moves', () => {
+  /** Puts the hero on a resolved tile in the column before a target matching `pred`, from which it is a legal move. */
+  function before(s: RunState, pred: (t: DayTile) => boolean): DayTile {
+    for (const t of s.map.tiles) {
+      if (t.col < 1 || t.resolved || !pred(t)) continue;
+      const from = s.map.tiles.find(
+        (p) => p.col === t.col - 1 && nextOptions(s.map, p).some((o) => o.col === t.col && o.row === t.row),
+      );
+      if (!from) continue;
+      from.resolved = from.visited = true;
+      s.pos = { col: from.col, row: from.row };
+      s.stats.steps = from.col;
+      return t;
+    }
+    throw new Error('No matching target.');
+  }
+  const to = (p: Pos): Action => ({ type: 'move', to: { col: p.col, row: p.row } });
+
+  it('each legal target from the start: one column forward, one step, a moved event; class change refused after', () => {
+    const s = makeTestRun();
+    const opts = legalMoves(s);
+    expect(opts.length).toBeGreaterThan(0);
+    for (const o of opts) {
+      const r = step(s, to(o));
+      expect(r.pos).toEqual({ col: o.col, row: o.row });
+      expect(r.prev).toEqual(s.pos);
+      expect(r.stats.steps).toBe(1);
+      expect(r.events[0]).toEqual({ type: 'moved', from: s.pos, to: { col: o.col, row: o.row } });
+      expect(tileAt(r.map, o.col, o.row)!.visited).toBe(true);
+      if (r.status === 'exploring') expect(step(r, { type: 'chooseClass', cls: 'rogue' }).hero.cls).toBe('wanderer');
+    }
   });
 
-  it('void moves do nothing; a sealed Gate is blocked with a log line', () => {
+  it('refused moves (behind, sideways, two ahead, off the route) return an equal state with no events or log', () => {
     const s = makeTestRun();
-    expect(step(s, { type: 'move', dir: 'left' })).toEqual({ ...s, events: [] });
-    const g = s.map.tiles[90]!;
-    const near = structuredClone(s);
-    near.pos = { col: g.col, row: g.row - 1 };
-    if (!tileAt(near.map, near.pos.col, near.pos.row)) near.pos = { col: g.col - 1, row: g.row };
-    const dir = near.pos.col === g.col ? 'down' : 'right';
-    const r = step(near, { type: 'move', dir });
-    expect(r.pos).toEqual(near.pos);
-    expect(r.log.at(-1)).toBe('The Gate is sealed. Defeat the Phantom of your best day first.');
-    expect(r.events).toEqual([{ type: 'blocked', col: g.col, row: g.row }]);
-    expect(r.stats.steps).toBe(0);
+    const t = before(s, (x) => x.col === 4);
+    const here = s.pos;
+    const legal = legalMoves(s);
+    const bad: Pos[] = [
+      { col: here.col - 1, row: here.row },
+      { col: here.col, row: here.row },
+      { col: here.col, row: here.row + 1 },
+      { col: here.col + 2, row: here.row },
+      { col: here.col + 1, row: here.row + 3 },
+      { col: 99, row: 0 },
+      { ...s.map.bossNode },
+    ].filter((p) => !legal.some((o) => o.col === p.col && o.row === p.row));
+    expect(bad.length).toBeGreaterThan(4);
+    for (const p of bad) expect(step(s, to(p)), JSON.stringify(p)).toEqual({ ...s, events: [] });
+    expect(t.col).toBe(here.col + 1);
   });
 
-  it('entering a monster starts a fight; an unsealed Gate wins the run', () => {
+  it('FR-MOV-3: no moves during a fight or a relic offer', () => {
+    const f = makeFightRun(2);
+    const fo = nextOptions(f.map, f.pos)[0]!;
+    expect(step(f, to(fo))).toEqual({ ...f, events: [] });
     const s = makeTestRun();
-    const m = s.map.tiles.find((t) => t.kind === 'monster' && tileAt(s.map, t.col - 1, t.row)?.kind !== 'monster')!;
-    const at = structuredClone(s);
-    at.pos = { col: m.col - 1, row: m.row };
-    const r = step(at, { type: 'move', dir: 'right' });
+    const chest = before(s, (x) => x.kind === 'chest');
+    const r = step(s, to(chest));
+    expect(r.status).toBe('relic');
+    const next = legalMoves(r)[0]!;
+    expect(step(r, to(next))).toEqual({ ...r, events: [] });
+  });
+
+  it('fog: a quiet day, resolved at once', () => {
+    const s = makeTestRun({ hero: { hp: 10 } });
+    const t = before(s, (x) => x.kind === 'fog');
+    const r = step(s, to(t));
+    expect(r.status).toBe('exploring');
+    expect(tileAt(r.map, t.col, t.row)!.resolved).toBe(true);
+    expect(r.events.map((e) => e.type)).toEqual(['moved', 'rest']);
+    expect(r.hero.hp).toBeGreaterThan(10);
+  });
+
+  it('wisp: collected and resolved', () => {
+    const s = makeTestRun();
+    const t = before(s, (x) => x.kind === 'wisp');
+    const r = step(s, to(t));
+    expect([r.status, r.stats.wisps, tileAt(r.map, t.col, t.row)!.resolved]).toEqual(['exploring', 1, true]);
+    expect(r.events.map((e) => e.type)).toEqual(['moved', 'wisp', 'xp']);
+  });
+
+  it('chest: opened, resolved, and the relic offer blocks the next move until picked', () => {
+    const s = makeTestRun();
+    const t = before(s, (x) => x.kind === 'chest');
+    let r = step(s, to(t));
+    expect([r.status, r.stats.chests, tileAt(r.map, t.col, t.row)!.resolved]).toEqual(['relic', 1, true]);
+    expect(r.events.map((e) => e.type)).toEqual(['moved', 'chest', 'xp', 'relicOffer']);
+    r = step(r, { type: 'pickRelic', i: 0 });
+    expect(r.status).toBe('exploring');
+    expect(step(r, to(legalMoves(r)[0]!)).stats.steps).toBe(r.stats.steps + 1);
+  });
+
+  it('monster: starts a fight on the tile; the tile resolves only when the fight is won', () => {
+    const s = makeTestRun();
+    const t = before(s, (x) => x.kind === 'monster');
+    let r = step(s, to(t));
     expect(r.status).toBe('combat');
-    expect(r.events).toEqual([{ type: 'fightStart', boss: false }]);
-    expect(r.prev).toEqual(at.pos);
-
-    const g = s.map.tiles[90]!;
-    const open = structuredClone(s);
-    open.bossDown = true;
-    open.pos = { col: g.col, row: g.row - 1 };
-    const w = step(open, { type: 'move', dir: 'down' });
-    expect(w.status).toBe('won');
-    expect(w.events).toEqual([{ type: 'won' }, { type: 'runEnded', won: true }]);
+    expect(r.events).toEqual([{ type: 'moved', from: s.pos, to: { col: t.col, row: t.row } }, { type: 'fightStart', boss: false }]);
+    expect([r.combat!.col, r.combat!.row]).toEqual([t.col, t.row]);
+    expect(tileAt(r.map, t.col, t.row)!.resolved).toBe(false);
+    r.combat!.m.hp = 1;
+    r = run(r, [{ type: 'attack' }, { type: 'forceGrade', grade: 'good' }, { type: 'advance' }]);
+    expect([r.status, tileAt(r.map, t.col, t.row)!.resolved]).toEqual(['exploring', true]);
   });
 
-  it('no moves during a fight', () => {
-    const s = makeFightRun(2);
-    expect(step(s, { type: 'move', dir: 'up' }).pos).toEqual(s.pos);
+  it('a resolved tile entered in a hand-built state does nothing more', () => {
+    const s = makeTestRun();
+    const t = before(s, (x) => x.kind === 'monster');
+    t.resolved = true;
+    const r = step(s, to(t));
+    expect([r.status, r.events.map((e) => e.type)]).toEqual(['exploring', ['moved']]);
+  });
+
+  it('the boss node: from the last column, a boss fight on the node; winning it wins the run', () => {
+    const s = makeTestRun();
+    const last = s.map.tiles.find((x) => x.col === s.map.cols - 1)!;
+    last.resolved = last.visited = true;
+    s.pos = { col: last.col, row: last.row };
+    s.stats.steps = last.col;
+    s.shards = 2;
+    expect(legalMoves(s)).toEqual([{ ...s.map.bossNode, boss: true }]);
+    let r = step(s, to(s.map.bossNode));
+    expect(r.pos).toEqual(s.map.bossNode);
+    expect(r.stats.steps).toBe(s.map.cols);
+    expect(r.events).toEqual([{ type: 'moved', from: s.pos, to: s.map.bossNode }, { type: 'fightStart', boss: true }]);
+    expect([r.status, r.combat!.col, r.combat!.row, r.combat!.m.tier]).toEqual(['combat', s.map.bossNode.col, s.map.bossNode.row, 5]);
+    expect(r.combat!.lines.slice(0, 2)).toEqual([
+      'The air turns cold. Your best day has come back for you.',
+      '2 soul shards weaken the Phantom: 20% less HP.',
+    ]);
+    expect(legalMoves(r)).toEqual([]);
+    r.combat!.m.hp = 1;
+    r = run(r, [{ type: 'attack' }, { type: 'forceGrade', grade: 'good' }, { type: 'advance' }]);
+    expect([r.status, r.bossDown]).toEqual(['won', true]);
+    expect(r.events.slice(-2)).toEqual([{ type: 'won' }, { type: 'runEnded', won: true }]);
   });
 });

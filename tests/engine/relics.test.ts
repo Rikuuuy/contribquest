@@ -1,9 +1,8 @@
 import { describe, expect, it } from 'vitest';
-import { revealRadiusSq } from '../../src/engine/explore';
+import { legalMoves, viewAhead } from '../../src/engine/explore';
 import { CHEST_TITLE, RELICS, offerRelic, pickRelic, relicById } from '../../src/engine/relics';
 import type { Action, RelicId, RunState } from '../../src/engine/state';
 import { step } from '../../src/engine/step';
-import { neighbours } from '../../src/mapgen/layout';
 import { nextFloat } from '../../src/mapgen/rng';
 import { makeTestRun } from '../fixtures/run';
 
@@ -36,8 +35,8 @@ describe('FR-REL-1: RELICS', () => {
       { id: 'coffee', name: 'Cold Brew', text: '+10 max HP, and heal 10 now.' },
       { id: 'blame', name: 'Git Blame', text: 'Counter-attacks deal full ATK instead of half.' },
       { id: 'pair', name: 'Pair Programmer', text: 'Glancing blows deal 60% more damage.' },
-      { id: 'review', name: 'Code Review', text: 'Your lantern reveals and lights a wider area.' },
-      { id: 'cache', name: 'CI Cache', text: 'Fleeing with a Good press takes no damage.' },
+      { id: 'review', name: 'Code Review', text: 'See one more week ahead.' },
+      { id: 'cache', name: 'CI Cache', text: 'After each won fight, heal 10% of max HP.' },
     ]);
   });
 
@@ -103,8 +102,7 @@ describe('FR-REL-1: status relic blocks gameplay', () => {
   it('ignores moves, class and race changes, the blessing, and fight actions', () => {
     const s = offering(['duck', 'force', 'stack']);
     const blocked: Action[] = [
-      { type: 'move', dir: 'right' },
-      { type: 'move', dir: 'down' },
+      ...legalMoves(s).map((o): Action => ({ type: 'move', to: { col: o.col, row: o.row } })),
       { type: 'chooseClass', cls: 'knight' },
       { type: 'chooseRace', race: 'orc' },
       { type: 'offerBlessing' },
@@ -176,30 +174,32 @@ describe('FR-REL-1, FR-REL-4: pickRelic', () => {
     expect([k.hero.maxHp, k.hero.hp]).toEqual([max + 9, max + 9]);
   });
 
-  it('Code Review reveals the wider radius at once', () => {
+  it('Code Review marks one more column seen at once (v1.6)', () => {
     const s = offering(['review']);
-    const unseen = s.map.tiles.filter((t) => {
-      const dc = t.col - s.pos.col;
-      const dr = t.row - s.pos.row;
-      return !t.seen && dc * dc + dr * dr <= 8;
-    });
-    expect(unseen.length).toBeGreaterThan(0);
+    const next = s.pos.col + 3;
+    const col = s.map.tiles.filter((t) => t.col === next);
+    expect(col.length).toBeGreaterThan(0);
+    expect(col.every((t) => !t.seen)).toBe(true);
     pickRelic(s, 0);
-    expect(revealRadiusSq(s.hero.relics)).toBe(8);
-    for (const t of unseen) expect(s.map.tiles.find((x) => x.col === t.col && x.row === t.row)?.seen).toBe(true);
+    expect(viewAhead(s.hero.relics)).toBe(3);
+    expect(col.every((t) => t.seen)).toBe(true);
+    expect(s.map.tiles.filter((t) => t.col > next).every((t) => !t.seen)).toBe(true);
   });
 });
 
 describe('FR-REL-1: chest then offer', () => {
   it('a chest ends with an offer, and the pick returns to exploring', () => {
     const s0 = makeTestRun({ level: 1 });
-    const chest = s0.map.tiles.find((t) => t.kind === 'chest')!;
-    const from = neighbours(s0.map, chest).find((n) => n.kind === 'fog' || n.kind === 'wisp' || n.kind === 'start')!;
+    const reaches = (f: { col: number; row: number }, t: { col: number; row: number }) =>
+      legalMoves({ ...s0, pos: { col: f.col, row: f.row } }).some((o) => o.col === t.col && o.row === t.row);
+    const chest = s0.map.tiles.find(
+      (t) => t.kind === 'chest' && s0.map.tiles.some((f) => f.col === t.col - 1 && reaches(f, t)),
+    )!;
+    const from = s0.map.tiles.find((f) => f.col === chest.col - 1 && reaches(f, chest))!;
     s0.pos = { col: from.col, row: from.row };
-    const dir = chest.col > from.col ? 'right' : chest.col < from.col ? 'left' : chest.row > from.row ? 'down' : 'up';
-    const s = step(s0, { type: 'move', dir });
+    const s = step(s0, { type: 'move', to: { col: chest.col, row: chest.row } });
     expect(s.status).toBe('relic');
-    expect(s.events.map((e) => e.type)).toEqual(['chest', 'xp', 'relicOffer']);
+    expect(s.events.map((e) => e.type)).toEqual(['moved', 'chest', 'xp', 'relicOffer']);
     expect(step(s, { type: 'pickRelic', i: 0 }).status).toBe('exploring');
   });
 });

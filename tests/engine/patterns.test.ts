@@ -3,9 +3,9 @@ import { PHASE2_LINE, STRIKE_LINE, checkPhase2, patternDamageMult, strikePlan } 
 import { step } from '../../src/engine/step';
 import type { Monster } from '../../src/engine/state';
 import type { Tier } from '../../src/mapgen/types';
-import { makeFightRun } from '../fixtures/run';
+import { bossFightOn, makeFightRun, makeTestRun } from '../fixtures/run';
 
-const mon = (tier: Tier, o: Partial<Monster> = {}): Monster => ({ name: 'M', tier, hp: 40, maxHp: 40, dmg: 5, xp: 0, phase2: false, ...o });
+const mon = (tier: Tier, o: Partial<Monster> = {}): Monster => ({ name: 'M', tier, hp: 40, maxHp: 40, dmg: 5, xp: 0, phase2: false, bound: false, ...o });
 const draws = (...v: number[]) => {
   const f = Object.assign(() => (f.calls++, v.shift() ?? 0), { calls: 0 });
   return f;
@@ -60,6 +60,28 @@ describe('FR-COM-5: boss phase 2', () => {
     b.hp = 5;
     expect(checkPhase2(b)).toBe(false);
     expect(checkPhase2(mon(4, { hp: 1 }))).toBe(false);
+  });
+
+  it('v1.6: a bound boss (3 shards) never triggers, at any HP', () => {
+    const b = mon(5, { bound: true });
+    for (const hp of [20, 10, 1]) {
+      b.hp = hp;
+      expect(checkPhase2(b)).toBe(false);
+    }
+    expect(b.phase2).toBe(false);
+  });
+
+  it('v1.6: a bound boss at half HP stays in phase 1 through a strike and the next turn', () => {
+    let s = bossFightOn(makeTestRun(), 3);
+    expect(s.combat!.m.bound).toBe(true);
+    s.combat!.m.hp = Math.floor(s.combat!.m.maxHp / 2);
+    s = step(s, { type: 'attack' });
+    s = step(s, { type: 'forceGrade', grade: 'good' });
+    expect(s.combat!.m.hp).toBeGreaterThan(0);
+    expect(s.combat!.m.phase2).toBe(false);
+    expect(s.events.map((e) => e.type)).not.toContain('phase2');
+    s = step(s, { type: 'advance' });
+    expect(s.combat!.plan).toEqual(['normal', 'flaky']);
   });
 
   it('does not trigger when the hit kills', () => {

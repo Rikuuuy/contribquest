@@ -1,4 +1,5 @@
-// Wanderer grade-policy regression on the demo graph (progression requirement 14.4).
+// Wanderer grade-policy regression on the demo graph (progression requirement 14.4). v1.6: prints fights,
+// shards, and steps instead of the retired 15–25 steps target.
 import { describe, expect, it } from 'vitest';
 import { playRun, type Grader } from '../../src/engine/routebot';
 import { newRun } from '../../src/engine/run';
@@ -37,8 +38,9 @@ const POLICIES: [string, () => Grader, boolean][] = [
 describe('FR-COM-5, FR-PRO-1: Wanderer grade policies on the demo graph', () => {
   it.each(POLICIES)('%s gives the PRD outcome', (name, grader, wins) => {
     const r = playRun(demoRun(), grader());
+    // v1.6: steps always equal cols (14 on the demo), so only the fights target (6–10, the boss included) is shown.
     console.log(
-      `${name}: ${r.won ? 'won' : 'lost'} in ${r.state.stats.steps} steps and ${r.fights} fights (route target 15–25 steps, 6–10 fights)`,
+      `${name}: ${r.won ? 'won' : 'lost'} with ${r.fights} fights, ${r.state.shards} shards, ${r.state.stats.steps} steps (target 6–10 fights, the boss included)`,
     );
     expect(r.state.status).toBe(wins ? 'won' : 'lost');
   });

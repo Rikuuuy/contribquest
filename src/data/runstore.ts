@@ -4,16 +4,17 @@ import { CLASSWINS_KEY, RUN_KEY, TROPHIES_KEY } from './constants';
 import type { ClassWins, TrophyHave } from './schema';
 import { readJson, removeKey, writeJson, type StorageLike } from './storage';
 
-/** The parsed `cq:v1:run` JSON, or null when missing or not JSON. `restore` validates it. */
+/** The parsed `cq:v2:run` JSON, or null when missing or not JSON. `restore` validates it. */
 export function readRun(storage: StorageLike | null): unknown | null {
   return readJson(storage, RUN_KEY);
 }
 
 /** Writes a serialized run (the engine's `SavedRun`). */
-export function writeRun(storage: StorageLike | null, saved: { version: 1 }): void {
+export function writeRun(storage: StorageLike | null, saved: { version: 2 }): void {
   writeJson(storage, RUN_KEY, saved);
 }
 
+/** Removes only the v2 run key; the prototype's v1 save is left in place (requirement 10.6). */
 export function clearRun(storage: StorageLike | null): void {
   removeKey(storage, RUN_KEY);
 }

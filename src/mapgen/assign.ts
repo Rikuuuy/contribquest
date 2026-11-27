@@ -15,8 +15,15 @@ export function bestDayIndex(days: readonly ContributionDay[]): { idx: number; e
   return { idx: best, emptyQuarter: false };
 }
 
-export function assignTiles(days: readonly ContributionDay[], cells: Cell[], best: number): DayTile[] {
-  const last = days.length - 1;
+/**
+ * v1.6 rule table (game-rules.md "Tile assignment"): no `boss` or `gate` kind; the best day and index 90 follow
+ * the level table like any other day. The best day is flagged `bestDay` unless the map is an empty quarter.
+ */
+export function assignTiles(
+  days: readonly ContributionDay[],
+  cells: Cell[],
+  best: { idx: number; emptyQuarter: boolean },
+): DayTile[] {
   return cells.map((c) => {
     const day = days[c.idx] as ContributionDay;
     const t: DayTile = {
@@ -32,11 +39,6 @@ export function assignTiles(days: readonly ContributionDay[], cells: Cell[], bes
     };
     const h = fnv1a(day.date);
     if (c.idx === 0) t.kind = 'start';
-    else if (c.idx === best) {
-      t.kind = c.idx === last ? 'gate' : 'boss';
-      t.tier = 5;
-      t.boss = true;
-    } else if (c.idx === last) t.kind = 'gate';
     else
       switch (day.level) {
         case 0:
@@ -69,6 +71,7 @@ export function assignTiles(days: readonly ContributionDay[], cells: Cell[], bes
           t.tier = 4;
           break;
       }
+    if (c.idx === best.idx && !best.emptyQuarter) t.bestDay = true;
     return t;
   });
 }

@@ -25,9 +25,9 @@ export function patternDamageMult(m: Pick<Monster, 'tier' | 'phase2'>): number {
   return 1;
 }
 
-/** Enters phase 2 the first time a living boss is at or below half HP. True when it just triggered. */
+/** Enters phase 2 the first time a living boss is at or below half HP; never while `bound`. True when it just triggered. */
 export function checkPhase2(m: Monster): boolean {
-  if (m.tier !== 5 || m.phase2 || m.hp <= 0 || m.hp > m.maxHp * PHASE2.hpFrac) return false;
+  if (m.tier !== 5 || m.bound || m.phase2 || m.hp <= 0 || m.hp > m.maxHp * PHASE2.hpFrac) return false;
   m.phase2 = true;
   return true;
 }

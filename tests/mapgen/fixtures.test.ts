@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { buildSet, parseApiResponse } from '../../src/data/normalize';
 import { generateMap } from '../../src/mapgen/generate';
+import { routeMinFights } from '../../src/mapgen/routes';
+import { MIN_ROUTE_FIGHTS } from '../../src/mapgen/rules';
 import { FIXTURES } from '../fixtures/profiles';
 
 describe('PRD fixture profiles', () => {
@@ -10,5 +12,6 @@ describe('PRD fixture profiles', () => {
     const set = buildSet(name, 'live', parsed.value.days, parsed.value.total, '2026-11-16T12:00:00.000Z');
     const r = generateMap(set);
     expect(r.ok).toBe(true);
+    if (r.ok) expect(routeMinFights(r.value)).toBeGreaterThanOrEqual(MIN_ROUTE_FIGHTS);
   });
 });

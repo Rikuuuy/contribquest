@@ -102,6 +102,36 @@ Wanderer grade policies on the demo graph (route target: 15–25 steps, 6–10 f
 - **Commits / PRs:** one branch, `feature/haunted-routes-spec` from `bc4f4a6`; one PR for the author to review, opened by the workflow's PR step. Implementation waits for approval.
 - **Notes:** the 3D look comes from the sample the author liked (`preview-3d/sample-source.html`, billboard screenshots): its cameras, light rig, fog density, fireflies, and sprite sizes are now steering values. Choices made for the author to confirm are listed in the PR: the edge-column fallback, rest and wisp heals, CI Cache and Speedrun replacements, the shard numbers, the minimum-fights rule, and for the renderer a reduced flat fallback instead of full prototype parity, the Rolldown chunk split, and the quality step-down thresholds. Balance is re-measured after implementation (progression 13.8); class difficulty numbers are unchanged.
 
+## Fri 27 Nov 2026: v1.6 forward-only week routes in the engine
+
+- **Kiro client:** Kiro Web, workflow run (one subagent per spec group, then this balance and final gate step).
+- **Specs and tasks:** 30 of 32 in-scope items done (see docs/build-checklist.json): map-generation 9.1–9.7, 10.1–10.5, 11.1; combat-timing 11.1–11.7, 12.1; progression 13.1–13.8, 10.3, 12.1. Progression 10.1 and 10.2 (UI buttons and boot restore) stay `todo`; they belong to the renderer phase.
+- **Hooks and agents:** none fired. The final gate ran `npm run typecheck && npm test && npm run build` (514 of 514 tests in 53 files) and the 82 unique `verify` commands of the 146 done items in all phases; all passed. The full `npm run simulate` exited 0. The `balance-tuner` agent was not run.
+- **Commits / PRs:** branch `feature/v16-routes-engine` from `1d02c48`, 33 commits (`92cc9d0` … this entry); PR *Implement forward-only week routes in the engine*.
+- **Notes:** properties P20, P21, P22, P23, P24 added; P3 and P4 changed; P10 retired (its shard bounds moved to P23). P19 gained a 20 s timeout and legal-move picks. `src/main.ts` got a typecheck-only edit so the Phase 1 debug text view runs on the v1.6 engine (route keys and buttons, no Flee, boss shown as B, shards n/3); `index.html` still redirects to the prototype. No balance number was changed: every win-rate target passes on the v1.6 rules. The demo route misses the 6–10 fights target (10–12 fights, the boss included), which the simulator prints but does not fail on.
+
+`npm run simulate` (200 seeds per cell and graph, race Human, Calm and Auto-timing off), exit code 0:
+
+| Class | σ (ms) | demo | allEmpty | singleActiveDay | veryDense | bestDayFirst | bestDayLast | lastDayZero | Overall | Target | Result | Avg fights | Avg shards at boss |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| knight | 140 | 200/200 | 200/200 | 200/200 | 200/200 | 200/200 | 200/200 | 200/200 | 100.0% | ≥ 90% | PASS | 12.57 | 2.14 |
+| wanderer | 100 | 197/200 | 114/200 | 142/200 | 200/200 | 191/200 | 191/200 | 198/200 | 88.1% | ≥ 80% | PASS | 12.43 | 2.14 |
+| mage | 100 | 111/200 | 20/200 | 28/200 | 93/200 | 75/200 | 60/200 | 121/200 | 36.3% | 15–50% | PASS | 10.49 | 1.90 |
+| mage | 60 | 186/200 | 96/200 | 111/200 | 198/200 | 169/200 | 157/200 | 186/200 | 78.8% | ≥ 60% | PASS | 12.34 | 2.13 |
+| rogue | 60 | 101/200 | 17/200 | 25/200 | 105/200 | 40/200 | 39/200 | 119/200 | 31.9% | ≤ 40% | PASS | 10.27 | 1.84 |
+| rogue | 35 | 190/200 | 111/200 | 151/200 | 197/200 | 148/200 | 166/200 | 196/200 | 82.8% | ≥ 80% | PASS | 12.33 | 2.12 |
+
+Wanderer grade policies on the demo graph (route target: 6–10 fights, the boss included; steps always equal cols):
+
+| Policy | Expected | Outcome | Fights | Shards | Steps | Result |
+| --- | --- | --- | --- | --- | --- | --- |
+| All Perfect | win | win | 12 | 3 | 14 | PASS |
+| All Good | win | win | 11 | 3 | 14 | PASS |
+| Mixed 25/50/25 | win | win | 11 | 3 | 14 | PASS |
+| All Miss | lose | lose | 10 | 3 | 14 | PASS |
+
+**Follow-up for the `balance-tuner` agent:** the demo route takes 11–12 fights in the winning policies (10 for All Miss), above the 6–10 fights target, and the simulator averages 10.3–12.6 fights per run. Fight count is mostly set by the map (`MIN_ROUTE_FIGHTS` and the route shortfall) and the bot's tier-first policy, not by the tuner's v1.6 tunables, so this may need a spec decision rather than tuning. Win rates also moved: Knight 96.6% → 100%, Wanderer 78.8% → 88.1% (now passing), Rogue σ 60 41.6% → 31.9% (now passing).
+
 <!--
 Template for future days. Copy the block below, newest day last.
 

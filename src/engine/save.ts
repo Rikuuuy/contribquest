@@ -1,4 +1,6 @@
 // Pure save and restore of a run (progression design.md "save.ts"). Storage lives in src/data/runstore.ts.
+// v1.6: save version 2. The objects below are strict, so a v1.5 shape (a `boss` tile flag, the Gate index,
+// the ward's shard count) is rejected instead of being stripped.
 import { z } from 'zod';
 import {
   ClassIdSchema,
@@ -7,6 +9,7 @@ import {
   RaceIdSchema,
   TrophyIdSchema,
 } from '../data/schema';
+import { tileAt } from '../mapgen';
 import type { RunState } from './state';
 
 export type SavedRun = Omit<RunState, 'events'>;
@@ -21,15 +24,15 @@ const RelicIdSchema = z.enum(['duck', 'hotfix', 'force', 'linter', 'stack', 'cof
 const TierSchema = z.literal([1, 2, 3, 4, 5]);
 const PosSchema = z.object({ col: int, row: int });
 
-const DayTileSchema = z.object({
+const DayTileSchema = z.strictObject({
   col: int,
   row: int,
   idx: int.min(0).max(90),
   day: ContributionDaySchema,
-  kind: z.enum(['fog', 'wisp', 'chest', 'monster', 'boss', 'start', 'gate']),
-  tier: z.literal([0, 1, 2, 3, 4, 5]),
+  kind: z.enum(['fog', 'wisp', 'chest', 'monster', 'start']),
+  tier: z.literal([0, 1, 2, 3, 4]),
   size: z.literal([1, 2]).optional(),
-  boss: z.literal(true).optional(),
+  bestDay: z.literal(true).optional(),
   risen: z.literal(true).optional(),
   deco: z.boolean().optional(),
   resolved: z.boolean(),
@@ -37,20 +40,19 @@ const DayTileSchema = z.object({
   seen: z.boolean(),
 });
 
-const GameMapSchema = z.object({
+const GameMapSchema = z.strictObject({
   cols: z.literal([13, 14]),
   rows: z.literal(7),
   w0: int,
   tiles: z.array(DayTileSchema).length(91),
   seed: int,
   bossIdx: int.min(0).max(90),
-  gateIdx: z.literal(90),
+  bossNode: PosSchema,
   emptyQuarter: z.boolean(),
   quiet: z.boolean(),
-  shardsNeeded: z.literal([0, 1, 2, 3]),
 });
 
-const HeroSchema = z.object({
+const HeroSchema = z.strictObject({
   name: z.string(),
   cls: ClassIdSchema,
   race: RaceIdSchema,
@@ -68,7 +70,7 @@ const HeroSchema = z.object({
   omen: z.enum(['blessed', 'cursed']),
 });
 
-const MonsterSchema = z.object({
+const MonsterSchema = z.strictObject({
   name: z.string(),
   tier: TierSchema,
   hp: num,
@@ -76,10 +78,11 @@ const MonsterSchema = z.object({
   dmg: num,
   xp: num,
   phase2: z.boolean(),
+  bound: z.boolean(),
 });
 
-const QteTestSchema = z.object({
-  kind: z.enum(['attack', 'defend', 'flee']),
+const QteTestSchema = z.strictObject({
+  kind: z.enum(['attack', 'defend']),
   mode: ModeSchema,
   pattern: PatternSchema,
   P: num,
@@ -95,14 +98,13 @@ const QteTestSchema = z.object({
 });
 
 const FightNextSchema = z.discriminatedUnion('kind', [
-  z.object({ kind: z.literal('strike'), i: int }),
-  z.object({ kind: z.literal('choose') }),
-  z.object({ kind: z.literal('win') }),
-  z.object({ kind: z.literal('lose') }),
-  z.object({ kind: z.literal('escape'), dmg: num }),
+  z.strictObject({ kind: z.literal('strike'), i: int }),
+  z.strictObject({ kind: z.literal('choose') }),
+  z.strictObject({ kind: z.literal('win') }),
+  z.strictObject({ kind: z.literal('lose') }),
 ]);
 
-const FightSchema = z.object({
+const FightSchema = z.strictObject({
   col: int,
   row: int,
   m: MonsterSchema,
@@ -119,8 +121,8 @@ const FightSchema = z.object({
 });
 
 /** Every RunState field except `events` (FR-SAV-1). A save that fails this schema is "no save". */
-export const SavedRunSchema = z.object({
-  version: z.literal(1),
+export const SavedRunSchema = z.strictObject({
+  version: z.literal(2),
   set: ContributionSetSchema,
   heroSet: ContributionSetSchema.nullable(),
   map: GameMapSchema,
@@ -129,7 +131,7 @@ export const SavedRunSchema = z.object({
   prev: PosSchema.nullable(),
   rng: int,
   combat: FightSchema.nullable(),
-  stats: z.object({
+  stats: z.strictObject({
     steps: int,
     defeated: int,
     chests: int,
@@ -141,7 +143,7 @@ export const SavedRunSchema = z.object({
   }),
   status: z.enum(['exploring', 'combat', 'relic', 'won', 'lost']),
   bossDown: z.boolean(),
-  shards: int,
+  shards: int.min(0).max(3),
   undying: z.boolean(),
   killer: z.string().nullable(),
   opts: z.object({ calm: z.boolean(), assist: z.boolean() }),
@@ -159,13 +161,27 @@ export function serialize(s: RunState): SavedRun {
 }
 
 /**
- * The run in a save, or null for anything that fails the schema (a prototype save, a newer version, non-JSON).
- * A fight in a timing test resumes at the Attack/Flee choice (FR-COM-7); a fight in `wait` is kept.
+ * The position invariant Zod cannot express (requirement 10.3): a day tile before the boss node, or the
+ * boss node itself during the boss fight or after the run ended.
+ */
+function posValid(s: SavedRun): boolean {
+  const { pos, map } = s;
+  if (pos.col < map.cols && tileAt(map, pos.col, pos.row)) return true;
+  if (pos.col !== map.bossNode.col || pos.row !== map.bossNode.row) return false;
+  return (s.status === 'combat' && s.combat?.m.tier === 5) || s.status === 'won' || s.status === 'lost';
+}
+
+/**
+ * The run in a save, or null for anything that fails the schema (a prototype or v1.5 save, another version,
+ * non-JSON) or has a bad `pos`. A fight in a timing test resumes at the Attack choice (FR-COM-7); a fight in
+ * `wait` is kept.
  */
 export function restore(json: unknown): RunState | null {
   const r = SavedRunSchema.safeParse(json);
   if (!r.success) return null;
-  const s = { ...(r.data as SavedRun), events: [] } as RunState;
+  const saved = r.data as SavedRun;
+  if (!posValid(saved)) return null;
+  const s = { ...saved, events: [] } as RunState;
   if (s.combat && s.combat.phase === 'test') {
     s.combat.phase = 'choose';
     s.combat.test = null;

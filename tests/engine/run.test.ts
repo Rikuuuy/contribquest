@@ -26,7 +26,7 @@ describe('FR-PRO-1: newRun on the demo set', () => {
     }
   });
 
-  it('starts on the start tile, visited and revealed, with the run RNG at the map seed', () => {
+  it('starts on the start tile, visited, resolved, and revealed, with the run RNG at the map seed', () => {
     const set = demoSet();
     const s = run(set);
     const map = generateMap(set);
@@ -35,7 +35,9 @@ describe('FR-PRO-1: newRun on the demo set', () => {
     expect(s0.kind).toBe('start');
     expect(s.pos).toEqual({ col: s0.col, row: s0.row });
     expect(s0.visited).toBe(true);
+    expect(s0.resolved).toBe(true);
     expect(s0.seen).toBe(true);
+    expect(s.map.tiles.filter((t) => t.resolved)).toHaveLength(1);
     expect(s.map.tiles.filter((t) => t.visited)).toHaveLength(1);
     expect(s.rng).toBe(map.value.seed);
     expect(s.rng).toBe(s.map.seed);
@@ -44,7 +46,7 @@ describe('FR-PRO-1: newRun on the demo set', () => {
   it('sets every run field to its starting value', () => {
     const s = run(demoSet(), null, { ...SETTINGS, calm: true, assist: true });
     expect(s).toMatchObject({
-      version: 1,
+      version: 2,
       heroSet: null,
       prev: null,
       combat: null,
@@ -69,7 +71,7 @@ describe('FR-PRO-1: newRun on the demo set', () => {
     expect(run(demoSet()).log).toEqual([
       'You wake in a crypt on Tue 18 Aug 2026. Somewhere ahead waits the Phantom of your best day.',
       'Commit Blessing: demo-necromancer contributed today, so a relic awaits.',
-      'Its ward is fed by your other big days. Banish 3 elites (Ghouls or Liches) to collect soul shards and break it.',
+      'Banish Ghouls or Liches for soul shards: each one weakens the Phantom (up to 3).',
     ]);
   });
 
@@ -91,17 +93,24 @@ describe('FR-OMEN-1, FR-OMEN-3: omen at run start', () => {
     expect(s.log[1]).toBe('Uncommitted Curse: no contributions today, so monsters hit 15% harder. Commit to lift it.');
   });
 
-  it('no shard line when the ward needs none', () => {
-    const s = run(makeSet(windowDays((i) => ({ count: i === 90 ? 1 : 0 }))));
-    expect(s.map.shardsNeeded).toBe(0);
-    expect(s.log).toHaveLength(2);
+  it('the shard line is logged on every map, even one without elites (v1.6)', () => {
+    for (const set of [
+      makeSet(windowDays((i) => ({ count: i === 90 ? 1 : 0 }))),
+      makeSet(windowDays((i) => ({ count: i === 30 ? 20 : i === 60 ? 8 : i === 90 ? 1 : 0 }))),
+      cursedSet(),
+    ]) {
+      const s = run(set);
+      expect(s.log).toHaveLength(3);
+      expect(s.log[2]).toBe('Banish Ghouls or Liches for soul shards: each one weakens the Phantom (up to 3).');
+    }
   });
+});
 
-  it('one elite: "Banish 1 elite"', () => {
-    const set = makeSet(windowDays((i) => ({ count: i === 30 ? 20 : i === 60 ? 8 : i === 90 ? 1 : 0 })));
-    const s = run(set);
-    expect(s.map.shardsNeeded).toBe(1);
-    expect(s.log[2]).toBe('Its ward is fed by your other big days. Banish 1 elite (Ghouls or Liches) to collect soul shards and break it.');
+describe('FR-MOV-6: the column window at run start (v1.6)', () => {
+  it('marks columns 0–2 seen and nothing further', () => {
+    const s = run(demoSet());
+    expect(s.pos.col).toBe(0);
+    for (const t of s.map.tiles) expect(t.seen).toBe(t.col <= 2);
   });
 });
 
