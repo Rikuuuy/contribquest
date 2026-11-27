@@ -5,7 +5,7 @@ import type { ComboGrade, Grade, RunState } from '../../src/engine/state';
 import { nextFloat } from '../../src/mapgen/rng';
 import { tileAt } from '../../src/mapgen/layout';
 import type { Tier } from '../../src/mapgen/types';
-import { makeFightRun, type TestRunOptions } from '../fixtures/run';
+import { bossFightOn, makeFightRun, makeTestRun, type TestRunOptions } from '../fixtures/run';
 
 /** The next `n` draws from the run RNG, without advancing it. */
 function peek(s: RunState, n: number): number[] {
@@ -239,13 +239,13 @@ describe('FR-COM-1, FR-DIF-4, FR-PRO-3: end of a fight', () => {
     expect(s.log).toEqual([
       'Merge Conflict Lich is banished: +60 XP, +13 treasure.',
       'The graph grows restless: timing windows 93%.',
-      'Soul shard 1/3 collected.',
+      'Soul shard 1/3. The Phantom weakens.',
     ]);
     expect(s.events).toEqual([
       { type: 'xp', amount: 66 },
       { type: 'timing', pct: 93, maxed: false },
       { type: 'monsterDown', boss: false },
-      { type: 'shard', have: 1, need: 3, shattered: false },
+      { type: 'shard', have: 1, max: 3, bound: false },
     ]);
   });
 
@@ -259,23 +259,50 @@ describe('FR-COM-1, FR-DIF-4, FR-PRO-3: end of a fight', () => {
     const base = killer(4);
     base.log = ['a', 'b', 'c'];
     const s = step(base, { type: 'advance' });
-    expect(s.log).toEqual(['c', 'Merge Conflict Lich is banished: +60 XP, +13 treasure.', 'The graph grows restless: timing windows 93%.', 'Soul shard 1/3 collected.']);
+    expect(s.log).toEqual(['c', 'Merge Conflict Lich is banished: +60 XP, +13 treasure.', 'The graph grows restless: timing windows 93%.', 'Soul shard 1/3. The Phantom weakens.']);
   });
 
-  it('the boss: no pressure line, bossDown, bossHpLeft, the Gate opens', () => {
-    const s = step(killer(5), { type: 'advance' });
-    expect([s.bossDown, s.stats.bossHpLeft, s.stats.defeated, s.status]).toEqual([true, 42, 1, 'exploring']);
-    expect(s.log).toEqual(['The Phantom of Tue 3 Nov 2026 is banished: +100 XP, +33 treasure.', 'The Phantom falls. The Gate is unsealed!']);
-    expect(s.events.map((e) => e.type)).toEqual(['xp', 'monsterDown', 'gateOpen']);
-  });
-
-  it('a boss on the Gate ends the run as won', () => {
+  it('v1.6: the boss win: no pressure line, no shard, bossDown, bossHpLeft, the new line, and the run is won', () => {
     const base = killer(5);
-    const t = tileAt(base.map, base.combat!.col, base.combat!.row)!;
-    t.kind = 'gate';
+    const before = structuredClone(base.map.tiles);
     const s = step(base, { type: 'advance' });
-    expect(s.status).toBe('won');
-    expect(s.events.slice(-2)).toEqual([{ type: 'won' }, { type: 'runEnded', won: true }]);
+    expect([s.bossDown, s.stats.bossHpLeft, s.stats.defeated, s.status, s.combat]).toEqual([true, 42, 1, 'won', null]);
+    expect(s.log).toEqual(['The Phantom of Tue 3 Nov 2026 is banished: +100 XP, +33 treasure.', 'The Phantom falls. Your graph is exorcised.']);
+    expect(s.events).toEqual([
+      { type: 'xp', amount: 110 },
+      { type: 'monsterDown', boss: true },
+      { type: 'won' },
+      { type: 'runEnded', won: true },
+    ]);
+    // The boss node is not a tile: no day tile changes.
+    expect(s.map.tiles).toEqual(before);
+  });
+
+  it('v1.6 FR-REL-1: CI Cache heals ceil(maxHp × 0.1) after a non-boss win, after the XP and the shard', () => {
+    const base = killer(4, { relics: ['cache'], defeated: 20, hero: { hp: 10 } });
+    const heal = Math.ceil(base.hero.maxHp * 0.1);
+    const rng = base.rng;
+    const s = step(base, { type: 'advance' });
+    expect(s.hero.hp).toBe(10 + heal);
+    expect(s.rng).toBe(rng);
+    expect(s.log.at(-1)).toBe(`CI Cache: +${heal} HP.`);
+    expect(s.events.map((e) => e.type)).toEqual(['xp', 'monsterDown', 'shard', 'heal']);
+    expect(s.events.at(-1)).toEqual({ type: 'heal', amount: heal, source: 'cache' });
+  });
+
+  it('v1.6: CI Cache is capped at max HP, silent at full HP, and does nothing without the relic or after the boss', () => {
+    const near = killer(2, { relics: ['cache'], hero: { hp: 41 } });
+    let s = step(near, { type: 'advance' });
+    expect(s.hero.hp).toBe(s.hero.maxHp);
+    expect(s.events.at(-1)).toEqual({ type: 'heal', amount: 1, source: 'cache' });
+    s = step(killer(2, { relics: ['cache'] }), { type: 'advance' });
+    expect(s.events.some((e) => e.type === 'heal')).toBe(false);
+    expect(s.log.some((l) => l.startsWith('CI Cache'))).toBe(false);
+    s = step(killer(2, { hero: { hp: 10 } }), { type: 'advance' });
+    expect(s.hero.hp).toBe(10);
+    s = step(killer(5, { relics: ['cache'], hero: { hp: 10 } }), { type: 'advance' });
+    expect([s.hero.hp, s.status]).toEqual([10, 'won']);
+    expect(s.events.some((e) => e.type === 'heal')).toBe(false);
   });
 
   it('FR-COM-4: HP 0 loses the run and records the killer', () => {
@@ -305,6 +332,31 @@ describe('FR-COM-1, FR-COM-3: fight start', () => {
       'tester steps into the battle as a Human Wanderer.',
       'Attack, then press Space as the marker crosses the gold.',
     ]);
-    expect(makeFightRun(5).combat!.lines[0]).toBe('The air turns cold. The Phantom of Tue 3 Nov 2026 rises from your best day!');
+    expect(makeFightRun(5).combat!.lines).toEqual([
+      'The air turns cold. Your best day has come back for you.',
+      'tester steps into the battle as a Human Wanderer.',
+      'Attack, then press Space as the marker crosses the gold.',
+    ]);
+  });
+
+  it('v1.6: the boss fight is on the boss node, with the shard line when shards are held', () => {
+    const s = bossFightOn(makeTestRun(), 3);
+    expect([s.status, s.combat!.col, s.combat!.row]).toEqual(['combat', s.map.bossNode.col, s.map.bossNode.row]);
+    expect(s.combat!.m).toMatchObject({ tier: 5, hp: 49, maxHp: 49, bound: true });
+    expect(s.combat!.lines.slice(0, 2)).toEqual([
+      'The air turns cold. Your best day has come back for you.',
+      '3 soul shards bind the Phantom: 30% less HP and no Phase 2.',
+    ]);
+    expect(bossFightOn(makeTestRun(), 1).combat!.lines[1]).toBe('1 soul shard weaken the Phantom: 10% less HP.');
+  });
+
+  it('v1.6: the boss fight uses the best day\'s row for the weekday trait', () => {
+    const s = bossFightOn(makeTestRun(), 0);
+    expect(s.combat!.row).toBe(s.map.tiles[s.map.bossIdx]!.row);
+    s.hero.trait = { name: 'Row', text: '', rows: [s.combat!.row], hp: 0 };
+    s.combat!.m.hp = s.combat!.m.maxHp = 500;
+    const [v] = peek(s, 1);
+    const r = attackWith(s, 'good');
+    expect(r.events.find((e) => e.type === 'heroHit')).toMatchObject({ dmgs: [Math.max(1, Math.round((s.hero.atk + 2) * vary(v!)))] });
   });
 });

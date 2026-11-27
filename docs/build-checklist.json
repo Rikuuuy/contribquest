@@ -922,7 +922,7 @@
       "spec": "combat-timing",
       "task": "11.2",
       "title": "Remove Flee: the `flee` action, `startFlee`, `resolveFlee`, `finishEscape`, `FightNext` `escape`, the `flee` test kind, the `escaped` and `gateOpen` events, `FLEE_KEYS` in `input.ts`; delete the flee cases from `tests/engine/combat.test.ts` and update `tests/engine/input.test.ts`",
-      "status": "todo",
+      "status": "done",
       "verify": "npx vitest --run tests/engine/combat.test.ts tests/engine/input.test.ts && ! grep -rnE \"'flee'|startFlee|resolveFlee|finishEscape|'escape'|gateOpen\" src/engine"
     },
     {
@@ -949,7 +949,7 @@
       "spec": "combat-timing",
       "task": "11.5",
       "title": "Change `winFight`: the CI Cache heal after non-boss wins, and the boss win (bossDown, bossHpLeft, new log line, `monsterDown`, `endRun(\"won\")`, no Gate); extend `tests/engine/combat.test.ts`",
-      "status": "todo",
+      "status": "done",
       "verify": "npx vitest --run tests/engine/combat.test.ts"
     },
     {
