@@ -544,7 +544,7 @@
       "spec": "map-generation",
       "task": "9.6",
       "title": "Record `tests/fixtures/golden/demo-map-v2.json` from the port; update `tests/mapgen/golden.test.ts` to the v1.6 summary facts (14 cols, seed 722674249, `bossIdx` 77 with `bestDay`, `bossNode` (14, 2), not quiet, `routeMin \u2265 4`) and to prototype parity on every tile except index 77, index 90, and route-shortfall tiles; keep `demo-map.json` unchanged",
-      "status": "todo",
+      "status": "done",
       "verify": "npx vitest --run tests/mapgen/golden.test.ts"
     },
     {
