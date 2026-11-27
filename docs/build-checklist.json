@@ -553,7 +553,7 @@
       "spec": "map-generation",
       "task": "9.7",
       "title": "Update `tests/mapgen/map.prop.test.ts`: P3 and P4 to their v1.6 statements, remove P10 (leave a comment naming it retired), add P20 and P21 (random walks plus an independent recursive minimum)",
-      "status": "todo",
+      "status": "done",
       "verify": "npx vitest --run tests/mapgen/map.prop.test.ts"
     },
     {
