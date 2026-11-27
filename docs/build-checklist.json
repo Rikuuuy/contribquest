@@ -885,7 +885,7 @@
       "spec": "progression",
       "task": "4.4",
       "title": "Write `tests/engine/relics.prop.test.ts` for P17 and the v1.4 relic monotonicity property (uses combat-timing's `resolveStrike` and `resolveGuard` with a fixed RNG)",
-      "status": "todo",
+      "status": "done",
       "verify": "npx vitest --run tests/engine/relics.prop.test.ts"
     },
     {
