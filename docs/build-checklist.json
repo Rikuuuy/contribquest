@@ -3,7 +3,8 @@
   "statuses": [
     "todo",
     "doing",
-    "done"
+    "done",
+    "superseded"
   ],
   "items": [
     {
@@ -13,7 +14,7 @@
       "task": "0.1",
       "title": "Write PRD v1.5 (everything built since v1.4)",
       "status": "done",
-      "verify": "grep -q '^| Version | 1.5' docs/PRD.md"
+      "verify": "grep -q '1.5 (19 Nov 2026)' docs/PRD.md"
     },
     {
       "id": "phase-0-steering",
@@ -95,6 +96,24 @@
       "title": "README 'How it's built' section",
       "status": "done",
       "verify": "grep -q \"^## How it's built\" README.md"
+    },
+    {
+      "id": "design-1.6-routes",
+      "phase": 3,
+      "spec": null,
+      "task": "0.11",
+      "title": "PRD v1.6 and the route specs: game-rules.md (v1.6), map-generation 9-11, combat-timing 11-12, progression 13",
+      "status": "done",
+      "verify": "grep -q '^| Version | 1.6' docs/PRD.md && grep -q 'MIN_ROUTE_FIGHTS' .kiro/steering/game-rules.md && grep -q '^- \\[ \\] 13\\. ' .kiro/specs/progression/tasks.md"
+    },
+    {
+      "id": "design-1.6-renderer",
+      "phase": 3,
+      "spec": null,
+      "task": "0.12",
+      "title": "Three.js billboard renderer and routes on screen: tech.md, art-style.md (3D billboard world), structure.md, presentation requirements 19-26 and tasks 11-14",
+      "status": "done",
+      "verify": "grep -q '^| `three` | v1.6' .kiro/steering/tech.md && grep -q '^## 3D billboard world' .kiro/steering/art-style.md && grep -q '^### Requirement 26' .kiro/specs/presentation/requirements.md && grep -q '^- \\[ \\] 14\\. ' .kiro/specs/presentation/tasks.md"
     },
     {
       "id": "data-import-1.1",
@@ -475,6 +494,123 @@
       "verify": "npm run typecheck && npx vitest --run tests/mapgen tests/engine/explore.test.ts && ! grep -rE \"from ['\\\"]\\.\\./(engine|render|audio)|data/(fetch|load|cache|storage|settings)\" src/mapgen"
     },
     {
+      "id": "map-generation-9.1",
+      "phase": 3,
+      "spec": "map-generation",
+      "task": "9.1",
+      "title": "Update `src/mapgen/types.ts` (remove the `boss` and `gate` kinds, `boss` flag, `gateIdx`, `shardsNeeded`; add `bestDay`, `bossNode`, `RouteOption`) and `src/mapgen/rules.ts` (add `ROUTE_REACH = 1`, `MIN_ROUTE_FIGHTS = 4`; remove `MAX_SHARDS`); update the re-export in `src/engine/balance.ts` and list the new constants in `game-rules.md`",
+      "status": "todo",
+      "verify": "! npx tsc --noEmit 2>&1 | grep -q \"^src/mapgen/\""
+    },
+    {
+      "id": "map-generation-9.2",
+      "phase": 3,
+      "spec": "map-generation",
+      "task": "9.2",
+      "title": "Change `assignTiles` to the v1.6 table (best day and index 90 by level, `bestDay` flag, no boss or gate) and update `tests/mapgen/assign.test.ts`",
+      "status": "todo",
+      "verify": "npx vitest --run tests/mapgen/assign.test.ts"
+    },
+    {
+      "id": "map-generation-9.3",
+      "phase": 3,
+      "spec": "map-generation",
+      "task": "9.3",
+      "title": "Implement `nextOptions`, `routeMinFights`, `minFightRoute`, `reachableIdx` in `src/mapgen/routes.ts`; write `tests/mapgen/routes.test.ts` (three options, rows 0 and 6, the demo fallback column 12 rows 3\u20136 \u2192 (13, 1), a 13-column map, last column \u2192 boss node, boss node \u2192 `[]`, a hand-built DP case)",
+      "status": "todo",
+      "verify": "npx vitest --run tests/mapgen/routes.test.ts"
+    },
+    {
+      "id": "map-generation-9.4",
+      "phase": 3,
+      "spec": "map-generation",
+      "task": "9.4",
+      "title": "Change `applyShortfall` to take the shared map RNG, add `applyRouteShortfall` in `src/mapgen/shortfall.ts`, and extend `tests/mapgen/shortfall.test.ts` (fight-free route lifted to 4, fog before wisp before chest, shared RNG instance, `quiet` unchanged by the route step)",
+      "status": "todo",
+      "verify": "npx vitest --run tests/mapgen/shortfall.test.ts"
+    },
+    {
+      "id": "map-generation-9.5",
+      "phase": 3,
+      "spec": "map-generation",
+      "task": "9.5",
+      "title": "Rewrite `validateMap` with the v1.6 checks and update `generateMap` (one map RNG, `bossNode`, route shortfall, no `shardsNeeded`); update `tests/mapgen/validate.test.ts` (missing start, duplicate date, a tile with no forward option, a route below 4 fights) and `tests/mapgen/fixtures.test.ts` (every fixture profile still `ok: true`)",
+      "status": "todo",
+      "verify": "npx vitest --run tests/mapgen/validate.test.ts tests/mapgen/fixtures.test.ts"
+    },
+    {
+      "id": "map-generation-9.6",
+      "phase": 3,
+      "spec": "map-generation",
+      "task": "9.6",
+      "title": "Record `tests/fixtures/golden/demo-map-v2.json` from the port; update `tests/mapgen/golden.test.ts` to the v1.6 summary facts (14 cols, seed 722674249, `bossIdx` 77 with `bestDay`, `bossNode` (14, 2), not quiet, `routeMin \u2265 4`) and to prototype parity on every tile except index 77, index 90, and route-shortfall tiles; keep `demo-map.json` unchanged",
+      "status": "todo",
+      "verify": "npx vitest --run tests/mapgen/golden.test.ts"
+    },
+    {
+      "id": "map-generation-9.7",
+      "phase": 3,
+      "spec": "map-generation",
+      "task": "9.7",
+      "title": "Update `tests/mapgen/map.prop.test.ts`: P3 and P4 to their v1.6 statements, remove P10 (leave a comment naming it retired), add P20 and P21 (random walks plus an independent recursive minimum)",
+      "status": "todo",
+      "verify": "npx vitest --run tests/mapgen/map.prop.test.ts"
+    },
+    {
+      "id": "map-generation-10.1",
+      "phase": 3,
+      "spec": "map-generation",
+      "task": "10.1",
+      "title": "Add `VIEW_AHEAD = 2`, `VIEW_AHEAD_REVIEW = 3` to `balance.ts` (remove `REVEAL_R2`, `REVEAL_R2_REVIEW`) and the matching assertions in `tests/engine/balance.test.ts`",
+      "status": "todo",
+      "verify": "npx vitest --run tests/engine/balance.test.ts"
+    },
+    {
+      "id": "map-generation-10.2",
+      "phase": 3,
+      "spec": "map-generation",
+      "task": "10.2",
+      "title": "Rewrite `src/engine/explore.ts`: `viewAhead`, `reveal` (column window), `isVisible`, `legalMoves`, `checkMove(s, to)`, `applyMove`; remove the sealed and warded checks",
+      "status": "todo",
+      "verify": "npx vitest --run tests/engine/explore.test.ts"
+    },
+    {
+      "id": "map-generation-10.3",
+      "phase": 3,
+      "spec": "map-generation",
+      "task": "10.3",
+      "title": "Rewrite `collectShard` and `shardStatus` for `SHARD_MAX` (bonus shards, `bound`, new log lines)",
+      "status": "todo",
+      "verify": "npx vitest --run tests/engine/explore.test.ts"
+    },
+    {
+      "id": "map-generation-10.4",
+      "phase": 3,
+      "spec": "map-generation",
+      "task": "10.4",
+      "title": "Rewrite `tests/engine/explore.test.ts` for the v1.6 rules (window at start, after a move, with Code Review; refused moves behind, sideways, two ahead, void; boss node move; shard lines and `bound`; nothing past 3)",
+      "status": "todo",
+      "verify": "npx vitest --run tests/engine/explore.test.ts"
+    },
+    {
+      "id": "map-generation-10.5",
+      "phase": 3,
+      "spec": "map-generation",
+      "task": "10.5",
+      "title": "Write `tests/engine/explore.prop.test.ts` for P22 over action sequences from `newRun` (needs combat-timing task 11.3 and progression task 13.3)",
+      "status": "todo",
+      "verify": "npx vitest --run tests/engine/explore.prop.test.ts"
+    },
+    {
+      "id": "map-generation-11.1",
+      "phase": 3,
+      "spec": "map-generation",
+      "task": "11.1",
+      "title": "Run the mapgen and explore suites and the type check; confirm `src/mapgen` still imports nothing from `src/engine`, `src/render`, `src/audio`, or storage/fetch code, and that no `gateIdx`, `shardsNeeded`, or `\"gate\"` tile kind is left in `src/`",
+      "status": "todo",
+      "verify": "npm run typecheck && npx vitest --run tests/mapgen tests/engine/explore.test.ts tests/engine/explore.prop.test.ts && ! grep -rE \"from ['\\\"]\\.\\./(engine|render|audio)|data/(fetch|load|cache|storage|settings)\" src/mapgen && ! grep -rnE \"gateIdx|shardsNeeded|kind === ['\\\"]gate['\\\"]\" src"
+    },
+    {
       "id": "combat-timing-1.1",
       "phase": 1,
       "spec": "combat-timing",
@@ -772,6 +908,78 @@
       "verify": "npm run typecheck && npx vitest --run tests/engine && ! grep -rnE \"Math\\.random|Date\\.now|performance\\.now|document\\.|window\\.|localStorage|from ['\\\"]\\.\\./(render|audio|main)\" src/engine"
     },
     {
+      "id": "combat-timing-11.1",
+      "phase": 3,
+      "spec": "combat-timing",
+      "task": "11.1",
+      "title": "Add `SHARD_MAX = 3`, `SHARD_BOSS_HP_CUT = 0.1`, `SHARD_NO_PHASE2 = 3`, and `RELIC_COMBAT.cacheHeal = 0.1` to `src/engine/balance.ts`, with assertions in `tests/engine/balance.test.ts` that read them from `game-rules.md`",
+      "status": "todo",
+      "verify": "npx vitest --run tests/engine/balance.test.ts"
+    },
+    {
+      "id": "combat-timing-11.2",
+      "phase": 3,
+      "spec": "combat-timing",
+      "task": "11.2",
+      "title": "Remove Flee: the `flee` action, `startFlee`, `resolveFlee`, `finishEscape`, `FightNext` `escape`, the `flee` test kind, the `escaped` and `gateOpen` events, `FLEE_KEYS` in `input.ts`; delete the flee cases from `tests/engine/combat.test.ts` and update `tests/engine/input.test.ts`",
+      "status": "todo",
+      "verify": "npx vitest --run tests/engine/combat.test.ts tests/engine/input.test.ts && ! grep -rnE \"'flee'|startFlee|resolveFlee|finishEscape|'escape'|gateOpen\" src/engine"
+    },
+    {
+      "id": "combat-timing-11.3",
+      "phase": 3,
+      "spec": "combat-timing",
+      "task": "11.3",
+      "title": "Change the `move` action to `{ type: \"move\"; to: Pos }` in `src/engine/state.ts` and `src/engine/step.ts`: status gate, `checkMove`/`applyMove`, `moved` event, `enterTile` for monster, chest, wisp, fog (`restDay` from progression task 13.1), and the boss node; remove the `blocked` event; extend `tests/engine/step.test.ts` with legal and refused moves and every entry kind",
+      "status": "todo",
+      "verify": "npx vitest --run tests/engine/step.test.ts"
+    },
+    {
+      "id": "combat-timing-11.4",
+      "phase": 3,
+      "spec": "combat-timing",
+      "task": "11.4",
+      "title": "Implement `makeBoss` and `bossShardLine` in `src/engine/monsters.ts` (and the risen-label rule in `sourceLabel`), `startBossFight` in `src/engine/combat.ts`, `bound` in `checkPhase2`; extend `tests/engine/monsters.test.ts` (69, 62, 56, 49 HP at start level 3 for 0\u20133 shards) and `tests/engine/patterns.test.ts` (bound boss at half HP stays in phase 1)",
+      "status": "todo",
+      "verify": "npx vitest --run tests/engine/monsters.test.ts tests/engine/patterns.test.ts"
+    },
+    {
+      "id": "combat-timing-11.5",
+      "phase": 3,
+      "spec": "combat-timing",
+      "task": "11.5",
+      "title": "Change `winFight`: the CI Cache heal after non-boss wins, and the boss win (bossDown, bossHpLeft, new log line, `monsterDown`, `endRun(\"won\")`, no Gate); extend `tests/engine/combat.test.ts`",
+      "status": "todo",
+      "verify": "npx vitest --run tests/engine/combat.test.ts"
+    },
+    {
+      "id": "combat-timing-11.6",
+      "phase": 3,
+      "spec": "combat-timing",
+      "task": "11.6",
+      "title": "Update `tests/engine/rng-order.test.ts`: skip the recorded flee fights, drop flee from the coverage check, and replay the boss recording with `shards = 0`; do not re-record `demo-fight.json`",
+      "status": "todo",
+      "verify": "npx vitest --run tests/engine/rng-order.test.ts"
+    },
+    {
+      "id": "combat-timing-11.7",
+      "phase": 3,
+      "spec": "combat-timing",
+      "task": "11.7",
+      "title": "Add P23 to `tests/engine/combat.prop.test.ts` and write `tests/engine/step.prop.test.ts` for P24 (action sequences with random legal and illegal `move` targets)",
+      "status": "todo",
+      "verify": "npx vitest --run tests/engine/combat.prop.test.ts tests/engine/step.prop.test.ts"
+    },
+    {
+      "id": "combat-timing-12.1",
+      "phase": 3,
+      "spec": "combat-timing",
+      "task": "12.1",
+      "title": "Run the engine suite and the type check; confirm the engine purity rules still hold and that no Flee or Gate code is left in `src/engine`",
+      "status": "todo",
+      "verify": "npm run typecheck && npx vitest --run tests/engine && ! grep -rnE \"Math\\.random|Date\\.now|performance\\.now|document\\.|window\\.|localStorage|from ['\\\"]\\.\\./(render|audio|main)\" src/engine && ! grep -rnE \"'flee'|resolveFlee|gateOpen|gateIdx\" src/engine"
+    },
+    {
       "id": "progression-1.1",
       "phase": 1,
       "spec": "progression",
@@ -974,7 +1182,7 @@
       "phase": 4,
       "spec": "progression",
       "task": "8.2",
-      "title": "Implement `TROPHIES`, `trophyFacts`, `awardTrophies`, `trophyList`, `startTrophyLine` in `src/engine/trophies.ts`; handle `trophiesAwarded` in `step`",
+      "title": "Implement `TROPHIES`, `trophyFacts`, `awardTrophies`, `trophyList`, `startTrophyLine` in `src/engine/trophies.ts`; handle `trophiesAwarded` in `step` (v1.6: Speedrun uses `defeated \u2264 TROPHY_SPEED_FIGHTS`, requirement 9.3; `TrophyFacts` includes `defeated`)",
       "status": "todo",
       "verify": "npx vitest --run tests/engine/trophies.test.ts"
     },
@@ -1065,8 +1273,9 @@
       "spec": "progression",
       "task": "11.4",
       "title": "Run the full simulator, record the table in `docs/kiro-journal.md`, and hand any missed target to the `balance-tuner` agent (changes go to `balance.ts` and `game-rules.md` only)",
-      "status": "todo",
-      "verify": "npm run simulate"
+      "status": "superseded",
+      "verify": "npm run simulate",
+      "supersededBy": "progression-13.8"
     },
     {
       "id": "progression-12.1",
@@ -1076,6 +1285,78 @@
       "title": "Run the engine and data suites and the type check; confirm the progression files obey the engine rules",
       "status": "todo",
       "verify": "npm run typecheck && npx vitest --run tests/engine tests/data tests/sim && ! grep -rnE \"Math\\.random|Date\\.now|performance\\.now|document\\.|window\\.|localStorage\" src/engine"
+    },
+    {
+      "id": "progression-13.1",
+      "phase": 3,
+      "spec": "progression",
+      "task": "13.1",
+      "title": "Add `REST_HEAL = 0.05`, `WISP_HEAL = 0.1`, `TROPHY_SPEED_FIGHTS = 6`, and `SIM.bossWeeks = 2` to `balance.ts` with assertions in `tests/engine/balance.test.ts`; implement `restDay` and the wisp heal in `src/engine/progression.ts` with the `rest` event and the new `wisp` event field; extend `tests/engine/progression.test.ts`",
+      "status": "todo",
+      "verify": "npx vitest --run tests/engine/progression.test.ts tests/engine/balance.test.ts"
+    },
+    {
+      "id": "progression-13.2",
+      "phase": 3,
+      "spec": "progression",
+      "task": "13.2",
+      "title": "Change the Code Review and CI Cache texts in `RELICS`, and make `pickRelic` call the column-window `reveal` for Code Review; extend `tests/engine/relics.test.ts` and keep `tests/engine/relics.prop.test.ts` (P17, relic monotonicity with the CI Cache heal) green",
+      "status": "todo",
+      "verify": "npx vitest --run tests/engine/relics.test.ts tests/engine/relics.prop.test.ts"
+    },
+    {
+      "id": "progression-13.3",
+      "phase": 3,
+      "spec": "progression",
+      "task": "13.3",
+      "title": "Update `newRun` (`version: 2`, start resolved, column window, the always-shown shard log line) and `tests/engine/run.test.ts`; keep P18 green",
+      "status": "todo",
+      "verify": "npx vitest --run tests/engine/run.test.ts tests/engine/map-independence.prop.test.ts"
+    },
+    {
+      "id": "progression-13.4",
+      "phase": 3,
+      "spec": "progression",
+      "task": "13.4",
+      "title": "Move the save to v2: `RUN_KEY = \"cq:v2:run\"` in `src/data/constants.ts`, the v1.6 `SavedRunSchema` and the `pos` check in `restore` (`src/engine/save.ts`), `runstore.ts` never touching `cq:v1:run`; update `tests/data/runstore.test.ts`, `tests/engine/save.test.ts` (v1.5 saves rejected, bad `pos` rejected), and `tests/engine/save.prop.test.ts` (P8, P19 on v1.6 states)",
+      "status": "todo",
+      "verify": "npx vitest --run tests/data/runstore.test.ts tests/engine/save.test.ts tests/engine/save.prop.test.ts && ! grep -rn \"cq:v1:run\" src"
+    },
+    {
+      "id": "progression-13.5",
+      "phase": 3,
+      "spec": "progression",
+      "task": "13.5",
+      "title": "Change the won title in `resultsView` and update `tests/engine/views.test.ts`",
+      "status": "todo",
+      "verify": "npx vitest --run tests/engine/views.test.ts"
+    },
+    {
+      "id": "progression-13.6",
+      "phase": 3,
+      "spec": "progression",
+      "task": "13.6",
+      "title": "Rewrite `routeAction` and add `rankOption` in `src/engine/routebot.ts` (legal moves, heal mode, tier order, `SIM` constants, seen check), update `playRun` for the new `move` action, and rewrite `tests/engine/routebot.test.ts`",
+      "status": "todo",
+      "verify": "npx vitest --run tests/engine/routebot.test.ts"
+    },
+    {
+      "id": "progression-13.7",
+      "phase": 3,
+      "spec": "progression",
+      "task": "13.7",
+      "title": "Add the average fights and shards columns to `scripts/simulate.ts`, and change `tests/sim/regression.test.ts` to print fights, shards, and steps for the demo route instead of checking the 15\u201325 steps target",
+      "status": "todo",
+      "verify": "npx vitest --run tests/sim/regression.test.ts && npm run simulate -- --seeds 5 | grep -qi \"fights\""
+    },
+    {
+      "id": "progression-13.8",
+      "phase": 3,
+      "spec": "progression",
+      "task": "13.8",
+      "title": "Re-measure on the v1.6 rules: run the full simulator and the grade-policy regression, record both tables in `docs/kiro-journal.md`, and hand any missed target to the `balance-tuner` agent, which may change only the v1.6 tunables (`REST_HEAL`, `WISP_HEAL`, `SHARD_BOSS_HP_CUT`, `RELIC_COMBAT.cacheHeal`, `TROPHY_SPEED_FIGHTS`) in `balance.ts` and `game-rules.md`; `DIFFICULTY` stays unchanged",
+      "status": "todo",
+      "verify": "npm run simulate && ! git diff main -- src/engine/balance.ts | grep -q \"pMul:\""
     },
     {
       "id": "presentation-1.1",
@@ -1091,7 +1372,7 @@
       "phase": 3,
       "spec": "presentation",
       "task": "1.2",
-      "title": "Implement `src/render/input.ts` and `src/render/layout.ts`; write `tests/render/input.test.ts` and `tests/render/layout.test.ts`",
+      "title": "Implement `src/render/input.ts` (v1.6: `routeKey`, `isArrowKey`, no `moveKey`) and `src/render/layout.ts`; write `tests/render/input.test.ts` and `tests/render/layout.test.ts`",
       "status": "todo",
       "verify": "npx vitest --run tests/render/input.test.ts tests/render/layout.test.ts"
     },
@@ -1136,9 +1417,9 @@
       "phase": 3,
       "spec": "presentation",
       "task": "3.1",
-      "title": "Implement `tileTex`, `fogTex`, and `drawMap` (labels, tiles, rise, contents, visited border, warded ring, alerts, hero hop and aura) in `src/render/map/`",
+      "title": "Implement `tileTex`, `fogTex`, and `drawMap` (labels, tiles, rise, contents, visited border, unseen cover, alerts on legal monster tiles, hero hop and aura; v1.6: legal-tile highlights from `RouteView`, boss node with shard pips, best-day flame, no Gate or warded ring) in `src/render/map/`, for the flat renderer and the share card",
       "status": "todo",
-      "verify": "npx vitest --run tests/render/tooltip.test.ts"
+      "verify": "npm run build"
     },
     {
       "id": "presentation-3.2",
@@ -1146,8 +1427,9 @@
       "spec": "presentation",
       "task": "3.2",
       "title": "Implement `applyLighting` and `drawFogDrift`, and the unseen-tile cover",
-      "status": "todo",
-      "verify": "npx vitest --run tests/render/tooltip.test.ts"
+      "status": "superseded",
+      "verify": "npx vitest --run tests/render/tooltip.test.ts",
+      "supersededBy": "presentation-11.4"
     },
     {
       "id": "presentation-3.3",
@@ -1163,7 +1445,7 @@
       "phase": 3,
       "spec": "presentation",
       "task": "3.4",
-      "title": "Ask combat-timing's `move` handler to emit `moved`, and add the map screen's rAF loop, pointer tap-to-move, hero tap, hover tooltip, and blocked feedback in `src/render/screens/map.ts`",
+      "title": "Add the map screen in `src/render/screens/map.ts`: the renderer host, pointer tap on a legal tile through `renderer.pick`, hero tap, hover tooltip (v1.6: `moved` comes from combat-timing task 11.3; no blocked feedback)",
       "status": "todo",
       "verify": "npm run build && npx vitest --run tests/engine/step.test.ts"
     },
@@ -1172,7 +1454,7 @@
       "phase": 3,
       "spec": "presentation",
       "task": "4.1",
-      "title": "Implement `hudView`, `renderHud` (bump and level flash), `renderLog`, and the danger overlay in `src/render/hud.ts`; write `tests/render/hud.test.ts`",
+      "title": "Implement `hudView` (v1.6: week label, shards `{ have, max: 3 }`, the four boss lines), `renderHud` (bump and level flash), `renderLog`, and the danger overlay in `src/render/hud.ts`; write `tests/render/hud.test.ts`",
       "status": "todo",
       "verify": "npx vitest --run tests/render/hud.test.ts"
     },
@@ -1217,7 +1499,7 @@
       "phase": 3,
       "spec": "presentation",
       "task": "6.1",
-      "title": "Implement `Pacer`, `resolvedKind`, and `PACING` in `src/render/pacing.ts`; write `tests/render/pacing.test.ts`",
+      "title": "Implement `Pacer`, `resolvedKind`, and `PACING` (v1.6: no flee row) in `src/render/pacing.ts`; write `tests/render/pacing.test.ts`",
       "status": "todo",
       "verify": "npx vitest --run tests/render/pacing.test.ts"
     },
@@ -1235,7 +1517,7 @@
       "phase": 3,
       "spec": "presentation",
       "task": "6.3",
-      "title": "Combat panel in `src/render/screens/combat.ts` (sprites, HP bars with the 110 ms delay, source label, hint, buttons, Now! button, grade line) and the `advance` scheduling in `main.ts`",
+      "title": "Combat panel in `src/render/screens/combat.ts` (stage slot, HP bars with the 110 ms delay, source label, hint, Attack button with no Flee button (v1.6), Now! button, grade line) and the `advance` scheduling in `main.ts`",
       "status": "todo",
       "verify": "npm run build"
     },
@@ -1253,7 +1535,7 @@
       "phase": 3,
       "spec": "presentation",
       "task": "6.5",
-      "title": "Battle screen layout: boss bar, graveyard stage, nameplate, battle log, HERO/FOE tabs (FR-FX-10)",
+      "title": "Battle screen layout: boss bar, nameplate, HERO/FOE tabs, 7-line battle log, and the 8:3 stage slot in `src/render/screens/combat.ts` (v1.6: the 2D graveyard `stage-bg.ts` is dropped; the arena is task 11.6, the flat stage task 13.2) (FR-FX-10)",
       "status": "todo",
       "verify": "npm run build"
     },
@@ -1262,7 +1544,7 @@
       "phase": 3,
       "spec": "presentation",
       "task": "7.1",
-      "title": "Port the `fx*` particle system to `src/render/fx.ts` and the stage to `src/render/stage.ts` (background, strike and hit effects, hit-stop, slow motion, death, phase 2)",
+      "title": "Port the `fx*` particle system and floating text to `src/render/fx.ts` (used on the flat stage and, for text, on the overlay canvas) and the stage to `src/render/stage.ts` (strike and hit effects, hit-stop, slow motion, death, phase 2; v1.6: the reduced flat background is task 13.2)",
       "status": "todo",
       "verify": "npm run build"
     },
@@ -1271,9 +1553,9 @@
       "phase": 3,
       "spec": "presentation",
       "task": "7.2",
-      "title": "Map effects for every event in the design table, white-out, fight flashes, background confetti and ash",
+      "title": "Effects for every event in the design table (v1.6 rows: `moved`, `rest`, wisp heal, cache heal, `shard` with `bound`; no `blocked` or `gateOpen`) in both renderers, white-out, fight flashes, background confetti and ash",
       "status": "todo",
-      "verify": "npm run build"
+      "verify": "npm run build && ! grep -rnE \"gateOpen|'blocked'|WARD BROKEN|GATE OPENS\" src/render"
     },
     {
       "id": "presentation-7.3",
@@ -1325,7 +1607,7 @@
       "phase": 3,
       "spec": "presentation",
       "task": "9.2",
-      "title": "Implement `soundsFor` and `musicModeFor` in `src/audio/events.ts`, wire them in `main.ts`, and add the Sound button and M key; write `tests/audio/events.test.ts`",
+      "title": "Implement `soundsFor` (v1.6 sound set: no `blocked` or `gate`; `rest`, cache heal, `bound`) and `musicModeFor` in `src/audio/events.ts`, wire them in `main.ts`, and add the Sound button and M key; write `tests/audio/events.test.ts`",
       "status": "todo",
       "verify": "npx vitest --run tests/audio/events.test.ts && npm run build && ! find dist -iregex '.*\\.\\(mp3\\|ogg\\|wav\\|m4a\\|flac\\)' | grep ."
     },
@@ -1353,8 +1635,9 @@
       "spec": "presentation",
       "task": "10.3",
       "title": "Retake every prototype screenshot in `docs/screenshots/` from the new build with the Playwright power, compare side by side in `docs/parity.md`, and fix differences; check text contrast of the palette pairs (4.5:1) in the same file",
-      "status": "todo",
-      "verify": "every row in `docs/parity.md` is ticked"
+      "status": "superseded",
+      "verify": "every row in `docs/parity.md` is ticked",
+      "supersededBy": "presentation-14.2"
     },
     {
       "id": "presentation-10.4",
@@ -1364,6 +1647,150 @@
       "title": "Module check: render and audio decide no outcome and import no storage directly",
       "status": "todo",
       "verify": "npm run typecheck && npx vitest --run tests/render tests/audio && ! grep -rnE \"localStorage|from ['\\\"]\\.\\./\\.\\./data/(fetch|cache)\" src/render src/audio"
+    },
+    {
+      "id": "presentation-11.1",
+      "phase": 3,
+      "spec": "presentation",
+      "task": "11.1",
+      "title": "Add `three` (`^0.187.0`) to `dependencies` and `@types/three` (`^0.187.0`) to `devDependencies`; put `three` in its own chunk named `three` with `build.rolldownOptions.output.codeSplitting.groups` (`{ name: \"three\", test: /node_modules[\\\\/]three[\\\\/]/ }`) in `vite.config.ts` (Vite 8 uses Rolldown, where `manualChunks` is deprecated); add the empty `src/render/world/index.ts` entry loaded with a dynamic `import()`",
+      "status": "todo",
+      "verify": "npm ls three @types/three && npm run build && f=$(ls dist/assets/three-*.js) && test \"$(gzip -9c $f | wc -c)\" -le 184320"
+    },
+    {
+      "id": "presentation-11.2",
+      "phase": 3,
+      "spec": "presentation",
+      "task": "11.2",
+      "title": "Implement the pure world maths in `src/render/world/math.ts` (`slabHeight`, `tileWorld`, `bossNodeWorld`, `spriteWorldSize`, `followAim`, `overviewAim`, `cameraFor`, `easeOutBack`, `riseDelay`) and the reduced-motion flags in `src/render/world/motion-flags.ts`; write `tests/render/world-math.test.ts` and `tests/render/motion-flags.test.ts`",
+      "status": "todo",
+      "verify": "npx vitest --run tests/render/world-math.test.ts tests/render/motion-flags.test.ts"
+    },
+    {
+      "id": "presentation-11.3",
+      "phase": 3,
+      "spec": "presentation",
+      "task": "11.3",
+      "title": "Implement `src/render/world/textures.ts` (sprite texture cache from the `buildSprite` canvases, glow and label textures) and `src/render/world/billboard.ts` (`makeBillboard`, `setFacing`, `setFrame`, `faceCamera`); write `tests/render/billboard.test.ts`",
+      "status": "todo",
+      "verify": "npx vitest --run tests/render/billboard.test.ts"
+    },
+    {
+      "id": "presentation-11.4",
+      "phase": 3,
+      "spec": "presentation",
+      "task": "11.4",
+      "title": "Implement `src/render/world/atmosphere.ts`: the light rig with the pool of 4 point lights, `assignLights`, `flicker`, `FogExp2`, fireflies, and the fog bank over fog columns; write `tests/render/atmosphere.test.ts`",
+      "status": "todo",
+      "verify": "npx vitest --run tests/render/atmosphere.test.ts"
+    },
+    {
+      "id": "presentation-11.5",
+      "phase": 3,
+      "spec": "presentation",
+      "task": "11.5",
+      "title": "Implement `src/render/world/map-scene.ts`: instanced slabs per level, instanced gravestones, ground labels, rise, seen tint, content billboards, visited frames, crossed bones, hero hop and aura, `pickTile`; write `tests/render/map-scene.test.ts`",
+      "status": "todo",
+      "verify": "npx vitest --run tests/render/map-scene.test.ts"
+    },
+    {
+      "id": "presentation-11.6",
+      "phase": 3,
+      "spec": "presentation",
+      "task": "11.6",
+      "title": "Implement `src/render/world/arena-scene.ts`: the seeded graveyard arena from the sample, hero and foe billboards, boss variant, strike lunges and rig swaps, phase-2 tint, petals, battle camera; write `tests/render/arena-scene.test.ts`",
+      "status": "todo",
+      "verify": "npx vitest --run tests/render/arena-scene.test.ts"
+    },
+    {
+      "id": "presentation-11.7",
+      "phase": 3,
+      "spec": "presentation",
+      "task": "11.7",
+      "title": "Implement `src/render/world/fx3d.ts` (fixed particle pool, rings, slashes, camera shake, visual clock with hit-stop and slow motion) and `src/render/overlay.ts` (floating text and speech bubble at projected positions); write `tests/render/fx3d.test.ts`",
+      "status": "todo",
+      "verify": "npx vitest --run tests/render/fx3d.test.ts"
+    },
+    {
+      "id": "presentation-11.8",
+      "phase": 3,
+      "spec": "presentation",
+      "task": "11.8",
+      "title": "Implement `src/render/world/quality.ts` and `src/render/world/index.ts` (one `WebGLRenderer`, pixel ratio cap, antialias by pointer, `mount`, frame loop with no per-frame allocation, quality step-down, `window.__cqStats`, context loss and restore, `stop` on hidden pages and 2D-only screens) and `src/render/world/dispose.ts`; write `tests/render/quality.test.ts`",
+      "status": "todo",
+      "verify": "npx vitest --run tests/render/quality.test.ts && npm run build"
+    },
+    {
+      "id": "presentation-11.9",
+      "phase": 3,
+      "spec": "presentation",
+      "task": "11.9",
+      "title": "Reduced motion in the world renderer: drive every world module from `motionFlags(REDUCED)` and honour live `prefers-reduced-motion` changes through `renderer.setReduced`",
+      "status": "todo",
+      "verify": "npx vitest --run tests/render/motion-flags.test.ts tests/render/fx3d.test.ts && npm run build && ! grep -rn \"matchMedia\" src/render/world"
+    },
+    {
+      "id": "presentation-12.1",
+      "phase": 3,
+      "spec": "presentation",
+      "task": "12.1",
+      "title": "Implement `routeView` and `targetFor` in `src/render/map/route-view.ts`; write `tests/render/route-view.test.ts`",
+      "status": "todo",
+      "verify": "npx vitest --run tests/render/route-view.test.ts"
+    },
+    {
+      "id": "presentation-12.2",
+      "phase": 3,
+      "spec": "presentation",
+      "task": "12.2",
+      "title": "Change the movement wiring from task 1.3 in `src/main.ts`: keys through `routeKey` and `targetFor` send `{ type: \"move\", to }`, the D-pad becomes the three-button branch pad rebuilt from `RouteView`, taps go through `renderer.pick`, and the Flee button and F/Escape handling are removed",
+      "status": "todo",
+      "verify": "npx vitest --run tests/render/input.test.ts tests/render/route-view.test.ts && npm run build && ! grep -rnE \"['\\\"]flee['\\\"]|moveKey\" src/main.ts src/render"
+    },
+    {
+      "id": "presentation-13.1",
+      "phase": 3,
+      "spec": "presentation",
+      "task": "13.1",
+      "title": "Implement `src/render/caps.ts` (`parseRendererParam`, `pickRenderer`, `probeWebGL2`) and `src/render/renderer.ts` (`Renderer` interface, `createRenderer` with the dynamic import, the swap to flat on import, creation, context-loss, or repeated frame failures, the one-time log line); write `tests/render/caps.test.ts`",
+      "status": "todo",
+      "verify": "npx vitest --run tests/render/caps.test.ts && npm run build"
+    },
+    {
+      "id": "presentation-13.2",
+      "phase": 3,
+      "spec": "presentation",
+      "task": "13.2",
+      "title": "Implement the flat renderer: wrap `drawMap` (task 3.1) and the reduced stage in `src/render/stage.ts` (gradient sky, moon, path, ground band in the GitHub green, sprites at the stage scales, lunge and recoil, flashes, floating text) behind the `Renderer` interface in `src/render/flat.ts`",
+      "status": "todo",
+      "verify": "npm run build && ! grep -rnE \"from ['\\\"]three\" src/render/flat.ts src/render/stage.ts src/render/map"
+    },
+    {
+      "id": "presentation-14.1",
+      "phase": 4,
+      "spec": "presentation",
+      "task": "14.1",
+      "title": "With the Playwright power against `npm run preview`, run the phone performance and fallback checks and save the script as `tests/e2e/perf.md`: 390 \u00d7 844 at device pixel ratio 3 with 4\u00d7 CPU slowdown (median frame \u2264 33 ms on the map and in a fight, draw calls \u2264 120 / 80, pixel ratio \u2264 2, \u2264 4 point lights, memory counts equal after three runs), then `?renderer=flat` and a browser launched with WebGL disabled (both play `?demo` to victory)",
+      "status": "todo",
+      "verify": "`npm run build` then the Playwright power run described in `tests/e2e/perf.md`, with every check passing"
+    },
+    {
+      "id": "presentation-14.2",
+      "phase": 3,
+      "spec": "presentation",
+      "task": "14.2",
+      "title": "Take the map and a boss fight at 1280 \u00d7 720 and 390 \u00d7 844 from the new build with the Playwright power and put them next to `3d-map-billboard.png` and `3d-battle-billboard.png` in `docs/look.md`; add the flat renderer and reduced-motion shots, the HTML screens (start, summary, relic offer, results) next to `docs/screenshots/`, the legal-tile highlight, fog columns, boss node, and best-day marker, and the text contrast check of the palette pairs (4.5:1)",
+      "status": "todo",
+      "verify": "every row in `docs/look.md` is ticked"
+    },
+    {
+      "id": "presentation-14.3",
+      "phase": 3,
+      "spec": "presentation",
+      "task": "14.3",
+      "title": "Module check for the renderer: `three` is the second and last runtime dependency and is imported only under `src/render/world/`",
+      "status": "todo",
+      "verify": "npm run typecheck && npx vitest --run tests/render tests/audio && node -e \"const d=Object.keys(require('./package.json').dependencies).sort().join();process.exit(d==='three,zod'?0:1)\" && ! grep -rlE \"from ['\\\"]three['\\\"/]\" src | grep -v '^src/render/world/'"
     },
     {
       "id": "social-1.1",

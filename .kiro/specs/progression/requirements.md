@@ -6,6 +6,8 @@ This spec covers everything that carries a hero through a run and across runs: s
 
 Every rule and number comes from `prototype/index.html` (`xpForLevel`, `levelFor`, `makeTrait`, `makeHero`, `RACES`, `RELICS`, `offerRelic`, `pickRelic`, `newRun`, `enterTile`, `gainXp`, `enterMap`, `win`, `lose`, `TROPHIES`, `awardTrophies`, `renderTrophies`, `refreshStartTrophies`, `save`, `loadSave`, `refreshContinue`, `showSummary`, `showEnd`, the button handlers) and `.kiro/steering/game-rules.md` ("Hero", "Exploration", "Relics", "Daily omen", "Trophies", "Balance simulator").
 
+**v1.6 (27 Nov 2026).** Runs follow forward-only routes (map-generation), every tile entered resolves, and Flee is gone. For progression this means: the start tile is resolved at run start and the visibility window replaces the lantern radius; wisps also heal and quiet (fog) days give a small rest; CI Cache and Code Review get new effects; the Speedrun trophy gets a new condition; the results title no longer mentions the Gate; the save moves to `cq:v2:run` with `version: 2`; and the route bot follows a new per-column policy. These rules apply to the TypeScript rebuild only. Changed or added criteria are marked **(v1.6)**; retired criteria keep their numbers.
+
 PRD IDs covered: FR-PRO-1 to FR-PRO-4, FR-SAV-1 to FR-SAV-3, FR-RACE-1, FR-RACE-2, FR-RACE-4, FR-REL-1 to FR-REL-4, FR-OMEN-1 to FR-OMEN-3, FR-TRO-1 to FR-TRO-3, plus PRD Story 4 (streak aura) and the v1.2 weekday trait. Shared: FR-RACE-3 (the race face) is drawn by the presentation spec; the combat-side effects of races, relics, and the curse (FR-RACE-2, FR-REL-2, FR-REL-3, FR-OMEN-2) are applied by combat-timing; raid wording (FR-SOC-2) is added to the functions below by the social spec.
 
 ## Glossary
@@ -29,9 +31,9 @@ PRD IDs covered: FR-PRO-1 to FR-PRO-4, FR-SAV-1 to FR-SAV-3, FR-RACE-1, FR-RACE-
 
 1.2 WHEN a run starts THE SYSTEM SHALL build the hero from the hero set: `xp = round(15 × √total91)`, `level = levelFor(xp)`, `startLevel = level`, `aura = min(floor(streak / 7), 4)`, the weekday trait (requirement 3), `treasure = 0`, `relics = []`, class from `settings.heroClass` (Wanderer if unknown), race from `settings.heroRace` (Human if unknown), stats from combat-timing requirement 3.3, and `hp = maxHp`. [FR-PRO-1, FR-PRO-2, FR-CLS-1, FR-RACE-1, P6]
 
-1.3 WHEN a run starts THE SYSTEM SHALL generate the map from the map set only, start the run RNG at the map seed, place the hero on the start tile, mark it visited, reveal the lantern radius, set every counter in `stats` to 0 and `bossHpLeft` to `null`, set `status` to `exploring`, `bossDown` to false, `shards` to 0, `undying` to false, `relicOffer` to `null`, and copy `calm` and `assist` from settings into the run options. [FR-PRO-1, FR-MAP-3, P18]
+1.3 **(v1.6)** WHEN a run starts THE SYSTEM SHALL generate the map from the map set only, start the run RNG at the map seed, place the hero on the start tile, mark it visited and resolved, mark the visibility window (map-generation requirement 5.1), set every counter in `stats` to 0 and `bossHpLeft` to `null`, set `version` to 2, `status` to `exploring`, `bossDown` to false, `shards` to 0, `undying` to false, `relicOffer` to `null`, and copy `calm` and `assist` from settings into the run options. [FR-PRO-1, FR-MAP-3, FR-MOV-6, P18]
 
-1.4 WHEN a run starts THE SYSTEM SHALL log, in order: "You wake in a crypt on {fmtDate(start)}. Somewhere ahead waits the Phantom of your best day."; the omen line (requirement 7.3); and, if `shardsNeeded > 0`, "Its ward is fed by your other big days. Banish {n} elite{s} (Ghouls or Liches) to collect soul shards and break it." with "s" when n > 1. [FR-PRO-1, FR-OMEN-3, FR-MOV-7]
+1.4 **(v1.6)** WHEN a run starts THE SYSTEM SHALL log, in order: "You wake in a crypt on {fmtDate(start)}. Somewhere ahead waits the Phantom of your best day."; the omen line (requirement 7.3); and "Banish Ghouls or Liches for soul shards: each one weakens the Phantom (up to 3)." [FR-PRO-1, FR-OMEN-3, FR-MOV-7]
 
 1.5 WHEN map generation fails THE SYSTEM SHALL return the map error instead of a run, so the caller shows it with demo mode. [FR-MAP-4]
 
@@ -69,9 +71,11 @@ PRD IDs covered: FR-PRO-1 to FR-PRO-4, FR-SAV-1 to FR-SAV-3, FR-RACE-1, FR-RACE-
 
 #### Acceptance criteria
 
-4.1 WHEN the hero enters an unresolved wisp THE SYSTEM SHALL mark it resolved, add 1 to `wisps`, log "A soul wisp from {fmtShort(date)} ({count} contribution{s}): +5 XP." ("s" unless the count is 1), emit a `wisp` event, and gain 5 XP. [FR-PRO-1]
+4.1 **(v1.6)** WHEN the hero enters an unresolved wisp THE SYSTEM SHALL mark it resolved, add 1 to `wisps`, heal `ceil(maxHp × WISP_HEAL)` (`WISP_HEAL = 0.1`) up to max HP, log "A soul wisp from {fmtShort(date)} ({count} contribution{s}): +5 XP{, +{healed} HP}." ("s" unless the count is 1; the HP part only when HP rose), emit a `wisp` event with the XP and HP healed, and gain 5 XP, in that order. [FR-PRO-1]
 
 4.2 WHEN the hero enters an unresolved chest THE SYSTEM SHALL mark it resolved, add 1 to `chests`, heal `ceil(maxHp × 0.3)` up to max HP, add 6 treasure (size 1) or 12 (size 2), log "A chest from {fmtShort(date)}: +{gold} treasure{, +{healed} HP}, +10 XP." (the HP part only when HP rose), emit a `chest` event with the gold and HP healed, gain 10 XP, then offer a relic (requirement 6.1), in that order. [FR-PRO-1, FR-REL-1]
+
+4.3 **(v1.6)** WHEN the hero enters an unresolved fog tile (a quiet day) THE SYSTEM SHALL mark it resolved, heal `ceil(maxHp × REST_HEAL)` (`REST_HEAL = 0.05`) up to max HP, log "A quiet day ({fmtShort(date)}). You catch your breath: +{n} HP." or, when no HP was restored, "A quiet day ({fmtShort(date)}). Nothing stirs.", and emit a `rest` event with the HP healed. It gives no XP and draws nothing from the RNG. [FR-PRO-1, FR-MOV-3]
 
 ### Requirement 5: Races
 
@@ -99,9 +103,9 @@ PRD IDs covered: FR-PRO-1 to FR-PRO-4, FR-SAV-1 to FR-SAV-3, FR-RACE-1, FR-RACE-
 
 6.3 WHILE `status` is `relic` THE SYSTEM SHALL accept only `pickRelic` with index 0, 1, or 2 that exists in the offer; every other gameplay action is ignored. [FR-REL-1]
 
-6.4 WHEN a relic is picked THE SYSTEM SHALL add its id to `relics`, clear the offer, set `status` to `exploring`, recompute stats, heal 10 for Cold Brew, clamp HP to max HP, reveal the wider radius for Code Review, log "Relic: {name}. {text}", and emit a `relicPicked` event. [FR-REL-1, FR-REL-4]
+6.4 **(v1.6)** WHEN a relic is picked THE SYSTEM SHALL add its id to `relics`, clear the offer, set `status` to `exploring`, recompute stats, heal 10 for Cold Brew, clamp HP to max HP, widen the visibility window for Code Review (map-generation requirement 5.1), log "Relic: {name}. {text}", and emit a `relicPicked` event. [FR-REL-1, FR-REL-4]
 
-6.5 WHEN relics are listed THE SYSTEM SHALL use exactly the ids, names, and texts of the prototype's `RELICS`: `duck` Rubber Duck, `hotfix` Hotfix, `force` Force Push, `linter` Linter, `stack` Stack Overflow, `coffee` Cold Brew, `blame` Git Blame, `pair` Pair Programmer, `review` Code Review, `cache` CI Cache. [FR-REL-1, FR-REL-2]
+6.5 **(v1.6)** WHEN relics are listed THE SYSTEM SHALL use exactly the ids, names, and texts of the prototype's `RELICS`: `duck` Rubber Duck, `hotfix` Hotfix, `force` Force Push, `linter` Linter, `stack` Stack Overflow, `coffee` Cold Brew, `blame` Git Blame, `pair` Pair Programmer, `review` Code Review, `cache` CI Cache, except two v1.6 texts: Code Review "See one more week ahead." and CI Cache "After each won fight, heal 10% of max HP." (the CI Cache effect is combat-timing requirement 17.6). [FR-REL-1, FR-REL-2]
 
 6.6 WHEN a relic is owned THE SYSTEM SHALL keep it in `hero.relics` (saved with the run) so the HUD, the results screen, and the share card can list it. Owning any relic SHALL never lower a damage-dealt value or raise a damage-taken value. [FR-REL-4, FR-REL-2, FR-REL-3]
 
@@ -127,7 +131,7 @@ PRD IDs covered: FR-PRO-1 to FR-PRO-4, FR-SAV-1 to FR-SAV-3, FR-RACE-1, FR-RACE-
 
 8.1 WHEN combat-timing ends the run as won or lost THE SYSTEM SHALL set `status`, keep `killer` on a loss, and emit `runEnded` with the outcome. [FR-PRO-3, FR-COM-4]
 
-8.2 WHEN the results are shown THE SYSTEM SHALL provide the title "The Gate opens. Your graph is exorcised." (won) or "You became part of the graph." (lost), and the line "{map username} survived 91 haunted days." or "Slain by {killer}. The same map is waiting for a rematch." [FR-PRO-4]
+8.2 **(v1.6)** WHEN the results are shown THE SYSTEM SHALL provide the title "The Phantom is banished. Your graph is exorcised." (won) or "You became part of the graph." (lost), and the line "{map username} survived 91 haunted days." or "Slain by {killer}. The same map is waiting for a rematch." [FR-PRO-4]
 
 8.3 WHEN the results are shown THE SYSTEM SHALL provide the game rows Class, Final level, XP, Monsters banished, Critical hits, Perfect dodges, Chests opened, Relics (names joined by ", ", or "None"), Treasure, Steps. [FR-PRO-4, FR-REL-4]
 
@@ -141,11 +145,11 @@ PRD IDs covered: FR-PRO-1 to FR-PRO-4, FR-SAV-1 to FR-SAV-3, FR-RACE-1, FR-RACE-
 
 #### Acceptance criteria
 
-9.1 WHEN a run ends THE SYSTEM SHALL compute the facts `won`, `raid` (heroSet present), `source` (map set), `omen`, `bossDown`, `bossDmg`, `bossHpLeft`, `dodges`, `crits`, `relics` (count), `steps`, `chests`, `classWins`, and `nightmare` (class difficulty has 4 stars). [FR-TRO-1]
+9.1 **(v1.6)** WHEN a run ends THE SYSTEM SHALL compute the facts `won`, `raid` (heroSet present), `source` (map set), `omen`, `bossDown`, `bossDmg`, `bossHpLeft`, `dodges` (Perfect guards; there are no flee dodges), `crits`, `relics` (count), `steps`, `defeated`, `chests`, `classWins`, and `nightmare` (class difficulty has 4 stars). [FR-TRO-1]
 
 9.2 WHEN the run is won THE SYSTEM SHALL add the hero's class to the stored class wins (`cq:v1:classwins`) before computing `classWins` as the number of known class ids stored. [FR-TRO-1]
 
-9.3 WHEN trophies are awarded THE SYSTEM SHALL test each of the 14 trophies in the prototype's order and wording (game-rules.md "Trophies") and add every one not yet held whose test passes, with today's date as `YYYY-MM-DD`, to `cq:v1:trophies`, returning the new ids in order. Held trophies are never removed or re-dated. [FR-TRO-1]
+9.3 **(v1.6)** WHEN trophies are awarded THE SYSTEM SHALL test each of the 14 trophies in the prototype's order and wording (game-rules.md "Trophies"), except that Speedrun (`speed`) is "Won after banishing 6 monsters or fewer, the Phantom included" (`defeated ≤ TROPHY_SPEED_FIGHTS`, 6), because every route now takes `cols` steps, and add every one not yet held whose test passes, with today's date as `YYYY-MM-DD`, to `cq:v1:trophies`, returning the new ids in order. Held trophies are never removed or re-dated. [FR-TRO-1]
 
 9.4 WHEN the new ids are known THE SYSTEM SHALL store them in the run (`newTrophies`) so the results screen can mark them. [FR-TRO-2]
 
@@ -159,15 +163,17 @@ PRD IDs covered: FR-PRO-1 to FR-PRO-4, FR-SAV-1 to FR-SAV-3, FR-RACE-1, FR-RACE-
 
 #### Acceptance criteria
 
-10.1 WHEN `main.ts` applies any action other than `press`, `release`, or `timeout` THE SYSTEM SHALL write `serialize(state)` to `cq:v1:run`. This covers every resolved tile, relic pick, fight end, and run end. [FR-SAV-1]
+10.1 **(v1.6)** WHEN `main.ts` applies any action other than `press`, `release`, or `timeout` THE SYSTEM SHALL write `serialize(state)` to `cq:v2:run`. This covers every resolved tile, relic pick, fight end, and run end. [FR-SAV-1]
 
-10.2 WHEN a run is serialized THE SYSTEM SHALL write plain JSON with `version: 1`, the map set and raid hero set (91 normalized days each, never the raw API payload), the map tiles without any derived grid, and every run field except the per-step `events`. [FR-SAV-1, P8, P19]
+10.2 **(v1.6)** WHEN a run is serialized THE SYSTEM SHALL write plain JSON with `version: 2`, the map set and raid hero set (91 normalized days each, never the raw API payload), the map tiles without any derived grid, and every run field except the per-step `events`. [FR-SAV-1, P8, P19]
 
-10.3 WHEN a save is restored THE SYSTEM SHALL validate it with a Zod schema; a save that fails the schema, has a version other than 1, or is not JSON (including a save written by the prototype at `/prototype/`, which shares the origin and the key) SHALL be discarded as "no save", never thrown on. [FR-SAV-1]
+10.3 **(v1.6)** WHEN a save is restored THE SYSTEM SHALL read only `cq:v2:run` and validate it with a Zod schema; a save that fails the schema, has a version other than 2, is not JSON, has a `pos` that is neither a day tile nor (with a boss fight or an ended run) the boss node, or contains a v1.5-only shape (a `boss` or `gate` tile kind, `gateIdx`, `shardsNeeded`, a `flee` test, an `escape` next step) SHALL be discarded as "no save", never thrown on. [FR-SAV-1]
 
 10.4 WHEN a valid save is restored THE SYSTEM SHALL return a state equal to the saved one with `events: []`, except that a fight in the `test` phase resumes at `choose` (combat-timing requirement 19.3). [FR-SAV-1, FR-COM-7, P8, P19]
 
 10.5 WHEN the start screen loads and a valid save exists THE SYSTEM SHALL offer "Continue {map username}'s run"; choosing it SHALL open the results screen for a won or lost run, and otherwise the map without the rise animation. [FR-SAV-1]
+
+10.6 **(v1.6)** WHEN the game reads, writes, or clears the run save THE SYSTEM SHALL never read, write, or remove `cq:v1:run`. That key belongs to the prototype at `/prototype/`, which shares the origin, so an old v1 save is left in place and ignored. The settings, cache, trophies, and class-wins keys stay at `cq:v1:` because their shapes did not change. [FR-SAV-1, FR-SAV-3]
 
 ### Requirement 11: New run and retry
 
@@ -177,7 +183,7 @@ PRD IDs covered: FR-PRO-1 to FR-PRO-4, FR-SAV-1 to FR-SAV-3, FR-RACE-1, FR-RACE-
 
 11.1 WHEN the player chooses "Play this graph again" THE SYSTEM SHALL start a new run on the same map set and hero set from memory, with the current settings and no fetch, save it, and enter the map with the rise animation. [FR-SAV-3, FR-COM-4]
 
-11.2 WHEN the player chooses "New username" on the results screen or "Different username" on the summary THE SYSTEM SHALL remove `cq:v1:run`, drop the run from memory, hide the continue button, and show the start screen with the username field focused. [FR-SAV-3]
+11.2 **(v1.6)** WHEN the player chooses "New username" on the results screen or "Different username" on the summary THE SYSTEM SHALL remove `cq:v2:run`, drop the run from memory, hide the continue button, and show the start screen with the username field focused. [FR-SAV-3]
 
 ### Requirement 12: Privacy
 
@@ -209,10 +215,12 @@ PRD IDs covered: FR-PRO-1 to FR-PRO-4, FR-SAV-1 to FR-SAV-3, FR-RACE-1, FR-RACE-
 
 #### Acceptance criteria
 
-14.1 WHEN the simulator plays a run THE SYSTEM SHALL drive only `step`, answer every timing test with `forceGrade(skillGrade(test, bot))` (combat-timing requirement 21), send `advance` at once, pick the first relic offered, claim the Commit Blessing, never flee, and stop at `won`, `lost`, or 2000 actions (counted as lost). [FR-DIF-1, FR-REL-1]
+14.1 **(v1.6)** WHEN the simulator plays a run THE SYSTEM SHALL drive only `step`, answer every timing test with `forceGrade(skillGrade(test, bot))` (combat-timing requirement 21), send `advance` at once, attack in every fight (there is no Flee), pick the first relic offered, claim the Commit Blessing, and stop at `won`, `lost`, or 2000 actions (counted as lost). [FR-DIF-1, FR-REL-1]
 
-14.2 WHEN the simulator chooses where to walk THE SYSTEM SHALL follow the PRD v1.2 route rule: if HP is below 45% of max HP (75% once the ward is broken and the boss is next) and an unresolved chest is reachable, go to the nearest one; else, while shards are missing, go to the nearest unresolved Ghoul or Lich; else to the boss; after the boss, to the Gate. "Nearest" is the fewest steps by BFS over walkable tiles, ties broken by the mapgen `neighbours` order; every tile on the path is entered. [FR-PRO-1, FR-PRO-3]
+14.2 **(v1.6)** WHEN the simulator chooses a move THE SYSTEM SHALL pick one of `legalMoves(state)` by the v1.6 route policy (game-rules.md "Balance simulator"): in heal mode (HP below 45% of max HP, or below 75% when the target column is `≥ cols − SIM.bossWeeks`, with `bossWeeks = 2`) prefer chest, then wisp, then fog, then monster by lowest tier; otherwise prefer monster by highest tier (4, 3, 2, 1), then chest, wisp, fog; ties go to the first legal move (lowest row). It reads only tiles inside the visibility window. [FR-PRO-1, FR-PRO-3, FR-MOV-8]
 
 14.3 WHEN `npm run simulate` runs THE SYSTEM SHALL play 200 bot seeds for each target cell (Knight σ 140; Wanderer σ 100; Mage σ 100 and σ 60; Rogue σ 60 and σ 35) on the demo graph and the six balance fixtures, print win rates per graph and overall per cell next to the targets in `game-rules.md`, and exit with code 1 if any overall target is missed. [FR-DIF-1]
 
-14.4 WHEN the simulator runs the Wanderer grade-policy regression on the demo graph THE SYSTEM SHALL check that All Perfect wins, All Good wins, Mixed (25% Perfect, 50% Good, 25% Miss from `makeRng(1234)`) wins, and All Miss loses, and print steps and fights for the demo route against the 15–25 steps and 6–10 fights target. [FR-COM-5, FR-PRO-1]
+14.4 **(v1.6)** WHEN the simulator runs the Wanderer grade-policy regression on the demo graph THE SYSTEM SHALL check that All Perfect wins, All Good wins, Mixed (25% Perfect, 50% Good, 25% Miss from `makeRng(1234)`) wins, and All Miss loses, and print the fights, shards, and steps for the demo route against the 6–10 fights target (the boss included). Steps always equal `cols` (14 on the demo), so the v1.5 15–25 steps target is retired. [FR-COM-5, FR-PRO-1]
+
+14.5 **(v1.6)** WHEN the v1.6 rules are implemented THE SYSTEM SHALL be re-measured with `npm run simulate` and the grade-policy regression, and the table recorded in `docs/kiro-journal.md`. Class difficulty numbers (`DIFFICULTY`) SHALL NOT be changed for this; a missed target is handed to the `balance-tuner` agent, which may change the v1.6 tunables (`REST_HEAL`, `WISP_HEAL`, `SHARD_BOSS_HP_CUT`, `RELIC_COMBAT.cacheHeal`, `TROPHY_SPEED_FIGHTS`) in `balance.ts` and `game-rules.md` only. `MIN_ROUTE_FIGHTS` is a map rule (P21) and is changed by hand. [FR-DIF-1]

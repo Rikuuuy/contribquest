@@ -94,6 +94,14 @@ Wanderer grade policies on the demo graph (route target: 15–25 steps, 6–10 f
 | rogue | 60 | 140/200 | 15/200 | 42/200 | 79/200 | 49/200 | 88/200 | 170/200 | 41.6% | ≤ 40% | FAIL |
 | rogue | 35 | 193/200 | 130/200 | 142/200 | 195/200 | 164/200 | 193/200 | 198/200 | 86.8% | ≥ 80% | PASS |
 
+## Fri 27 Nov 2026: design-only spec run for v1.6, haunted routes and the Three.js billboard renderer
+
+- **Kiro client:** Kiro Web, workflow run (one subagent per design step, then a PR step), design-only: no game code, and `prototype/`, `src/`, `tests/`, `scripts/`, `.github/` untouched.
+- **Specs and tasks:** design items `design-1.6-routes` (0.11) and `design-1.6-renderer` (0.12) done (see docs/build-checklist.json). Decision 1, forward-only branching routes (one floor = one week, no Flee, boss node, shards weaken the boss, 2-week visibility window, at least 4 fights per route, saves `cq:v2:run`): PRD v1.6, `game-rules.md` v1.6, new todo tasks map-generation 9.1–11.1, combat-timing 11.1–12.1, progression 13.1–13.8. Decision 2, Three.js billboard world with a reduced Canvas 2D fallback: `tech.md` (`three` 0.187 as the second runtime dependency), `art-style.md` "3D billboard world", `structure.md` (`src/render/world/`), presentation requirements 19–26 and new todo tasks 11.1–11.9, 12.1–12.2, 13.1–13.2, 14.1–14.3. Superseded: progression 11.4 → 13.8, presentation 3.2 → 11.4, presentation 10.3 → 14.2.
+- **Hooks and agents:** none fired. The steps checked that `docs/build-checklist.json` parses, that every new presentation task has the same number and verify command in `tasks.md` and the checklist, and that `tests/engine/balance.test.ts` (which reads `game-rules.md`) still passes (14/14). The P19 property test in `tests/engine/save.prop.test.ts` timed out at 5 s in the sandbox; it reads no changed file, so it is left for CI to confirm.
+- **Commits / PRs:** one branch, `feature/haunted-routes-spec` from `bc4f4a6`; one PR for the author to review, opened by the workflow's PR step. Implementation waits for approval.
+- **Notes:** the 3D look comes from the sample the author liked (`preview-3d/sample-source.html`, billboard screenshots): its cameras, light rig, fog density, fireflies, and sprite sizes are now steering values. Choices made for the author to confirm are listed in the PR: the edge-column fallback, rest and wisp heals, CI Cache and Speedrun replacements, the shard numbers, the minimum-fights rule, and for the renderer a reduced flat fallback instead of full prototype parity, the Rolldown chunk split, and the quality step-down thresholds. Balance is re-measured after implementation (progression 13.8); class difficulty numbers are unchanged.
+
 <!--
 Template for future days. Copy the block below, newest day last.
 
