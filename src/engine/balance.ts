@@ -18,8 +18,9 @@ export {
 export const VIEW_AHEAD = 2;
 export const VIEW_AHEAD_REVIEW = 3;
 
-/** v1.6 soul shards: the most a run can hold, and the count at which the boss loses phase 2. */
+/** v1.6 soul shards: the most a run can hold, the boss max-HP cut per shard, and the count at which the boss loses phase 2. */
 export const SHARD_MAX = 3;
+export const SHARD_BOSS_HP_CUT = 0.1;
 export const SHARD_NO_PHASE2 = 3;
 
 // ---------- Timing tests (prototype QTE) ----------
@@ -198,6 +199,8 @@ export const RELIC_COMBAT = {
   stackAtk: 3,
   /** Orc: ATK. */
   orcAtk: 2,
+  /** v1.6 CI Cache: heal `ceil(maxHp × cacheHeal)` after a won non-boss fight. */
+  cacheHeal: 0.1,
 } as const;
 
 // ---------- Monsters ----------

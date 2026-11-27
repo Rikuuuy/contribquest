@@ -913,7 +913,7 @@
       "spec": "combat-timing",
       "task": "11.1",
       "title": "Add `SHARD_MAX = 3`, `SHARD_BOSS_HP_CUT = 0.1`, `SHARD_NO_PHASE2 = 3`, and `RELIC_COMBAT.cacheHeal = 0.1` to `src/engine/balance.ts`, with assertions in `tests/engine/balance.test.ts` that read them from `game-rules.md`",
-      "status": "todo",
+      "status": "done",
       "verify": "npx vitest --run tests/engine/balance.test.ts"
     },
     {

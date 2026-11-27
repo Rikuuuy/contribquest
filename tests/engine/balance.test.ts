@@ -25,6 +25,9 @@ import {
   QTE,
   RELIC_COMBAT,
   RELIC_OFFER,
+  SHARD_BOSS_HP_CUT,
+  SHARD_MAX,
+  SHARD_NO_PHASE2,
   SIM,
   START_XP_MUL,
   TEST_TIMING,
@@ -221,6 +224,15 @@ describe('FR-DIF-1: balance.ts matches game-rules.md', () => {
     const rows = Object.fromEntries(table('| Window constant | Value |').map(([k, v]) => [(k as string).replace(/`/g, ''), num(v as string)]));
     expect(rows).toEqual({ VIEW_AHEAD, VIEW_AHEAD_REVIEW });
     expect([VIEW_AHEAD, VIEW_AHEAD_REVIEW]).toEqual([2, 3]);
+  });
+
+  it('soul shards and CI Cache (v1.6)', () => {
+    const rows = Object.fromEntries(table('| Shard constant | Value |').map(([k, v]) => [(k as string).replace(/`/g, ''), num(v as string)]));
+    expect(rows).toEqual({ SHARD_MAX, SHARD_BOSS_HP_CUT, SHARD_NO_PHASE2 });
+    expect([SHARD_MAX, SHARD_BOSS_HP_CUT, SHARD_NO_PHASE2]).toEqual([3, 0.1, 3]);
+    has(`(1 − SHARD_BOSS_HP_CUT × shards)`);
+    has(`With \`shards ≥ SHARD_NO_PHASE2\` (${SHARD_NO_PHASE2}) the boss never enters phase 2`);
+    has(`heal \`ceil(maxHp × ${RELIC_COMBAT.cacheHeal})\` (\`RELIC_COMBAT.cacheHeal\`)`);
   });
 
   it('log lengths', () => {
