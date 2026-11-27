@@ -311,7 +311,7 @@ describe('FR-COM-1, FR-DIF-4, FR-PRO-3: end of a fight', () => {
     t.kind = 'gate';
     const s = step(base, { type: 'advance' });
     expect(s.status).toBe('won');
-    expect(s.events.at(-1)).toEqual({ type: 'won' });
+    expect(s.events.slice(-2)).toEqual([{ type: 'won' }, { type: 'runEnded', won: true }]);
   });
 
   it('FR-COM-4: HP 0 loses the run and records the killer', () => {
@@ -320,7 +320,7 @@ describe('FR-COM-1, FR-DIF-4, FR-PRO-3: end of a fight', () => {
     expect(s.events.find((e) => e.type === 'monsterHit')).toMatchObject({ lethal: true });
     s = step(s, { type: 'advance' });
     expect([s.status, s.killer]).toEqual(['lost', 'Merge Conflict Lich']);
-    expect(s.events).toEqual([{ type: 'lost' }]);
+    expect(s.events).toEqual([{ type: 'lost' }, { type: 'runEnded', won: false }]);
   });
 
   it('a counter can kill', () => {

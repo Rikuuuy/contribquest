@@ -453,7 +453,7 @@
       "spec": "map-generation",
       "task": "7.1",
       "title": "Add a type-level check in `tests/mapgen/map.prop.test.ts` that `generateMap` has exactly one parameter of type `ContributionSet` (`expectTypeOf(generateMap).parameters.toEqualTypeOf<[ContributionSet]>()`)",
-      "status": "todo",
+      "status": "done",
       "verify": "npx vitest --run tests/mapgen/map.prop.test.ts"
     },
     {
@@ -462,7 +462,7 @@
       "spec": "map-generation",
       "task": "7.2",
       "title": "Write `tests/engine/map-independence.prop.test.ts`: for any set and any class and race, `newRun(...).map` deep-equals `generateMap(set).value` (needs `newRun` from the progression spec)",
-      "status": "todo",
+      "status": "done",
       "verify": "npx vitest --run tests/engine/map-independence.prop.test.ts"
     },
     {
@@ -471,7 +471,7 @@
       "spec": "map-generation",
       "task": "8.1",
       "title": "Run the mapgen and explore suites and the type check; confirm `src/mapgen` imports nothing from `src/engine`, `src/render`, `src/audio`, or storage/fetch code in `src/data`",
-      "status": "todo",
+      "status": "done",
       "verify": "npm run typecheck && npx vitest --run tests/mapgen tests/engine/explore.test.ts && ! grep -rE \"from ['\\\"]\\.\\./(engine|render|audio)|data/(fetch|load|cache|storage|settings)\" src/mapgen"
     },
     {
@@ -741,7 +741,7 @@
       "spec": "combat-timing",
       "task": "9.1",
       "title": "Implement `makeSkillBot` and `skillGrade` in `src/engine/skillbot.ts`, ported from `simulateGrade` and `gauss`",
-      "status": "todo",
+      "status": "done",
       "verify": "npx vitest --run tests/engine/skillbot.test.ts"
     },
     {
@@ -750,7 +750,7 @@
       "spec": "combat-timing",
       "task": "9.2",
       "title": "Write `tests/engine/skillbot.test.ts`: seeding, combo gives three grades, charge overload limit, conflict and flaky miss rates within \u00b12 points of `\u03c3/600` and `\u03c3/700` over 10 000 draws, shield rescue near 0.7",
-      "status": "todo",
+      "status": "done",
       "verify": "npx vitest --run tests/engine/skillbot.test.ts"
     },
     {
@@ -759,7 +759,7 @@
       "spec": "combat-timing",
       "task": "9.3",
       "title": "Add the `retry` action (needs `newRun` from the progression spec): a lost run restarts on the same `set` and `heroSet` with no fetch; test it in `tests/engine/step.test.ts`",
-      "status": "todo",
+      "status": "done",
       "verify": "npx vitest --run tests/engine/step.test.ts"
     },
     {
@@ -768,7 +768,7 @@
       "spec": "combat-timing",
       "task": "10.1",
       "title": "Run the engine suite and the type check; confirm `src/engine` has no `Math.random`, `Date.now`, `performance.now`, `document`, `window`, or `localStorage`, and imports nothing from `src/render`, `src/audio`, or `src/main.ts`",
-      "status": "todo",
+      "status": "done",
       "verify": "npm run typecheck && npx vitest --run tests/engine && ! grep -rnE \"Math\\.random|Date\\.now|performance\\.now|document\\.|window\\.|localStorage|from ['\\\"]\\.\\./(render|audio|main)\" src/engine"
     },
     {
@@ -858,7 +858,7 @@
       "spec": "progression",
       "task": "4.1",
       "title": "Implement `RELICS`, `relicById`, `offerRelic`, `pickRelic` in `src/engine/relics.ts`; replace the stub in `openChest`",
-      "status": "todo",
+      "status": "done",
       "verify": "npx vitest --run tests/engine/relics.test.ts"
     },
     {
@@ -867,7 +867,7 @@
       "spec": "progression",
       "task": "4.2",
       "title": "Handle `pickRelic` in `step`, and ignore every other gameplay action while `status === \"relic\"`",
-      "status": "todo",
+      "status": "done",
       "verify": "npx vitest --run tests/engine/relics.test.ts"
     },
     {
@@ -876,7 +876,7 @@
       "spec": "progression",
       "task": "4.3",
       "title": "Write `tests/engine/relics.test.ts`",
-      "status": "todo",
+      "status": "done",
       "verify": "npx vitest --run tests/engine/relics.test.ts"
     },
     {
@@ -885,7 +885,7 @@
       "spec": "progression",
       "task": "4.4",
       "title": "Write `tests/engine/relics.prop.test.ts` for P17 and the v1.4 relic monotonicity property (uses combat-timing's `resolveStrike` and `resolveGuard` with a fixed RNG)",
-      "status": "todo",
+      "status": "done",
       "verify": "npx vitest --run tests/engine/relics.prop.test.ts"
     },
     {
@@ -894,7 +894,7 @@
       "spec": "progression",
       "task": "5.1",
       "title": "Implement `RACE_INFO` (names, texts, lines, and the face colours and flags from the prototype's `RACES`) and `chooseRace` in `src/engine/races.ts`; handle `chooseRace` in `step`",
-      "status": "todo",
+      "status": "done",
       "verify": "npx vitest --run tests/engine/races.test.ts"
     },
     {
@@ -903,7 +903,7 @@
       "spec": "progression",
       "task": "5.2",
       "title": "Write `tests/engine/races.test.ts`",
-      "status": "todo",
+      "status": "done",
       "verify": "npx vitest --run tests/engine/races.test.ts"
     },
     {
@@ -912,7 +912,7 @@
       "spec": "progression",
       "task": "6.1",
       "title": "Implement `enterMap`, `offerBlessing`, `BLESSING_TITLE` in `src/engine/omen.ts`; handle both actions in `step`",
-      "status": "todo",
+      "status": "done",
       "verify": "npx vitest --run tests/engine/omen.test.ts"
     },
     {
@@ -921,7 +921,7 @@
       "spec": "progression",
       "task": "6.2",
       "title": "Write `tests/engine/omen.test.ts`",
-      "status": "todo",
+      "status": "done",
       "verify": "npx vitest --run tests/engine/omen.test.ts"
     },
     {
@@ -930,7 +930,7 @@
       "spec": "progression",
       "task": "7.1",
       "title": "Add `TrophyHaveSchema` and `ClassWinsSchema` to `src/data/schema.ts`, and implement `src/data/runstore.ts`; write `tests/data/runstore.test.ts`",
-      "status": "todo",
+      "status": "done",
       "verify": "npx vitest --run tests/data/runstore.test.ts"
     },
     {
@@ -939,7 +939,7 @@
       "spec": "progression",
       "task": "7.2",
       "title": "Implement `SavedRunSchema`, `serialize`, `restore`, `continueLabel` in `src/engine/save.ts`",
-      "status": "todo",
+      "status": "done",
       "verify": "npx vitest --run tests/engine/save.test.ts"
     },
     {
@@ -948,7 +948,7 @@
       "spec": "progression",
       "task": "7.3",
       "title": "Write `tests/engine/save.test.ts`, including a save captured from the prototype (`localStorage[\"cq:v1:run\"]` after a few demo moves, stored in `tests/fixtures/prototype-save.json`) that must be rejected",
-      "status": "todo",
+      "status": "done",
       "verify": "npx vitest --run tests/engine/save.test.ts"
     },
     {
@@ -957,7 +957,7 @@
       "spec": "progression",
       "task": "7.4",
       "title": "Write `tests/engine/save.prop.test.ts` for P8 and P19 with the action-sequence arbitrary",
-      "status": "todo",
+      "status": "done",
       "verify": "npx vitest --run tests/engine/save.prop.test.ts"
     },
     {
@@ -966,7 +966,7 @@
       "spec": "progression",
       "task": "8.1",
       "title": "Implement `endRun` in `src/engine/run.ts` and hand it to combat-timing's `winFight`, Gate entry, and `loseFight`",
-      "status": "todo",
+      "status": "done",
       "verify": "npx vitest --run tests/engine/trophies.test.ts"
     },
     {
@@ -993,7 +993,7 @@
       "spec": "progression",
       "task": "9.1",
       "title": "Implement `summaryView` and `resultsView` in `src/engine/views.ts` (normal runs; the social spec adds raid branches)",
-      "status": "todo",
+      "status": "done",
       "verify": "npx vitest --run tests/engine/views.test.ts"
     },
     {
@@ -1002,7 +1002,7 @@
       "spec": "progression",
       "task": "9.2",
       "title": "Write `tests/engine/views.test.ts`",
-      "status": "todo",
+      "status": "done",
       "verify": "npx vitest --run tests/engine/views.test.ts"
     },
     {
@@ -1038,7 +1038,7 @@
       "spec": "progression",
       "task": "11.1",
       "title": "Implement `routeAction` in `src/engine/routebot.ts` and write `tests/engine/routebot.test.ts`",
-      "status": "todo",
+      "status": "done",
       "verify": "npx vitest --run tests/engine/routebot.test.ts"
     },
     {
@@ -1047,7 +1047,7 @@
       "spec": "progression",
       "task": "11.2",
       "title": "Write `scripts/simulate.ts` (graphs, cells, 200 seeds, report, exit code, `--seeds` and `--cell` flags) and the `simulate` npm script",
-      "status": "todo",
+      "status": "done",
       "verify": "npm run simulate -- --seeds 5"
     },
     {
@@ -1056,7 +1056,7 @@
       "spec": "progression",
       "task": "11.3",
       "title": "Write `tests/sim/regression.test.ts` for the Wanderer grade policies and print the demo route's steps and fights",
-      "status": "todo",
+      "status": "done",
       "verify": "npx vitest --run tests/sim/regression.test.ts"
     },
     {

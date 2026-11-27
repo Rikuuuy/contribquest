@@ -9,11 +9,14 @@ import {
   startGuard,
   startStrike,
   winFight,
-  winRun,
 } from './combat';
 import { applyMove, checkMove } from './explore';
 import { log } from './log';
+import { enterMap, offerBlessing } from './omen';
 import { collectWisp, openChest } from './progression';
+import { chooseRace } from './races';
+import { endRun, newRun } from './run';
+import { pickRelic } from './relics';
 import { grade, testDeadline } from './qte';
 import type { Action, RunState } from './state';
 
@@ -21,6 +24,8 @@ import type { Action, RunState } from './state';
 export function step(state: RunState, action: Action): RunState {
   const s = structuredClone(state);
   s.events = [];
+  // While a relic offer is open, only the pick (and the settings toggles) are accepted (requirement 6.3).
+  if (s.status === 'relic' && action.type !== 'pickRelic' && action.type !== 'setOptions') return s;
   switch (action.type) {
     case 'move':
       move(s, action.dir);
@@ -48,9 +53,20 @@ export function step(state: RunState, action: Action): RunState {
     case 'advance':
       advance(s);
       break;
-    case 'retry':
-      // Needs newRun from the progression spec (Phase 2, task 9.3).
+    case 'pickRelic':
+      pickRelic(s, action.i);
       break;
+    case 'chooseRace':
+      chooseRace(s, action.race);
+      break;
+    case 'enterMap':
+      enterMap(s);
+      break;
+    case 'offerBlessing':
+      offerBlessing(s);
+      break;
+    case 'retry':
+      return retry(s);
   }
   return s;
 }
@@ -76,7 +92,7 @@ function move(s: RunState, dir: Parameters<typeof checkMove>[1]): void {
       break;
     case 'gate':
       if (t.boss) startFight(s, t);
-      else winRun(s);
+      else endRun(s, 'won');
       break;
     case 'wisp':
       collectWisp(s, t);
@@ -87,6 +103,13 @@ function move(s: RunState, dir: Parameters<typeof checkMove>[1]): void {
     default:
       break;
   }
+}
+
+/** A finished run restarts on the same set and hero set from memory, with the hero's class and race and the current options (requirement 17.5). */
+function retry(s: RunState): RunState {
+  if (s.status !== 'won' && s.status !== 'lost') return s;
+  const r = newRun(s.set, s.heroSet, { heroClass: s.hero.cls, heroRace: s.hero.race, ...s.opts });
+  return r.ok ? r.value : s;
 }
 
 const DELTA = { up: [0, -1], down: [0, 1], left: [-1, 0], right: [1, 0] } as const;

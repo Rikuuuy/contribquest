@@ -1,4 +1,4 @@
-// Starting a run (prototype makeHero, newRun). `endRun` comes with progression group 8.
+// Starting and ending a run (prototype makeHero, newRun, win, lose).
 import type { Result } from '../data/errors';
 import { ClassIdSchema, RaceIdSchema, type ContributionSet } from '../data/schema';
 import type { Settings } from '../data/settings';
@@ -91,4 +91,15 @@ export function newRun(
   if (n > 0)
     log(s, `Its ward is fed by your other big days. Banish ${n} elite${n > 1 ? 's' : ''} (Ghouls or Liches) to collect soul shards and break it.`);
   return { ok: true, value: s };
+}
+
+/**
+ * Ends the run (requirement 8.1), called by combat-timing: `winFight` on a boss on the Gate, entering the
+ * open Gate, and `loseFight`. Storage and trophies are handled by main.ts on the `runEnded` event.
+ */
+export function endRun(s: RunState, outcome: 'won' | 'lost', killer?: string): void {
+  s.status = outcome;
+  if (outcome === 'lost') s.killer = killer ?? null;
+  s.events.push({ type: outcome });
+  s.events.push({ type: 'runEnded', won: outcome === 'won' });
 }

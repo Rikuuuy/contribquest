@@ -1,6 +1,7 @@
 // fast-check arbitraries shared by property tests.
 import fc from 'fast-check';
-import type { ContributionDay, ContributionSet } from '../src/data/schema';
+import { ClassIdSchema, RaceIdSchema, type ContributionDay, type ContributionSet } from '../src/data/schema';
+import type { Action, Grade } from '../src/engine/state';
 import { addDaysUtc } from './fixtures/profiles';
 
 const LEVELS = [0, 1, 2, 3, 4] as const;
@@ -57,3 +58,30 @@ export const contributionSetArb: fc.Arbitrary<ContributionSet> = fc.oneof(
   { arbitrary: denseSetArb, weight: 1 },
   { arbitrary: sparseSetArb, weight: 2 },
 );
+
+const gradeArb = fc.constantFrom<Grade>('perfect', 'good', 'miss');
+
+/**
+ * One gameplay action. Applied with `step` from `newRun`, a list of these only reaches reachable states
+ * (progression design.md "Testing"). Moves and grades are weighted up so runs get into and through fights.
+ */
+export const actionArb: fc.Arbitrary<Action> = fc.oneof(
+  { arbitrary: fc.constantFrom('up', 'down', 'left', 'right').map((dir): Action => ({ type: 'move', dir })), weight: 8 },
+  { arbitrary: fc.constant<Action>({ type: 'attack' }), weight: 3 },
+  { arbitrary: fc.constant<Action>({ type: 'flee' }), weight: 1 },
+  {
+    arbitrary: fc
+      .oneof(gradeArb, fc.tuple(gradeArb, gradeArb, gradeArb))
+      .map((grade): Action => ({ type: 'forceGrade', grade })),
+    weight: 4,
+  },
+  { arbitrary: fc.constant<Action>({ type: 'advance' }), weight: 4 },
+  { arbitrary: fc.nat(3).map((i): Action => ({ type: 'pickRelic', i })), weight: 3 },
+  { arbitrary: fc.constantFrom(...ClassIdSchema.options).map((cls): Action => ({ type: 'chooseClass', cls })), weight: 1 },
+  { arbitrary: fc.constantFrom(...RaceIdSchema.options).map((race): Action => ({ type: 'chooseRace', race })), weight: 1 },
+  { arbitrary: fc.constant<Action>({ type: 'enterMap' }), weight: 1 },
+  { arbitrary: fc.constant<Action>({ type: 'offerBlessing' }), weight: 1 },
+  { arbitrary: fc.nat(400).map((t): Action => ({ type: 'press', t, key: 'k' })), weight: 1 },
+);
+
+export const actionsArb: fc.Arbitrary<Action[]> = fc.array(actionArb, { minLength: 20, maxLength: 200 });
