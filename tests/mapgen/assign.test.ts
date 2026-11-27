@@ -19,19 +19,30 @@ function mixedDays(best = 60, bestCount = 50): ContributionDay[] {
 
 function tilesFor(days: ContributionDay[]): DayTile[] {
   const { cells } = layoutDays(days);
-  return assignTiles(days, cells, bestDayIndex(days).idx);
+  return assignTiles(days, cells, bestDayIndex(days));
 }
 
 describe('assignTiles rule rows', () => {
   const days = mixedDays();
   const tiles = tilesFor(days);
-  const plain = tiles.filter((t) => t.idx !== 0 && t.idx !== 60 && t.idx !== 90);
+  const plain = tiles.filter((t) => t.idx !== 0 && t.idx !== 60);
 
-  it('index 0 is the start, the best day the boss (tier 5), index 90 the Gate', () => {
+  it('index 0 is the start; the best day follows the level table and is flagged bestDay', () => {
     expect(tiles[0]).toMatchObject({ kind: 'start', tier: 0 });
-    expect(tiles[60]).toMatchObject({ kind: 'boss', tier: 5, boss: true });
-    expect(tiles[90]).toMatchObject({ kind: 'gate', tier: 0 });
-    expect(tiles[90]!.boss).toBeUndefined();
+    expect(days[60]!.level).toBe(4);
+    expect(tiles[60]).toMatchObject({ kind: 'monster', tier: 4, bestDay: true });
+    expect(tiles.filter((t) => t.bestDay).map((t) => t.idx)).toEqual([60]);
+  });
+
+  it('index 90 follows the level table like any other day', () => {
+    const t = tiles[90]!;
+    expect(t.day.level).toBe(0);
+    expect(t.kind).toBe('fog');
+    expect(t.tier).toBe(0);
+  });
+
+  it('no tile has kind boss or gate (v1.6)', () => {
+    for (const t of tiles) expect(['fog', 'wisp', 'chest', 'monster', 'start']).toContain(t.kind);
   });
 
   it('level 0 is fog with a gravestone when fnv1a(date) % 6 === 0', () => {
@@ -80,12 +91,21 @@ describe('bestDayIndex', () => {
     expect(tilesFor(days)[0]!.kind).toBe('start');
   });
 
-  it('a best day on index 90 makes the Gate the boss', () => {
+  it('a best day on index 90 is a normal level tile flagged bestDay', () => {
     const days = mixedDays(90);
     const tiles = tilesFor(days);
     expect(bestDayIndex(days).idx).toBe(90);
-    expect(tiles[90]).toMatchObject({ kind: 'gate', tier: 5, boss: true });
-    expect(tiles.filter((t) => t.kind === 'boss')).toEqual([]);
+    expect(tiles[90]).toMatchObject({ kind: 'monster', tier: 4, bestDay: true });
+    expect(tiles.filter((t) => t.bestDay).length).toBe(1);
+  });
+
+  it('a level 3 best day still follows the table (chest or tier 3 monster)', () => {
+    const days = windowDays((i) => ({ count: i === 20 ? 8 : 1 }));
+    const t = tilesFor(days)[20]!;
+    expect(t.day.level).toBe(3);
+    expect(t.bestDay).toBe(true);
+    if (fnv1a(t.day.date) % 3 === 0) expect(t).toMatchObject({ kind: 'chest', size: 2 });
+    else expect(t).toMatchObject({ kind: 'monster', tier: 3 });
   });
 
   it('ties go to the latest date', () => {
@@ -93,10 +113,12 @@ describe('bestDayIndex', () => {
     expect(bestDayIndex(days).idx).toBe(70);
   });
 
-  it('an all-empty window puts the boss on index 45 and marks emptyQuarter', () => {
+  it('an all-empty window names the boss after index 45, marks emptyQuarter, and flags no bestDay', () => {
     const days = windowDays(() => ({ count: 0 }));
     expect(bestDayIndex(days)).toEqual({ idx: 45, emptyQuarter: true });
-    expect(tilesFor(days)[45]).toMatchObject({ kind: 'boss', tier: 5, boss: true });
+    const tiles = tilesFor(days);
+    expect(tiles[45]!.kind).toBe('fog');
+    expect(tiles.some((t) => t.bestDay)).toBe(false);
   });
 
   it('a count only on index 0 still counts as empty', () => {

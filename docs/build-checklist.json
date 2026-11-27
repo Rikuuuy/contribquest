@@ -508,7 +508,7 @@
       "spec": "map-generation",
       "task": "9.2",
       "title": "Change `assignTiles` to the v1.6 table (best day and index 90 by level, `bestDay` flag, no boss or gate) and update `tests/mapgen/assign.test.ts`",
-      "status": "todo",
+      "status": "done",
       "verify": "npx vitest --run tests/mapgen/assign.test.ts"
     },
     {

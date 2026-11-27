@@ -17,7 +17,7 @@ export function generateMap(set: ContributionSet): Result<GameMap, MapError> {
     const seed = fnv1a(set.username.toLowerCase() + '|' + last.date);
     const { w0, cols, cells } = layoutDays(days);
     const best = bestDayIndex(days);
-    const tiles = assignTiles(days, cells, best.idx);
+    const tiles = assignTiles(days, cells, best);
     const { quiet } = applyShortfall(tiles, seed);
     const map: GameMap = {
       cols,
