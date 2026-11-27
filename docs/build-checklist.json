@@ -1056,7 +1056,7 @@
       "spec": "progression",
       "task": "11.3",
       "title": "Write `tests/sim/regression.test.ts` for the Wanderer grade policies and print the demo route's steps and fights",
-      "status": "todo",
+      "status": "done",
       "verify": "npx vitest --run tests/sim/regression.test.ts"
     },
     {
