@@ -27,7 +27,7 @@ export { combatKey } from './input';
 export { checkMove, applyMove, reveal, isVisible, collectShard, type Dir } from './explore';
 export { xpForLevel, levelFor, startingXp, auraTier, gainXp, collectWisp, openChest } from './progression';
 export { makeTrait } from './trait';
-export { omenFor, omenLog } from './omen';
+export { omenFor, omenLog, enterMap, offerBlessing, BLESSING_TITLE } from './omen';
 export { makeHero, newRun, type RunSettings } from './run';
 export { RACE_NAMES, RACE_INFO, chooseRace, type RaceInfo } from './races';
 export { RELICS, relicById, offerRelic, pickRelic, CHEST_TITLE, type Relic } from './relics';

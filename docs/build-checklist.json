@@ -912,7 +912,7 @@
       "spec": "progression",
       "task": "6.1",
       "title": "Implement `enterMap`, `offerBlessing`, `BLESSING_TITLE` in `src/engine/omen.ts`; handle both actions in `step`",
-      "status": "todo",
+      "status": "done",
       "verify": "npx vitest --run tests/engine/omen.test.ts"
     },
     {
@@ -921,7 +921,7 @@
       "spec": "progression",
       "task": "6.2",
       "title": "Write `tests/engine/omen.test.ts`",
-      "status": "todo",
+      "status": "done",
       "verify": "npx vitest --run tests/engine/omen.test.ts"
     },
     {

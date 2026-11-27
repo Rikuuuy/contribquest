@@ -13,6 +13,7 @@ import {
 } from './combat';
 import { applyMove, checkMove } from './explore';
 import { log } from './log';
+import { enterMap, offerBlessing } from './omen';
 import { collectWisp, openChest } from './progression';
 import { chooseRace } from './races';
 import { pickRelic } from './relics';
@@ -57,6 +58,12 @@ export function step(state: RunState, action: Action): RunState {
       break;
     case 'chooseRace':
       chooseRace(s, action.race);
+      break;
+    case 'enterMap':
+      enterMap(s);
+      break;
+    case 'offerBlessing':
+      offerBlessing(s);
       break;
     case 'retry':
       // Needs newRun from the progression spec (Phase 2, task 9.3).
