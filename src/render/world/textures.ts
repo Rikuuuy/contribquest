@@ -35,6 +35,12 @@ export function cachedTexture(key: string): CanvasTexture<CanvasSource> | undefi
   return sprites.get(key);
 }
 
+/** True for a texture in the sprite cache; `disposeTree` keeps these for the page session. */
+export function isCachedSprite(t: Texture): boolean {
+  for (const s of sprites.values()) if (s === t) return true;
+  return false;
+}
+
 /** Glow texture side in pixels. */
 const GLOW = 64;
 

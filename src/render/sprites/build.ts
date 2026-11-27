@@ -149,5 +149,31 @@ export function monsterKey(name: MonsterName): string {
   return key;
 }
 
+/**
+ * Crossed bones for a resolved fight, as a 12×12 grid: the prototype draws them as two round-capped strokes
+ * (`drawBones`, `rgba(232,230,240,.35)`); billboards need a sprite, so the strokes are rasterised here in the
+ * same colour over the dark map.
+ */
+const BONES: Grid = [
+  'uu........uu',
+  'uuu......uuu',
+  '.uuu....uuu.',
+  '..uuu..uuu..',
+  '...uuuuuu...',
+  '....uuuu....',
+  '....uuuu....',
+  '...uuuuuu...',
+  '..uuu..uuu..',
+  '.uuu....uuu.',
+  'uuu......uuu',
+  'uu........uu',
+];
+
+/** Key of the crossed-bones sprite; built on first use. */
+export function bonesKey(): string {
+  cachedSprite('bones', () => buildSprite(colorGrid(BONES, { u: '#6b6878' })));
+  return 'bones';
+}
+
 /** Monster sprite names by tier (5 is the boss). */
 export const MONSTER_SPRITE: Readonly<Record<1 | 2 | 3 | 4 | 5, MonsterName>> = { 1: 'ghost', 2: 'imp', 3: 'ghoul', 4: 'lich', 5: 'phantom' };

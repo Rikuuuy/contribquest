@@ -1690,7 +1690,7 @@
       "spec": "presentation",
       "task": "11.5",
       "title": "Implement `src/render/world/map-scene.ts`: instanced slabs per level, instanced gravestones, ground labels, rise, seen tint, content billboards, visited frames, crossed bones, hero hop and aura, `pickTile`; write `tests/render/map-scene.test.ts`",
-      "status": "todo",
+      "status": "done",
       "verify": "npx vitest --run tests/render/map-scene.test.ts"
     },
     {
