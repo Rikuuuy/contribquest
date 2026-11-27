@@ -1328,7 +1328,7 @@
       "spec": "progression",
       "task": "13.5",
       "title": "Change the won title in `resultsView` and update `tests/engine/views.test.ts`",
-      "status": "todo",
+      "status": "done",
       "verify": "npx vitest --run tests/engine/views.test.ts"
     },
     {

@@ -74,7 +74,7 @@ export function resultsView(s: RunState): ResultsView {
   const st = s.stats;
   return {
     won,
-    title: won ? 'The Gate opens. Your graph is exorcised.' : 'You became part of the graph.',
+    title: won ? 'The Phantom is banished. Your graph is exorcised.' : 'You became part of the graph.',
     sub: won ? `${set.username} survived 91 haunted days.` : `Slain by ${s.killer}. The same map is waiting for a rematch.`,
     game: [
       ['Class', heroClass(h).name],
