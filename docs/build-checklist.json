@@ -1681,7 +1681,7 @@
       "spec": "presentation",
       "task": "11.4",
       "title": "Implement `src/render/world/atmosphere.ts`: the light rig with the pool of 4 point lights, `assignLights`, `flicker`, `FogExp2`, fireflies, and the fog bank over fog columns; write `tests/render/atmosphere.test.ts`",
-      "status": "todo",
+      "status": "done",
       "verify": "npx vitest --run tests/render/atmosphere.test.ts"
     },
     {
