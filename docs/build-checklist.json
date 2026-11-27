@@ -1672,7 +1672,7 @@
       "spec": "presentation",
       "task": "11.3",
       "title": "Implement `src/render/world/textures.ts` (sprite texture cache from the `buildSprite` canvases, glow and label textures) and `src/render/world/billboard.ts` (`makeBillboard`, `setFacing`, `setFrame`, `faceCamera`); write `tests/render/billboard.test.ts`",
-      "status": "todo",
+      "status": "done",
       "verify": "npx vitest --run tests/render/billboard.test.ts"
     },
     {
