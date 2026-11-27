@@ -1391,7 +1391,7 @@
       "spec": "presentation",
       "task": "2.1",
       "title": "Copy `SPRITES` and `OUTFITS` into `src/render/sprites/grids.ts` and implement `buildSprite`, `outline`, `silhouette`, `drawSprite`, `shadow`, `glow`, `rrect`",
-      "status": "todo",
+      "status": "done",
       "verify": "npm run typecheck"
     },
     {
