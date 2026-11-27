@@ -1346,7 +1346,7 @@
       "spec": "progression",
       "task": "13.7",
       "title": "Add the average fights and shards columns to `scripts/simulate.ts`, and change `tests/sim/regression.test.ts` to print fights, shards, and steps for the demo route instead of checking the 15\u201325 steps target",
-      "status": "todo",
+      "status": "done",
       "verify": "npx vitest --run tests/sim/regression.test.ts && npm run simulate -- --seeds 5 | grep -qi \"fights\""
     },
     {
