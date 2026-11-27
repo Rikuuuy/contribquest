@@ -1,5 +1,5 @@
 // Pure key and pointer mapping for the map screen (prototype keydown handler and tileFromEvent).
-// v1.6: movement picks one of up to three branches into the next column; there is no `moveKey` and no left.
+// v1.6: movement picks one of up to three branches into the next column; there is no direction key mapping and no left.
 import type { Pos } from '../mapgen';
 import type { Layout } from './layout';
 

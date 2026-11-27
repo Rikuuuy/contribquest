@@ -1744,7 +1744,7 @@
       "spec": "presentation",
       "task": "12.2",
       "title": "Change the movement wiring from task 1.3 in `src/main.ts`: keys through `routeKey` and `targetFor` send `{ type: \"move\", to }`, the D-pad becomes the three-button branch pad rebuilt from `RouteView`, taps go through `renderer.pick`, and the Flee button and F/Escape handling are removed",
-      "status": "todo",
+      "status": "done",
       "verify": "npx vitest --run tests/render/input.test.ts tests/render/route-view.test.ts && npm run build && ! grep -rnE \"['\\\"]flee['\\\"]|moveKey\" src/main.ts src/render"
     },
     {
