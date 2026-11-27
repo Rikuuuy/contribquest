@@ -2,17 +2,21 @@
 
 ## Introduction
 
-This spec covers the fight: the turn order, monster stats and labels, the four hero classes with their stat modifiers, class difficulty and rising pressure, the six timing-test modes and their pure grading, the four monster strike patterns, boss phase 2, damage resolution for strike, guard, and flee, the end of a fight, the Calm and Auto-timing assists, and the engine reducer (`step`, `nextDeadline`) that runs it all. It also ports the prototype's skill bot so the balance simulator can grade tests the way the prototype measured them.
+This spec covers the fight: the turn order, monster stats and labels, the four hero classes with their stat modifiers, class difficulty and rising pressure, the six timing-test modes and their pure grading, the four monster strike patterns, boss phase 2, damage resolution for strike and guard, the end of a fight, the Calm and Auto-timing assists, and the engine reducer (`step`, `nextDeadline`) that runs it all, including the `move` action that enters tiles. It also ports the prototype's skill bot so the balance simulator can grade tests the way the prototype measured them.
+
+**v1.6 (27 Nov 2026).** Flee is removed: every fight ends in a win or a loss. The boss is fought on a final boss node after the last week (map-generation requirement 8), its max HP drops 10% per soul shard, and with 3 shards it has no phase 2. Winning the boss fight wins the run; there is no Gate. The `move` action takes a target from the legal moves, and every tile entered resolves (requirement 22). CI Cache gets a new effect. These rules apply to the TypeScript rebuild only; the prototype keeps v1.5. Changed or added criteria are marked **(v1.6)**; retired criteria keep their numbers.
 
 Every rule and number comes from `prototype/index.html` (`QTE`, `CLASSES`, `DIFFICULTY`, `ATK_MULT`, `DEF_MULT`, `pressure`, `applyStats`, `makeMonster`, `sourceLabel`, `startQte`, `qtePress`, `qteRelease`, `shieldImpact`, `finishQte`, `GRADE_LABELS`, `CLASS_HINT`, `resolveAttack`, `strikePlan`, `STRIKE_LINE`, `enemyTurn`, `checkPhase`, `resolveDefend`, `winFight`, `flee`, `resolveFlee`, `lose`, `simulateGrade`, the key handlers) and `.kiro/steering/game-rules.md` ("Hero", "Monsters", "Combat", "Timing tests").
 
-PRD IDs covered: FR-COM-1 to FR-COM-7, FR-CLS-1 to FR-CLS-9, FR-DIF-1 to FR-DIF-5. Shared with progression (this spec applies the combat-side effect; progression owns choosing and owning): FR-PRO-3, FR-REL-2, FR-REL-3, FR-RACE-2, FR-OMEN-2.
+PRD IDs covered: FR-COM-1 to FR-COM-7, FR-CLS-1 to FR-CLS-9, FR-DIF-1 to FR-DIF-5. Shared with map-generation (this spec applies the move in the reducer; map-generation owns the legal-move rule): FR-MOV-1, FR-MOV-3, FR-MOV-8. Shared with progression (this spec applies the combat-side effect; progression owns choosing and owning): FR-PRO-3, FR-REL-2, FR-REL-3, FR-RACE-2, FR-OMEN-2.
 
 ## Glossary
 
 - **t**: the monster tier, 1–5. **calm**: 1.6 in Calm mode, otherwise 1. **rand()**: the next draw from the run RNG.
 - **Strike test**: the timing test after Attack; mode `bar`, `combo`, or `charge` by class.
-- **Guard test**: the timing test for each monster strike and the flee parting strike; mode `ring`, `sidestep`, or `shield` by class.
+- **Guard test**: the timing test for each monster strike; mode `ring`, `sidestep`, or `shield` by class. (v1.5 also used it for the flee parting strike.)
+- **Boss node (v1.6)**: the final node after the last column where the boss is fought (map-generation glossary).
+- **Shards (v1.6)**: soul shards held, 0–3 (map-generation requirement 7).
 - **P / G**: the Perfect and Good half-windows in ms around the target.
 - **Pattern**: how a monster strike's guard test is timed: `normal`, `quick`, `flaky`, or `conflict`.
 - **Test time**: milliseconds since the test started. Every press, release, and deadline is expressed in test time.
@@ -26,13 +30,13 @@ PRD IDs covered: FR-COM-1 to FR-COM-7, FR-CLS-1 to FR-CLS-9, FR-DIF-1 to FR-DIF-
 
 #### Acceptance criteria
 
-1.1 WHEN the hero enters an unresolved `monster` or `boss` tile, or a `gate` tile with `boss: true` THE SYSTEM SHALL start a fight in the `choose` phase with the hero acting first. For the boss THE SYSTEM SHALL log "The air turns cold. Your best day has come back for you." [FR-COM-1]
+1.1 **(v1.6)** WHEN the hero enters an unresolved `monster` tile or the boss node THE SYSTEM SHALL start a fight in the `choose` phase with the hero acting first. For the boss THE SYSTEM SHALL log "The air turns cold. Your best day has come back for you.", then the shard line from requirement 2.6 when `shards > 0`. [FR-COM-1, FR-MOV-8]
 
-1.2 WHILE a fight is in the `choose` phase THE SYSTEM SHALL accept exactly two actions: Attack, which starts a strike test, and Flee, which logs "You turn to run. {name} strikes at your back!" and starts one guard test with the `normal` pattern. [FR-COM-1, FR-COM-5]
+1.2 **(v1.6)** WHILE a fight is in the `choose` phase THE SYSTEM SHALL accept exactly one fight action, Attack, which starts a strike test. There is no Flee action. [FR-COM-1, FR-COM-5]
 
 1.3 WHEN the hero's strike resolves and the monster survives THE SYSTEM SHALL run the monster's strike plan, one guard test per strike, then return to `choose`. [FR-COM-1, FR-COM-5]
 
-1.4 WHILE a test is not in progress THE SYSTEM SHALL ignore presses and releases; WHILE a test is in progress THE SYSTEM SHALL ignore Attack and Flee. [FR-COM-1]
+1.4 **(v1.6)** WHILE a test is not in progress THE SYSTEM SHALL ignore presses and releases; WHILE a test is in progress THE SYSTEM SHALL ignore Attack. [FR-COM-1]
 
 ### Requirement 2: Monsters
 
@@ -49,6 +53,8 @@ PRD IDs covered: FR-COM-1 to FR-COM-7, FR-CLS-1 to FR-CLS-9, FR-DIF-1 to FR-DIF-
 2.4 WHEN labelling a monster's source THE SYSTEM SHALL return "Born from 91 days of silence" for the empty-quarter boss, "Risen from an empty day: {date}" for a shortfall Lost Ghost, and otherwise "Risen from {date}: {count} contribution" with "s" unless the count is 1. [FR-COM-3]
 
 2.5 WHILE a fight is shown THE SYSTEM SHALL expose both HP values and maxima, the monster name, the source label, and "timing {n}%" (requirement 6.3) for the combat view. [FR-COM-3, FR-DIF-4]
+
+2.6 **(v1.6)** WHEN the boss fight starts THE SYSTEM SHALL build the boss from the best-day tile (`tiles[bossIdx]`: name, date, source label) with tier 5, `hp = round((5 + 7 × 5) × f × 1.4 × (1 − SHARD_BOSS_HP_CUT × shards))` (`SHARD_BOSS_HP_CUT = 0.1`), damage and XP as in 2.1–2.2, `bound = shards ≥ SHARD_NO_PHASE2` (3), and fight row `bossNode.row`. WHEN `shards > 0` THE SYSTEM SHALL log "{n} soul shard{s} weaken the Phantom: {10n}% less HP." or, at 3, "3 soul shards bind the Phantom: 30% less HP and no Phase 2." [FR-COM-2, FR-MOV-7, P23]
 
 ### Requirement 3: Hero classes
 
@@ -204,6 +210,8 @@ PRD IDs covered: FR-COM-1 to FR-COM-7, FR-CLS-1 to FR-CLS-9, FR-DIF-1 to FR-DIF-
 
 14.2 WHILE the boss is in phase 2 THE SYSTEM SHALL use the phase-2 plan for every new turn, guard speed ×0.85, pressure ×0.9, and strike damage ×0.75; a plan already in progress keeps its remaining strikes. [FR-COM-5, FR-DIF-3]
 
+14.3 **(v1.6)** WHILE the boss is `bound` (3 shards) THE SYSTEM SHALL never enter phase 2, whatever its HP. [FR-COM-5, FR-MOV-7, P23]
+
 ### Requirement 15: Damage resolution
 
 **User story:** As a player, I want a better press always to be at least as good for me.
@@ -222,27 +230,27 @@ PRD IDs covered: FR-COM-1 to FR-COM-7, FR-CLS-1 to FR-CLS-9, FR-DIF-1 to FR-DIF-
 
 15.6 WHEN the first Miss of a fight occurs while the hero holds Rubber Duck THE SYSTEM SHALL turn it into Good with reason "rubber duck"; in a combo only the first missed hit changes. [FR-REL-3]
 
-### Requirement 16: Fleeing
+### Requirement 16: Fleeing (retired in v1.6)
 
-#### Acceptance criteria
+16.1 *Retired in v1.6.* There is no Flee action, so no flee guard test and no CI Cache flee rule. CI Cache's new effect is requirement 17.6. [was FR-COM-1, FR-REL-1]
 
-16.1 WHEN the flee guard is Perfect, or Good with CI Cache, THE SYSTEM SHALL take no damage; otherwise THE SYSTEM SHALL take `max(1, round(dmg × guardMult × (0.9 + 0.2 × rand())))` with no pattern multiplier. [FR-COM-1, FR-REL-1]
-
-16.2 WHEN fleeing THE SYSTEM SHALL never drop HP below 1, add one to `dodges` on Perfect, return the hero to the previous tile, leave the monster unresolved, end the fight, and log "You escaped but took {n} damage. It still haunts that day." or "A perfect escape. It still haunts that day." [FR-COM-1]
+16.2 *Retired in v1.6.* No escape, no return to the previous tile, no "It still haunts that day." lines. Every fight ends in a win (17.1) or a loss (17.4). [was FR-COM-1]
 
 ### Requirement 17: End of a fight
 
 #### Acceptance criteria
 
-17.1 WHEN the monster's HP reaches 0 THE SYSTEM SHALL mark the tile resolved, add one to `defeated`, add treasure (requirement 4.2) and the monster's XP, log "{name} is banished: +{xp} XP, +{gold} treasure.", apply the pressure message (5.3), and collect a soul shard (map-generation requirement 7.1). [FR-COM-1, FR-PRO-1]
+17.1 **(v1.6)** WHEN the monster's HP reaches 0 THE SYSTEM SHALL mark the tile resolved, add one to `defeated`, add treasure (requirement 4.2) and the monster's XP, log "{name} is banished: +{xp} XP, +{gold} treasure.", apply the pressure message (5.3), collect a soul shard (map-generation requirement 7.1), and apply CI Cache (17.6). [FR-COM-1, FR-PRO-1]
 
-17.2 WHEN the boss falls THE SYSTEM SHALL set `bossDown`, record `bossHpLeft` as the hero's HP, and log "The Phantom falls. The Gate is unsealed!"; WHEN the boss stood on the Gate THE SYSTEM SHALL end the run as won. [FR-PRO-3]
+17.2 **(v1.6)** WHEN the boss falls THE SYSTEM SHALL set `bossDown`, record `bossHpLeft` as the hero's HP, log "The Phantom falls. Your graph is exorcised.", emit `monsterDown` with `boss: true`, and end the run as won. [FR-PRO-3]
 
-17.3 WHEN the hero enters the unsealed Gate THE SYSTEM SHALL end the run as won. [FR-PRO-3]
+17.3 *Retired in v1.6.* There is no Gate to enter; 17.2 wins the run. [was FR-PRO-3]
 
 17.4 WHEN the hero's HP reaches 0 THE SYSTEM SHALL end the run as lost and record the monster's name. [FR-COM-4]
 
 17.5 WHEN the player retries after a loss THE SYSTEM SHALL start a new run on the same ContributionSet (and raid hero set) from memory, with no fetch. [FR-COM-4]
+
+17.6 **(v1.6)** WHEN a non-boss fight is won while the hero holds CI Cache THE SYSTEM SHALL heal `min(maxHp − hp, ceil(maxHp × RELIC_COMBAT.cacheHeal))` (`cacheHeal = 0.1`) after the XP and shard steps, log "CI Cache: +{n} HP." when `n > 0`, and emit `heal` with source `cache`. No RNG draw. [FR-REL-1, FR-REL-2]
 
 ### Requirement 18: Input
 
@@ -252,7 +260,7 @@ PRD IDs covered: FR-COM-1 to FR-COM-7, FR-CLS-1 to FR-CLS-9, FR-DIF-1 to FR-DIF-
 
 18.1 WHILE a test is in progress THE SYSTEM SHALL treat Space, Enter, A, J, and K, and a pointer press on the "Now!" button or the test area, as a press; key-up and pointer-up, -cancel, or -leave as a release. Auto-repeated key events are ignored. [FR-COM-6, FR-CLS-9]
 
-18.2 WHILE a fight is in `choose` THE SYSTEM SHALL map F or Escape to Flee and the hit keys to Attack. [FR-COM-1, FR-COM-6]
+18.2 **(v1.6)** WHILE a fight is in `choose` THE SYSTEM SHALL map the hit keys to Attack. F and Escape no longer have a fight action. [FR-COM-1, FR-COM-6]
 
 18.3 WHEN a press or release is passed to the engine THE SYSTEM SHALL use the input event's `timeStamp` minus the test's start time, not the time it is processed. [FR-COM-6]
 
@@ -278,7 +286,7 @@ PRD IDs covered: FR-COM-1 to FR-COM-7, FR-CLS-1 to FR-CLS-9, FR-DIF-1 to FR-DIF-
 
 20.2 WHILE a test is in progress THE SYSTEM SHALL report its next deadline in test time from `nextDeadline(state)`, and grade on a `timeout` action at that time; otherwise `nextDeadline` returns `null`. [FR-COM-5]
 
-20.3 WHEN a test resolves THE SYSTEM SHALL move the fight to `wait` with the next step named (`strike i`, `choose`, `win`, `lose`, or `escape`), and continue only on an `advance` action, so the presentation controls pacing. [FR-COM-1]
+20.3 **(v1.6)** WHEN a test resolves THE SYSTEM SHALL move the fight to `wait` with the next step named (`strike i`, `choose`, `win`, or `lose`), and continue only on an `advance` action, so the presentation controls pacing. [FR-COM-1]
 
 20.4 WHEN the simulator or a test injects a grade with `forceGrade` THE SYSTEM SHALL resolve the current test with it, applying Rubber Duck as for a real grade. [FR-COM-5]
 
@@ -293,3 +301,19 @@ PRD IDs covered: FR-COM-1 to FR-COM-7, FR-CLS-1 to FR-CLS-9, FR-DIF-1 to FR-DIF-
 21.1 WHEN the skill bot grades a test with skill σ THE SYSTEM SHALL place each press at `gauss() × σ` from the target (Box-Muller from the bot's own RNG, seeded `σ × 7919 + seed × 104729`), grade one press Perfect within P, Good within G, else Miss; three independent presses for a combo; for charge Miss if the offset exceeds `fill − target`. [FR-DIF-1]
 
 21.2 WHEN the pattern is `conflict` THE SYSTEM SHALL grade Miss with probability `σ / 600` before grading; WHEN `flaky`, Miss with probability `σ / 700`; WHEN the guard is a shield, turn a Miss into Good with probability 0.7. [FR-DIF-1]
+
+### Requirement 22: Moving and entering tiles on a route (v1.6)
+
+**User story:** As a player, I want every week I step into to count, so that my route choice decides which fights I face, and no fight can be dodged.
+
+#### Acceptance criteria
+
+22.1 **(v1.6)** WHEN a `move` action arrives with a target position THE SYSTEM SHALL apply it only WHILE `status` is `exploring` and only if the target equals one of `legalMoves(state)` (map-generation requirement 6); otherwise THE SYSTEM SHALL return a state equal to the input with `events: []`. [FR-MOV-1, FR-MOV-3, P24]
+
+22.2 **(v1.6)** WHEN a legal move is applied THE SYSTEM SHALL call `applyMove`, emit `moved` with the old and new positions, and enter the target: a `monster` tile starts a fight (1.1); a `chest` opens (progression requirement 4.2); a `wisp` is collected (progression 4.1); a `fog` tile gives the rest (progression 4.3); the boss node starts the boss fight (1.1, 2.6). [FR-MOV-3, FR-MOV-8, P24]
+
+22.3 **(v1.6)** WHEN a tile is entered THE SYSTEM SHALL leave it resolved by the time `status` returns to `exploring`: fog, wisp, and chest at once; a monster when its fight is won. A loss ends the run. Nothing lets the hero leave a tile without resolving it. [FR-MOV-3, P24]
+
+22.4 **(v1.6)** WHILE `status` is `combat` or `relic` THE SYSTEM SHALL ignore `move`, so a fight or a relic offer must be finished before the next floor. [FR-MOV-3, FR-REL-1, P24]
+
+22.5 **(v1.6)** WHEN a `flee` action, an `escape` next step, or a `flee` test kind appears in input or in a save THE SYSTEM SHALL not accept it: `flee` is not an `Action`, and the save schema rejects the other two (progression requirement 10.3). [FR-COM-1]

@@ -4,7 +4,7 @@
 | --- | --- |
 | Product | ContribQuest: The Haunted Graph |
 | Document type | Product Requirements Document (PRD) |
-| Version | 1.5 (19 Nov 2026) — adds hero classes with their own timing tests, class difficulty and rising pressure, races, the daily omen, trophies, raids, the share card, 24×24 hero sprites with idle behaviour, and synthesized audio; v1.4 added monster attack patterns, boss phase 2, and relics; v1.3 added timing tests (QTE) to every combat action; v1.2 added fog of war, soul shards, weekday traits, and challenge links |
+| Version | 1.6 (27 Nov 2026) — forward-only branching routes (one floor = one week), unskippable tiles, no Flee, a final boss node, soul shards that weaken the boss, a visibility window, and the decision to render the TypeScript build with a Three.js billboard world (see "What changed in v1.6"); v1.5 (19 Nov 2026) added hero classes with their own timing tests, class difficulty and rising pressure, races, the daily omen, trophies, raids, the share card, 24×24 hero sprites with idle behaviour, and synthesized audio; v1.4 added monster attack patterns, boss phase 2, and relics; v1.3 added timing tests (QTE) to every combat action; v1.2 added fog of war, soul shards, weekday traits, and challenge links |
 | Status | Phase 0 (foundations) started Thu 19 Nov 2026. The game is rebuilt as a TypeScript project from Kiro specs, using the prototype as the reference design (see `docs/BUILD-PLAN.md`) |
 | Preview | `prototype/index.html`: a single-file vibe-coded prototype used to test the design (not the submission code) |
 | Competition | Kiroween 2026, hosted on Devpost (https://kiroween.devpost.com/) |
@@ -16,6 +16,25 @@
 | Eligibility | Built from scratch between 30 Oct and 4 Dec 2026. Frameworks, libraries, and asset packs are allowed; any other pre-existing code must be declared |
 | Team | Solo build (decided 16 Nov 2026) |
 | Platform | Static web application, no backend |
+
+## What changed in v1.6
+
+Two decisions by the author on 27 Nov 2026, after playing the prototype: every floor's battles and route should be unskippable, with branching routes, and the TypeScript build should render a 3D world in the billboard style of the Three.js sample. Both apply to the TypeScript rebuild only. `prototype/` keeps the v1.5 rules and its Canvas 2D look, stays online at `/prototype/`, and is not edited. Where this section and the rest of the document disagree, this section wins; the FRs, mapping rules, and property table below are updated to match. The v1.6 numbers are tunable starting values (not prototype values), recorded in `game-rules.md` and `src/engine/balance.ts`, and re-measured with the simulator after implementation. Class difficulty numbers do not change.
+
+| Version | Date | Area | Change | Requirements |
+| --- | --- | --- | --- | --- |
+| 1.6 | 27 Nov 2026 | Routes | The 91-day layout stays (columns = weeks, rows = weekdays). Each column is a floor. The hero starts on the crypt in column 0 and moves only to the next column, to row r − 1, r, or r + 1 (up to 3 choices, void cells skipped). No moving back, sideways, or staying. If all three are void (only when entering a short last column), the only move is the next column's day closest in row. The legal moves are highlighted | FR-MOV-1, FR-MOV-2, FR-MOV-8, FR-MAP-4 |
+| 1.6 | 27 Nov 2026 | Unskippable tiles | Every tile entered resolves: monsters must be fought, chests opened, wisps collected (+5 XP and now heal 10% max HP), and quiet level-0 days give a small rest (heal 5% max HP). Fights and relic offers block the next move | FR-MOV-3, FR-PRO-1 |
+| 1.6 | 27 Nov 2026 | No Flee | The Flee action, its parting strike, and fleeing's "dodge" are removed. CI Cache becomes "After each won fight, heal 10% of max HP." The Speedrun trophy becomes "Win after 6 or fewer banishes, the boss included", because every route now takes 13 or 14 steps | FR-COM-1, FR-COM-5, FR-REL-1, FR-TRO-1 |
+| 1.6 | 27 Nov 2026 | Boss node | The Phantom of the best day (same name and date) waits on a final node after the last week, reachable from every last-column tile. Beating it wins the run; the Gate and its walk are removed. The best day's own tile becomes a normal tile by its level (usually a Merge Conflict Lich) with a marker | FR-PRO-3, FR-MOV-8, FR-MAP-3 |
+| 1.6 | 27 Nov 2026 | Soul shards | A bonus, not a gate: each banished Ghoul or Lich gives a shard (max 3); each shard cuts the boss's max HP by 10%, and with 3 shards it has no phase 2. The ward and the blocked-boss rule are removed | FR-MOV-7 |
+| 1.6 | 27 Nov 2026 | Visibility | Tile contents are visible for the current column and the next 2; further columns show shape and level colour only. Code Review adds one column. Replaces the √5 lantern radius | FR-MOV-6 |
+| 1.6 | 27 Nov 2026 | Minimum fights | Every route from the crypt to the boss enters at least 4 monster tiles. After the count shortfall (6 monsters), a second seeded step turns fog (then wisps, then chests) on the fight-poorest route into Lost Ghosts until the rule holds | FR-MAP-3, FR-MAP-4 |
+| 1.6 | 27 Nov 2026 | Saves | The run save moves to `cq:v2:run` with `version: 2`. Old saves are ignored; `cq:v1:run` is left for the prototype | FR-SAV-1 |
+| 1.6 | 27 Nov 2026 | Simulator | The route bot picks among the legal moves: chest, wisp, then fog when HP is low (below 45%, or 75% in the last two weeks), otherwise the strongest monster. Balance targets are re-measured after implementation | — |
+| 1.6 | 27 Nov 2026 | Renderer (Three.js billboard) | The TypeScript build renders with Three.js: a 3D world where tiles are slabs whose height and green tint follow the contribution level, with fog, moonlight, lantern point lights, and fireflies, and the existing pixel-art sprites drawn as camera-facing planes (nearest-neighbour, 1 px outline). The combat screen is a 3D graveyard arena with the same billboards. HUD, battle log, and menus stay HTML over the canvas; audio stays Web Audio. Without WebGL 2 (or with `?renderer=flat`) a reduced Canvas 2D renderer runs the same game: flat tiles and sprites, highlights, fog cover, boss node, and a simple stage. Phone budgets: pixel ratio capped at 2 with an automatic quality step-down, instanced slabs, at most 4 point lights, no per-frame allocations, a median frame of 33 ms or less on a throttled phone profile. Reduced motion also stops camera moves, bobbing, flicker, and drifting fog in 3D. `three` becomes the second runtime dependency. Specified in `tech.md`, `art-style.md` ("3D billboard world"), and the presentation spec (requirements 19–26) | FR-FX-1 to FR-FX-10, FR-MOV-6, FR-MOV-8, NFRs, Technology |
+
+Property changes: P3 and P4 are restated for routes, P10 (shard feasibility) is retired, and P20–P24 are added (route completeness, minimum fights, visibility window, shard weakening, forward-only with no skipping). See "Testing and quality strategy".
 
 ## What changed in v1.5
 
@@ -215,7 +234,7 @@ Kiro is how the chimera is built, not one of its parts. Every entry uses Kiro, s
 | Metric | Target |
 | --- | --- |
 | Username input to playable map | Under 3 s on a typical connection; hard limit 10 s, after which the error screen offers demo mode |
-| Demo dataset run length | 15–25 steps and 6–10 fights on the intended route, about 2 minutes of play |
+| Demo dataset run length | 6–10 fights on the bot's route (v1.6: every route is 14 steps on the demo), about 2 minutes of play |
 | Map validity | 100% of property-test cases and all fixture profiles produce a valid map |
 | Run completion | The balance simulator's bot wins every fixture profile |
 | Demo resilience | The full game works with the network disabled, in demo mode |
@@ -227,7 +246,7 @@ Kiro is how the chimera is built, not one of its parts. Every entry uses Kiro, s
 **Primary users** are developers, students, and bootcamp participants with a GitHub account who care about consistency. **Secondary users** are judges and demo viewers, who may never type a username, so demo mode and the start screen carry the explanation for them.
 
 - **The streak keeper** commits almost daily. Their streak is a visible aura, and breaking it would visibly weaken the hero.
-- **The habit-building student** has an empty start and a busy end to their quarter. Their map gets more crowded and dangerous toward the gate while the hero grows stronger across it.
+- **The habit-building student** has an empty start and a busy end to their quarter. Their map gets more crowded and dangerous toward the last weeks while the hero grows stronger across it.
 - **The demo viewer** clicks "Play the demo" and judges the concept with no setup.
 
 ## Jobs to be done
@@ -274,7 +293,10 @@ Kiro is how the chimera is built, not one of its parts. Every entry uses Kiro, s
 | Level (day) | GitHub's own 0–4 shading for that day, returned by the data source |
 | Tile | One map cell, generated from exactly one contribution day, or a void padding cell |
 | Void cell | An unwalkable padding cell before the first day or after the last day in the week grid |
-| Encounter | A monster, chest, wisp, boss, or gate on a tile |
+| Encounter | A monster, chest, wisp, or quiet day on a tile, or the boss on the final node (v1.6) |
+| Floor (v1.6) | One column (week) of the map; the hero enters exactly one tile per floor |
+| Route (v1.6) | The hero's path from the crypt through one tile per floor to the boss node, each step to row r − 1, r, or r + 1 of the next column |
+| Boss node (v1.6) | The final node after the last week, reachable from every last-column tile, where the Phantom is fought |
 | Run | One play session, from map generation to victory or game over |
 | Streak | Consecutive days with at least one contribution, ending at the last day (or the day before, if the last day has 0) |
 | Streak Aura | The ATK and max-HP bonus granted by the streak |
@@ -291,28 +313,29 @@ The theme is applied through names, palette, and sprites only. It adds no new me
 | Game element | Data source | Themed as |
 | --- | --- | --- |
 | Map | Last 91 days | The Haunted Graph |
-| Level 0 day | No contributions | Graveyard fog, occasional gravestone decoration (always walkable) |
-| Level 1 day | Few contributions | Soul wisp: walk over it to collect XP, no fight |
+| Level 0 day | No contributions | Graveyard fog, a quiet day for a short rest, occasional gravestone decoration |
+| Level 1 day | Few contributions | Soul wisp: step onto it to collect XP and a little HP, no fight |
 | Level 2 day | | Bug Imp, or a small chest |
 | Level 3 day | | Flaky Test Ghoul, or a stocked chest |
 | Level 4 day | Top shading | Merge Conflict Lich (elite) |
-| Best day of the 91 | Highest count | The boss: "The Phantom of {date}" |
+| Best day of the 91 | Highest count | The boss: "The Phantom of {date}", fought on a final node after the last week (v1.6); the day itself is marked on the map |
 | Filler monster on an empty day | Shortfall rule | Lost Ghost, labeled "risen from an empty day" |
 | First day | | The crypt where the hero wakes |
-| Last day | | The Gate, sealed until the boss falls |
+| A week (column) | | One floor of the climb; the hero picks one of up to three branches into the next (v1.6) |
+| Last day | | A normal tile of the last week (v1.6; the Gate is removed) |
 | Streak | Current streak | Streak Aura: a glow around the hero, brighter per tier |
 
-Tone: playful and spooky, never gory. Copy examples: "Your graph is haunted." "14 contributions rose from the grave on Tue 3 Nov." "The Gate is sealed. Defeat the Phantom of your best day."
+Tone: playful and spooky, never gory. Copy examples: "Your graph is haunted." "14 contributions rose from the grave on Tue 3 Nov." "Soul shard 2/3. The Phantom weakens."
 
 ## Core gameplay loop
 
 1. The player enters a username, opens a `?u=` link, or chooses demo mode.
 2. The app fetches the calendar and shows the hero summary.
 3. The graph "rises": the flat GitHub-style calendar animates into the haunted map (about 1.5 s, skippable, disabled with reduced motion).
-4. The player explores with arrow keys, WASD, or the on-screen D-pad.
-5. Wisps and chests resolve instantly when entered. Monsters start turn-based combat: attack or flee.
-6. Victories and pickups grant XP and treasure; level-ups heal fully.
-7. Defeating the boss unseals the Gate. Entering the Gate ends the run with the results screen.
+4. (v1.6) Week by week, the player picks one of up to three highlighted tiles in the next column (arrow keys, WASD, a tap, or the on-screen pad). The next two weeks are visible; the rest is fog.
+5. (v1.6) Every tile entered resolves: quiet days and wisps heal a little, chests open with a relic choice, and monsters start turn-based combat that ends only in a win or a loss.
+6. Victories and pickups grant XP and treasure; level-ups heal fully. Elites drop soul shards that weaken the boss.
+7. (v1.6) After the last week the Phantom of the best day waits. Defeating it ends the run with the results screen.
 
 ## Data source decision (decided 16 Nov 2026)
 
@@ -349,14 +372,14 @@ These rules are frozen from the MVP onward and live in the steering file `game-r
 
 | Day level | Tile | Fight? | Reward |
 | --- | --- | --- | --- |
-| 0 | Fog path (some get a gravestone decoration) | No | None |
-| 1 | Soul wisp | No | Small XP |
+| 0 | Fog path, a quiet day (some get a gravestone decoration) | No | v1.6: heal 5% max HP |
+| 1 | Soul wisp | No | Small XP; v1.6: heal 10% max HP |
 | 2 | Bug Imp (2 in 3) or small chest (1 in 3) | Imp: yes | XP, treasure |
 | 3 | Flaky Test Ghoul (2 in 3) or stocked chest (1 in 3) | Ghoul: yes | More XP, treasure, heal |
 | 4 | Merge Conflict Lich | Yes | High XP, treasure |
-| Best day | Boss (replaces the day's normal tile) | Yes | Largest XP and treasure; unseals the Gate |
+| Best day | v1.6: the tile for its level, marked as the boss's day; the boss itself is the final node after the last week | Boss: yes | Largest XP and treasure; beating it wins the run |
 | First day | Crypt (start) | No | — |
-| Last day | Gate (finish) | Boss guard if the best day is also the last day | Ends the run |
+| Last day | v1.6: the tile for its level (the Gate is removed) | By level | By level |
 
 The "1 in 3" choice is deterministic: `hash(date) % 3 === 0` means chest. All randomness comes from a seeded generator with seed `fnv1a(username + "|" + lastDate)`, so the same profile on the same day always produces the same map and the same combat rolls.
 
@@ -364,9 +387,10 @@ The "1 in 3" choice is deterministic: `hash(date) % 3 === 0` means chest. All ra
 
 - **Ties for the best day:** the most recent date wins.
 - **Best day is the first day:** use the next-best day, so the boss is never on the start tile.
-- **Shortfall:** if fewer than 6 fight tiles exist (excluding the boss), convert seeded-random level-0 days into Lost Ghosts until there are 6. The hero summary labels the map "A quiet graph — few spirits stir here."
-- **All-empty profile:** the boss becomes "The Phantom of the Empty Quarter" on the middle tile, and the shortfall rule fills the rest. The run is still winnable.
-- **Validation before play:** the start, the Gate, and the boss exist; a walkable route exists (BFS); every day appears exactly once. If validation fails, show an error and offer demo mode. A broken map is never shown.
+- **Shortfall:** if fewer than 6 fight tiles exist, convert seeded-random level-0 days into Lost Ghosts until there are 6. The hero summary labels the map "A quiet graph — few spirits stir here."
+- **Minimum fights per route (v1.6):** every route from the crypt to the boss must enter at least 4 monster tiles. While the fight-poorest route has fewer, one of its fog tiles (else a wisp, else a chest), chosen with the seeded map RNG, becomes a Lost Ghost.
+- **All-empty profile:** the boss becomes "The Phantom of the Empty Quarter" (named after the middle day), and the shortfall rules fill the rest. The run is still winnable.
+- **Validation before play (v1.6):** the start exists; every day appears exactly once; every tile reachable from the start has a legal move one column forward, so every route reaches the boss node; every route has at least 4 fights. If validation fails, show an error and offer demo mode. A broken map is never shown.
 
 ### Streak rules
 
@@ -391,12 +415,11 @@ Examples: 10 contributions in 91 days gives 47 XP (level 1). 100 gives 150 XP (l
 
 ## Combat design
 
-- Turn-based. The hero acts first and chooses Attack (`A` / Enter) or Flee (`F`).
+- Turn-based. The hero acts first and chooses Attack (`A` / Enter). (v1.6: Flee is removed; every fight ends in a win or a loss.)
 - Every action is a timing test (QTE). The player presses Space (or Enter, A, J, K, or the on-screen "Now!" button) at the right moment. See "Timing tests (QTE)" below.
 - After the hero attacks, a surviving monster strikes back. The boss strikes twice per turn, and each strike is its own dodge test.
-- Flee always succeeds. The monster gets one parting strike, defended with a dodge test. Fleeing never drops HP below 1 and leaves the monster in place.
-- If the fight happens in the row of the hero's weekday trait, the hero's attacks get +2 ATK.
-- Banishing a Ghoul or Lich drops a soul shard until the boss's ward is broken (see v1.2 changes).
+- If the fight happens in the row of the hero's weekday trait, the hero's attacks get +2 ATK. The boss fight counts as the best day's row.
+- (v1.6) Banishing a Ghoul or Lich drops a soul shard, up to 3. Each shard cuts the boss's max HP by 10%; with 3, the boss has no phase 2.
 - At 0 HP the run ends on the game-over screen. Retry restarts the same map from memory with no new fetch.
 - The combat panel shows both sprites, both HP bars, the monster name, and the source label "Risen from {weekday date} — {count} contributions".
 - Each fight should last 2–6 turns, about 10–15 seconds including timing tests, so a 3-minute video fits several.
@@ -406,7 +429,7 @@ Examples: 10 contributions in 91 days gives 47 XP (level 1). 100 gives 150 XP (l
 | Test | What the player sees | Perfect | Good | Miss (too early, too late, or no press) |
 | --- | --- | --- | --- | --- |
 | Strike (on Attack) | A marker sweeps once across a bar with a green zone and a narrow gold centre. The zone's position is seeded per strike | Critical: ×1.6 damage | ×1.0 damage | Glancing blow: ×0.5 damage |
-| Dodge (each monster strike, and the parting strike on Flee) | A red ring shrinks onto a gold circle around the target | No damage, plus a counter-attack for 50% ATK | Block: ×0.4 damage | Full damage |
+| Dodge (each monster strike) | A red ring shrinks onto a gold circle around the target | No damage, plus a counter-attack for 50% ATK | Block: ×0.4 damage | Full damage |
 
 Only a Perfect press avoids a hit completely. Pressing early ends the test as a miss, so mashing does not work. A press within the first 120 ms of a test is ignored so the key that chose Attack does not count.
 
@@ -444,7 +467,7 @@ Base damage is ×1.25 because blocking is now the normal outcome. A player who a
 | Mixed (25% Perfect, 50% Good, 25% Miss) | Wins | Won, level 6, entered the boss at 47/64 HP |
 | All Miss | Loses | Lost to a Merge Conflict Lich after 2 fights |
 
-The bot follows the v1.2 route rule: collect shards, heal at chests below 45% HP (75% before the boss), then the boss and the Gate. A first try at 1.4× damage and 0.5× block lost the All Good run at the boss, which was too punishing for an average player.
+The bot followed the v1.2 route rule: collect shards, heal at chests below 45% HP (75% before the boss), then the boss and the Gate. (v1.6 replaces it with the per-column route policy in "What changed in v1.6"; these results are re-measured.) A first try at 1.4× damage and 0.5× block lost the All Good run at the boss, which was too punishing for an average player.
 
 ## Functional requirements — MVP (must have)
 
@@ -463,38 +486,39 @@ The bot follows the v1.2 route rule: collect shards, heal at chests below 45% HP
 - **FR-MAP-1.** The map covers the 91 days ending at the last date in the data, and the summary displays that date range.
 - **FR-MAP-2.** Every day maps to exactly one tile in the GitHub calendar layout; void cells pad the first and last columns.
 - **FR-MAP-3.** Tile assignment follows the mapping rules and is deterministic for identical input.
-- **FR-MAP-4.** The map always has a start, a boss, a Gate, and a walkable route between them, verified before play.
+- **FR-MAP-4.** (v1.6) The map always has a start; every tile reachable from it has a legal move one column forward, so every route reaches the boss node; and every route enters at least 4 monster tiles. All of it is verified before play.
 
 ### Movement and exploration
 
-- **FR-MOV-1.** Four-direction movement with arrow keys and WASD.
-- **FR-MOV-2.** An on-screen D-pad appears on touch devices. (Moved into the MVP: it is about one hour of work, and judges may open the link on a phone.)
-- **FR-MOV-3.** Entering a tile triggers its encounter. Entering the sealed Gate shows "Defeat the Phantom first" and does nothing else.
+- **FR-MOV-1.** (v1.6) Forward-only movement: each move goes to the next column, to one of the legal tiles (row − 1, same row, row + 1). Keyboard: Up/W for the upper branch, Right/D for straight ahead, Down/S for the lower branch; when only one move exists, any of them takes it. Left/A does nothing on the map.
+- **FR-MOV-2.** (v1.6) On touch devices the legal tiles can be tapped, and an on-screen pad shows the three branch buttons. (Moved into the MVP: judges may open the link on a phone.)
+- **FR-MOV-3.** (v1.6) Entering a tile triggers its encounter, and every tile entered must resolve: no tile can be skipped, and the next move waits until a fight or relic choice is finished.
 - **FR-MOV-4.** The HUD always shows HP, hero level, XP to next level, treasure, and boss status.
 - **FR-MOV-5.** Visited and resolved tiles look different from unvisited tiles.
-- **FR-MOV-6.** Fog of war: unrevealed tiles show only their green shade; the lantern reveals radius √5 around the hero; the start, boss, and Gate are always visible.
-- **FR-MOV-7.** The HUD shows soul shards collected and needed. Entering a warded boss tile is refused with a message.
+- **FR-MOV-6.** (v1.6) Visibility window: tile contents are visible in the hero's column and the next 2 columns (3 with Code Review); further columns show only shape and level colour. Seen tiles stay seen. The boss node is always visible.
+- **FR-MOV-7.** (v1.6) The HUD shows soul shards collected out of 3. Shards weaken the boss; they never block it.
+- **FR-MOV-8.** (v1.6) The legal next tiles are highlighted. A final boss node after the last week is reachable from every last-column tile; entering it starts the boss fight.
 
 ### Combat
 
-- **FR-COM-1.** Combat offers Attack and Flee.
+- **FR-COM-1.** (v1.6) Combat offers Attack only. Flee is removed.
 - **FR-COM-2.** Monster stats follow the tier of the source tile and the balance formulas.
 - **FR-COM-3.** The combat view shows both HP values, the monster name, and the source date and count.
 - **FR-COM-4.** At 0 HP the game-over screen offers a retry of the same map with no new fetch.
-- **FR-COM-5.** Every Attack starts a strike test and every monster strike (including the Flee parting strike) starts a dodge test, graded Perfect, Good, or Miss using the windows in "Timing tests (QTE)". The grade appears on screen at once, for example "PERFECT DODGE!" or "TOO EARLY · HIT!".
+- **FR-COM-5.** Every Attack starts a strike test and every monster strike starts a dodge test, graded Perfect, Good, or Miss using the windows in "Timing tests (QTE)". The grade appears on screen at once, for example "PERFECT DODGE!" or "TOO EARLY · HIT!".
 - **FR-COM-6.** Timing tests accept Space, Enter, A, J, K, or a tap or click on the "Now!" button or the test itself. Grading uses the input event's timestamp, not the time it is processed.
-- **FR-COM-7.** Calm mode and Auto-timing are on the hero summary screen and are saved in local storage. A timing test in progress when the page reloads is cancelled and the fight resumes at the Attack/Flee choice.
+- **FR-COM-7.** Calm mode and Auto-timing are on the hero summary screen and are saved in local storage. A timing test in progress when the page reloads is cancelled and the fight resumes at the Attack choice.
 
 ### Progression and run completion
 
 - **FR-PRO-1.** XP comes from fights, chests, and wisps.
 - **FR-PRO-2.** Hero level follows the displayed XP table; level-ups heal fully and show a short effect.
-- **FR-PRO-3.** Defeating the boss unseals the Gate; entering the unsealed Gate shows the victory screen.
+- **FR-PRO-3.** (v1.6) Defeating the boss on the boss node wins the run and shows the victory screen.
 - **FR-PRO-4.** The results screen shows outcome, final level, XP, monsters defeated, critical hits, perfect dodges, treasure, steps taken, and the GitHub statistics the run came from, plus a "today's tile" line: if today has contributions, "Today's tile is already glowing"; if not, "Today's tile is still dark. Commit something and come back tomorrow."
 
 ### Persistence
 
-- **FR-SAV-1.** Run state is saved to local storage under a versioned key (`cq:v1:run`) after every resolved tile and restored on reload. A save with an unknown version is discarded, not crashed on.
+- **FR-SAV-1.** Run state is saved to local storage under a versioned key (v1.6: `cq:v2:run`, `version: 2`) after every resolved tile and restored on reload. A save with an unknown version is discarded, not crashed on. The prototype's `cq:v1:run` is never read, written, or removed.
 - **FR-SAV-2.** No ContribQuest server exists. The only network requests go to the contribution API (and, if built, the GitHub events API and avatar URL). This is disclosed on the start screen in one line.
 - **FR-SAV-3.** "New run" clears the saved run and returns to the start screen.
 
@@ -564,7 +588,7 @@ These requirements describe features the prototype already has. They are in scop
 
 ### Relics
 
-- **FR-REL-1.** The 10 relics from v1.4 stay, with the effects in that table except Force Push and Pair Programmer (FR-REL-2). Every chest offers three unowned relics shuffled with the run's seeded RNG; the player keeps one by click or by pressing 1–3. No offer is shown once all relics are owned.
+- **FR-REL-1.** The 10 relics from v1.4 stay, with the effects in that table except Force Push and Pair Programmer (FR-REL-2) and, in v1.6, CI Cache ("After each won fight, heal 10% of max HP.", replacing the flee effect) and Code Review ("See one more week ahead.", replacing the √8 radius). Every chest offers three unowned relics shuffled with the run's seeded RNG; the player keeps one by click or by pressing 1–3. No offer is shown once all relics are owned.
 - **FR-REL-2.** Force Push: Perfect strike damage × 1.25. Pair Programmer: Miss strike damage × 1.6. Both apply to each hit of a combo.
 - **FR-REL-3.** Rubber Duck turns the first Miss of each fight into a Good; in a combo, only the first missed hit of the three changes.
 - **FR-REL-4.** Owned relics appear in the HUD, on the results screen, and on the share card, and are saved with the run.
@@ -591,7 +615,7 @@ These requirements describe features the prototype already has. They are in scop
   | Untouchable | 10 perfect dodges in one run |
   | Critical Path | 10 critical hits in one run |
   | Dependency Hell | Hold 4 relics in one run |
-  | Speedrun | Win in 20 steps or fewer |
+  | Speedrun | (v1.6) Win after 6 or fewer banishes, the boss included (was: win in 20 steps or fewer) |
   | No Dependencies | Win without opening a chest |
   | Nightmare Mode | Win with a Nightmare (4-star) class |
   | Full Stack | Win with all four classes |
@@ -612,14 +636,14 @@ These requirements describe features the prototype already has. They are in scop
 
 - **FR-FX-1. Hero sprites.** Heroes are 24×24 pixel sprites: one outfit per class with the race's face (FR-RACE-3), auto-shaded, with an animated cape. Frames: idle, sway (alternating every 520 ms), step while moving, blink (130 ms every 3.4 s), and look left/right. Glows are drawn on top: race eye glow, the Wanderer's lantern, the Mage's orb, the Knight's blade glint, and the Rogue's dagger tips.
 - **FR-FX-2. Portrait.** The hero summary shows the hero at 6× scale with the aura glow, a breathing motion, eyes that follow the pointer, and a class flourish every 4 s. Clicking it, or pressing Enter or Space on it, makes the hero hop and speak (FR-FX-4). Choosing a race or class makes the hero say that race's or class's line.
-- **FR-FX-3. Map interaction.** Tapping or clicking a tile next to the hero moves there; tapping the hero makes it hop and speak. Hovering a tile shows a tooltip with the date, the contribution count, and what the tile holds ("Hidden in the fog" for unrevealed tiles, "banished" or "taken" once resolved). The tooltip is hidden during combat.
+- **FR-FX-3. Map interaction.** Tapping or clicking a highlighted legal tile moves there (v1.6; was: a tile next to the hero); tapping the hero makes it hop and speak. Hovering a tile shows a tooltip with the date, the contribution count, and what the tile holds ("Hidden in the fog" for unrevealed tiles, "banished" or "taken" once resolved). The tooltip is hidden during combat.
 - **FR-FX-4. Speech bubbles.** The hero speaks a random line from a shared pool, the race's lines, and the class line. Bubbles last about 2.2 s on the portrait and 2.4 s on the map. On entering the map the hero says the race's first line.
 - **FR-FX-5. Idle behaviour.** After 3.5 s without input on the map, the hero performs a class fidget at most every 4.5 s (Mage sparks, Knight shield glint, Rogue turns around with a hop, Wanderer lantern motes). After 14 s it falls asleep, with a "z" rising every 1.6 s. Any key or pointer input resets the idle timer.
 - **FR-FX-6. Combat effects.** Particles, screen shake, hit-stop, slow motion, floating damage text, the boss phase-2 banner and red tint, and a low-HP danger overlay. `prefers-reduced-motion` turns off screen shake, flashes, idle actions, and frame animation; timing-test animations stay.
 - **FR-FX-7. Sound and music.** Every effect and the music are synthesized with Web Audio at run time; the project ships no audio files. The music is a drone with modes for menu, explore, combat, boss, and boss phase 2, graveyard bells while exploring, and a heartbeat whose pace rises in combat (0.78 s), at the boss (0.5 s), in phase 2 (0.38 s), and at low HP on the map (0.9 s).
 - **FR-FX-8.** Audio starts on the first key or pointer input (browser autoplay rules). A Sound button and the M key toggle mute, saved in local storage. Audio failures never block the game.
 - **FR-FX-9.** Timing accuracy feedback (added 19 Nov 2026 after playtesting: dodges felt unreadable). During ring, sidestep, and shield tests the ring turns green inside the Good window and gold inside the Perfect window, and an approach strip under it shows time to impact with the gold and green zones. Every graded press records its signed error; the grade line adds "N MS EARLY/LATE" (or "ON TIME" under 8 ms); between tests a hit-error meter shows the last 12 presses against the current windows and the average of the last 20. The hero screen has a timing offset (−150 to +150 ms, step 5) that is subtracted from every press, and "Use my average" sets it from the measured average. Window sizes and damage do not change.
-- **FR-FX-10.** Battle screen layout (added 20 Nov 2026): a full-width battle screen instead of a small dialog. Top: a boss-style HP bar with the foe's portrait, its name on a framed plate, 10% tick marks, a Phase 2 marker at half HP for the boss, and chips for the source day, current timing %, and the boss phase. Middle: an 880×330 stage drawn at 2× (moonlit haunted graveyard with a far mountain, cemetery gate, tower, ghost-willow trees, stone path, and ground in the source day's green; falling petals) with the hero on the left under a nameplate (name, HP bar, timing bar, relic icons) and a larger foe on the right; the grade line and the timing test overlay the stage. Bottom: a battle log of the last 7 lines, newest in bold, and a side panel with HERO and FOE tabs (HP, attack, pattern description, class and race, relics) above the Attack/Flee or Now! buttons. Below 760 px wide the timing test moves under the stage and the panels stack.
+- **FR-FX-10.** Battle screen layout (added 20 Nov 2026): a full-width battle screen instead of a small dialog. Top: a boss-style HP bar with the foe's portrait, its name on a framed plate, 10% tick marks, a Phase 2 marker at half HP for the boss, and chips for the source day, current timing %, and the boss phase. Middle: an 880×330 stage drawn at 2× (moonlit haunted graveyard with a far mountain, cemetery gate, tower, ghost-willow trees, stone path, and ground in the source day's green; falling petals) with the hero on the left under a nameplate (name, HP bar, timing bar, relic icons) and a larger foe on the right; the grade line and the timing test overlay the stage. Bottom: a battle log of the last 7 lines, newest in bold, and a side panel with HERO and FOE tabs (HP, attack, pattern description, class and race, relics) above the Attack (v1.6: no Flee) or Now! buttons. Below 760 px wide the timing test moves under the stage and the panels stack.
 
 ## Scope after the MVP (MoSCoW)
 
@@ -636,12 +660,12 @@ Nothing below starts until every Must is checked against the hosted app. Each it
 
 ## Non-functional requirements
 
-- **Performance.** Map generation under 50 ms for 91 days. The game runs at 60 fps on a mid-range laptop. No animation blocks input for more than 300 ms.
-- **Responsiveness.** Playable from 360 px wide. The map scales by integer factors and scrolls on narrow screens; the HUD and D-pad stay visible.
-- **Accessibility.** Every action works by keyboard alone. Tile types differ by shape and icon, not only color. Numbers use a legible font. `prefers-reduced-motion` disables screen shake, flashes, and the intro animation; the timing-test animations stay because they are the game input. Timing tests are never the only way through: Calm mode slows them and Auto-timing removes the timing requirement for players who cannot use fast inputs. Text meets 4.5:1 contrast.
+- **Performance.** Map generation under 50 ms for 91 days. The game runs at 60 fps on a mid-range laptop. No animation blocks input for more than 300 ms. (v1.6) On a mid-range phone (390 × 844, pixel ratio 3, 4× CPU slowdown) the 3D map and fight keep a median frame time of 33 ms or less; the `three` chunk is at most 180 KB gzip and loads after the start screen.
+- **Responsiveness.** Playable from 360 px wide. The map scales by integer factors and scrolls on narrow screens; the HUD and D-pad stay visible. (v1.6) The 3D map's camera keeps the hero's week and the next two in view at 360 px; the D-pad becomes a three-button branch pad.
+- **Accessibility.** Every action works by keyboard alone. Tile types differ by shape and icon, not only color. Numbers use a legible font. `prefers-reduced-motion` disables screen shake, flashes, and the intro animation; the timing-test animations stay because they are the game input. (v1.6) In the 3D view it also stops camera moves, bobbing, lantern flicker, and drifting fog and fireflies. Timing tests are never the only way through: Calm mode slows them and Auto-timing removes the timing requirement for players who cannot use fast inputs. Text meets 4.5:1 contrast.
 - **Reliability.** Every fetch or parse failure leads to a readable error with demo mode. All data is validated against a schema at the trust boundary before it reaches the generator.
 - **Privacy.** No credentials, no analytics, no cookies. Only game state and a 1-hour data cache stay in the player's browser.
-- **Browser support.** Current Chrome, Firefox, Safari, and Edge on desktop; Chrome and Safari on mobile.
+- **Browser support.** Current Chrome, Firefox, Safari, and Edge on desktop; Chrome and Safari on mobile. (v1.6) The 3D view needs WebGL 2; without it the game runs on the flat Canvas 2D renderer with the same rules.
 - **Maintainability.** Data, map generation, engine, renderer, and storage are separate modules with pure functions at the core.
 - **Availability during judging.** The hosted app stays live and frozen from the deadline until at least 30 Jan 2027.
 
@@ -650,7 +674,7 @@ Nothing below starts until every Must is checked against the hosted app. Each it
 1. **Start.** Title, the tagline "Your GitHub graph is haunted.", a username field, Start, "Play the demo", a looping 4-second preview of the graph turning into the map, a 3-line "how to play", and the one-line privacy note.
 2. **Hero summary.** Pixel hero with aura, avatar, the statistics from FR-IMP-4, and the XP table. Primary action: "Enter the graph".
 3. **Map.** The map fills most of the screen. The HUD is at the top, a 3-line event log at the bottom. Week labels above the columns and weekday labels on the side, as on GitHub, so the origin is unmistakable.
-4. **Combat.** A panel over the map with both sprites, HP bars, the source label, Attack and Flee.
+4. **Combat.** A panel over the map with both sprites, HP bars, the source label, and Attack (v1.6: no Flee).
 5. **Results.** Victory or defeat, statistics side by side with the GitHub numbers, the "today's tile" line, "Play again", and "New username".
 
 Supporting states: loading, error, game over, and a how-to-play overlay readable in under 30 seconds.
@@ -669,7 +693,7 @@ Supporting states: loading, error, game over, and a how-to-play overlay readable
 | --- | --- | --- |
 | Language | TypeScript (strict) | Catches data-shape mistakes at the API boundary; Kiro generates and reviews typed code well |
 | Build | Vite | Fast dev server, static output, minimal config |
-| Rendering | Canvas 2D, no game framework | 91 tiles do not need an engine; keeps the code small and fully understood |
+| Rendering | (v1.6) Three.js billboard world, with a Canvas 2D or reduced fallback without WebGL; see `tech.md`. Was: Canvas 2D, no game framework | The author preferred the 3D billboard sample over a flat HTML/Canvas look; the sprites and rules stay the same |
 | UI screens | Plain DOM over the canvas | Forms, buttons, and text stay accessible |
 | Schema validation | Zod | One schema validates both live and demo data |
 | Tests | Vitest + fast-check | Unit tests plus property-based tests |
@@ -736,7 +760,7 @@ type ContributionSet = {
   days: ContributionDay[];  // the 91-day window, oldest first
 };
 
-type TileKind = "void" | "fog" | "wisp" | "chest" | "monster" | "boss" | "start" | "gate";
+type TileKind = "void" | "fog" | "wisp" | "chest" | "monster" | "start";   // v1.6: "boss" and "gate" removed; the boss is a node after the last column
 
 type Tile = {
   col: number; row: number;
@@ -749,7 +773,7 @@ type Tile = {
 type Hero = { name: string; level: number; xp: number; hp: number; maxHp: number; atk: number; auraTier: number; treasure: number };
 
 type RunState = {
-  version: 1;
+  version: 2;               // v1.6 (saved under cq:v2:run); the full type is in the combat-timing design
   seed: number; rngState: number;
   source: ContributionSet;
   map: Tile[][];
@@ -771,7 +795,7 @@ Generated once by `scripts/make-demo-data.ts`, reviewed by hand, frozen as `src/
 - One visible empty week in the first third (the "graveyard" stretch that tells the habit story).
 - A 15-day streak ending on the last day, giving aura tier 2.
 - One clear best day about two weeks before the end, hosting the boss.
-- An intended route of 15–25 steps with 6–10 fights, confirmed by the simulator.
+- A bot route with 6–10 fights, confirmed by the simulator (v1.6: every route is 14 steps and has at least 4 fights plus the boss).
 
 ## Using Kiro — the evidence plan
 
@@ -800,14 +824,14 @@ Kiro usage is a pass/fail gate and 20% of the score, so the evidence is produced
 | --- | --- | --- |
 | P1 | Generating twice from the same input gives deeply equal maps | FR-MAP-3 |
 | P2 | Every input day appears in exactly one tile, in calendar order | FR-MAP-2 |
-| P3 | Start, boss, and Gate exist, and BFS finds a route start → boss → Gate | FR-MAP-4 |
-| P4 | The boss sits on the highest-count day (latest on ties), never on the start | Mapping rules |
+| P3 | (v1.6, restated) From every tile reachable from the start there is at least one legal move, and every legal move goes exactly one column forward to row r − 1, r, or r + 1 (or the stated fallback, or the boss node from the last column). Was: start, boss, and Gate exist and BFS finds start → boss → Gate | FR-MAP-4, FR-MOV-1 |
+| P4 | (v1.6, restated) The boss is named after the highest-count day (latest on ties), never the start; only that day's tile is marked as the best day, and no tile is a boss or Gate | Mapping rules |
 | P5 | Every generated map has at least 6 fight tiles besides the boss | Shortfall rule |
 | P6 | Starting ATK and max HP never decrease as the streak grows, and stop growing at tier 4 | Story 4 |
 | P7 | Monster HP and damage never decrease as the tier rises | FR-COM-2 |
 | P8 | `restore(save(state))` equals `state` | FR-SAV-1 |
 | P9 | Live fixtures and demo data both pass the schema; random malformed payloads are rejected, never thrown past the boundary | FR-DEM-3, reliability |
-| P10 | Shards needed never exceed the number of level-3/4 monsters, so the ward can always be broken | FR-MOV-7 |
+| P10 | Retired in v1.6 (there is no ward). Was: shards needed never exceed the number of level-3/4 monsters. Replaced by P23 | — |
 | P11 | Every profile gets exactly one trait, and its rows are valid weekday rows | Weekday trait |
 | P12 | For any press time, the grade is Perfect inside the Perfect window, Good inside the Good window, and Miss outside it; windows never shrink as the aura tier grows or with Calm mode on | FR-COM-5 |
 | P13 | For any fight state, damage taken is ordered Perfect (0) ≤ Good ≤ Miss, and damage dealt is ordered Miss ≤ Good ≤ Perfect | FR-COM-5 |
@@ -817,6 +841,11 @@ Kiro usage is a pass/fail gate and 20% of the score, so the evidence is produced
 | P17 | A relic offer never contains an owned relic or a duplicate | FR-REL-1 |
 | P18 | Choosing a race or class never changes the map | FR-CLS-1, FR-RACE-1 |
 | P19 | `restore(save(state))` equals `state` for any reachable state, including class, race, relics, and pressure | FR-SAV-1, FR-REL-4 |
+| P20 | (v1.6) Every route from the start reaches the boss node in exactly `cols` moves, one day tile per column | FR-MAP-4, FR-MOV-8 |
+| P21 | (v1.6) Every route from the start enters at least 4 monster tiles (the boss not counted) | FR-MAP-4, Shortfall rule |
+| P22 | (v1.6) At every point of a run, a tile's contents are visible exactly when its column is at most the hero's column + 2 (+3 with Code Review), and every legal move is visible | FR-MOV-6, FR-MOV-8 |
+| P23 | (v1.6) Shards stay in 0–3; the boss's max HP never rises as shards rise and is the v1.5 value at 0 shards; with 3 shards the boss never enters phase 2 | FR-MOV-7 |
+| P24 | (v1.6) The hero's column never decreases, each accepted move adds exactly one column and one step, no move is accepted during a fight or a relic offer, and every visited tile is resolved whenever the hero is exploring | FR-MOV-3 |
 
 **Balance targets for the simulator (v1.5).** The simulator ports the prototype's skill bot: each press lands at a random offset from the target with standard deviation σ. It runs 200 seeds per cell on the demo graph and on 6 fixture graphs. These targets replace the grade-policy targets above for class balance; the grade-policy runs stay as a regression check for the Wanderer.
 
@@ -899,7 +928,7 @@ Recorded on Wed 2 Dec with the author's own username on the same day, plus a bac
 | 0:15–0:35 | Type a username. The flat calendar rises into the haunted map. "Every day of the last 13 weeks is now a tile." | Innovation, Presentation |
 | 0:35–0:55 | Hero summary: total → starting level, 15-day streak → aura tier 2 (+2 ATK, +10 HP) | Story 4 |
 | 0:55–1:30 | Explore: a wisp, a chest, a Bug Imp "risen from Wed 9 Sep — 6 contributions". Land a CRITICAL! strike | Story 2 |
-| 1:30–2:05 | The boss: "The Phantom of your best day — 31 contributions." Two-strike combo, one PERFECT DODGE! with counter, win, the Gate opens | Design, Presentation |
+| 1:30–2:05 | The boss: "The Phantom of your best day — 31 contributions." Two-strike combo, one PERFECT DODGE! with counter, win, "Your graph is exorcised." (v1.6: no Gate) | Design, Presentation |
 | 2:05–2:25 | Results next to the GitHub numbers; "Today's tile is still dark…" | Potential Impact |
 | 2:25–2:55 | How Kiro built it: a spec requirement → its property test → the hook catching a failure → steering keeping the rules consistent; `/.kiro` in the repo | Technological Implementation |
 
@@ -954,6 +983,8 @@ Exploration footage is cut first if the rehearsal overruns. The problem statemen
 | 19 Nov 2026 | Port every prototype feature to the rebuild; use the cut list only if the 28 Nov checkpoint is missed | Port everything, or trim now | Every rule and number already exists and was tested in the prototype; the cut list keeps the deadline safe |
 | 19 Nov 2026 | Deploy GitHub Pages through a GitHub Actions workflow | Branch deploy, or Actions | The Vite build output must be built in CI. After the workflow PR is merged, the author switches Settings → Pages → Source to "GitHub Actions" once |
 | 19 Nov 2026 | Rebuild as a TypeScript project from 6 Kiro specs, with the prototype as the reference design | Add `/.kiro` around the prototype, or rebuild from specs | Traceable PRD → spec → task → code → test history, a pure testable engine, and a fast headless simulator (see `docs/BUILD-PLAN.md`) |
+| 27 Nov 2026 | Forward-only branching routes ("one floor = one week"): unskippable tiles, no Flee, a final boss node, shards as boss weakeners, a 2-column visibility window (PRD v1.6). Rebuild only; the prototype keeps v1.5 | Keep free 4-direction exploration; make only fights unskippable; branching routes | The author wants each floor's battles and route to be unskippable with branching choices. The calendar layout already gives up to 3 forward neighbours per tile, so the graph stays recognisable |
+| 27 Nov 2026 | Render the TypeScript build with Three.js in the billboard style (3D slabs, fog, moonlight, lanterns, fireflies; pixel sprites as camera-facing planes), HTML HUD on top, Canvas 2D or reduced fallback. `three` is the second runtime dependency | Canvas 2D only (v1.5 plan), full 3D models, billboard sprites | The author did not like a flat HTML-only look and chose the billboard sample; it reuses every sprite. Specified in `tech.md`, `art-style.md`, and the presentation spec |
 
 ## Sources
 

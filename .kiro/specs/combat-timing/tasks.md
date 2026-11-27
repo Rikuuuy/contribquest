@@ -1,6 +1,6 @@
 # Tasks: combat-timing
 
-This is the largest spec, split into ordered groups that can each be built and tested on their own. Groups 1–8 are Phase 1 (core rules); group 9 is Phase 2 (hero systems). Groups need data-import task 1.2 and map-generation tasks 1–4; group 7 also needs map-generation task 6. Each task ends with its verify command passing and a commit naming the requirement IDs. A constant added to `balance.ts` is added to `game-rules.md` in the same commit.
+This is the largest spec, split into ordered groups that can each be built and tested on their own. Groups 1–8 are Phase 1 (core rules); group 9 is Phase 2 (hero systems); groups 11–12 (at the end) apply the v1.6 rules. Groups need data-import task 1.2 and map-generation tasks 1–4; group 7 also needs map-generation task 6. Each task ends with its verify command passing and a commit naming the requirement IDs. A constant added to `balance.ts` is added to `game-rules.md` in the same commit.
 
 - [ ] 1. Constants, types, and test fixtures
   - [ ] 1.1 Add the combat constants to `src/engine/balance.ts`: `QTE` (perfect 70, good 170, auraPerfect 10, calm 1.6, grace 120, counter 0.5, dmgScale 1.25), `ATK_MULT`, `DEF_MULT`, class stat numbers, `DIFFICULTY`, monster formula numbers, pattern numbers (quick 640, flaky 320/220/0.4/0.25, conflict 300/120/1.6, plan chance 0.65, imp ×0.6), phase-2 numbers (speed 0.85, pressure 0.9, damage 0.75), combo cap 120, sidestep ×1.2, charge 0.82 / 2600 / +20, deadline +30, shield +10, assist charge 300, and the relic/race combat numbers (Linter 25, Elf 15, Force 1.25, Pair 1.6, Hotfix 0.06, Vampire 2, trait +2)
@@ -104,3 +104,35 @@ This is the largest spec, split into ordered groups that can each be built and t
   - [ ] 10.1 Run the engine suite and the type check; confirm `src/engine` has no `Math.random`, `Date.now`, `performance.now`, `document`, `window`, or `localStorage`, and imports nothing from `src/render`, `src/audio`, or `src/main.ts`
     - _Requirements: 20.1 (all of FR-COM-1 to FR-COM-7, FR-CLS-1 to FR-CLS-9, FR-DIF-1 to FR-DIF-5)_
     - _Verify: `npm run typecheck && npx vitest --run tests/engine && ! grep -rnE "Math\.random|Date\.now|performance\.now|document\.|window\.|localStorage|from ['\"]\.\./(render|audio|main)" src/engine`_
+
+## v1.6: no Flee, boss node, unskippable tiles
+
+Groups 1–10 built the v1.5 rules and stay as history. Groups 11–12 change them to the v1.6 rules (PRD v1.6). They need map-generation group 9 and are built together with map-generation group 10 and progression group 13. A constant added to `balance.ts` is added to `game-rules.md` in the same commit (game-rules.md already lists the v1.6 values).
+
+- [ ] 11. Routes, no Flee, and the boss node (v1.6)
+  - [ ] 11.1 Add `SHARD_MAX = 3`, `SHARD_BOSS_HP_CUT = 0.1`, `SHARD_NO_PHASE2 = 3`, and `RELIC_COMBAT.cacheHeal = 0.1` to `src/engine/balance.ts`, with assertions in `tests/engine/balance.test.ts` that read them from `game-rules.md`
+    - _Requirements: 2.6, 14.3, 17.6 (FR-MOV-7, FR-REL-1)_
+    - _Verify: `npx vitest --run tests/engine/balance.test.ts`_
+  - [ ] 11.2 Remove Flee: the `flee` action, `startFlee`, `resolveFlee`, `finishEscape`, `FightNext` `escape`, the `flee` test kind, the `escaped` and `gateOpen` events, `FLEE_KEYS` in `input.ts`; delete the flee cases from `tests/engine/combat.test.ts` and update `tests/engine/input.test.ts`
+    - _Requirements: 1.2, 1.4, 16.1, 16.2, 18.2, 20.3, 22.5 (FR-COM-1, FR-COM-6)_
+    - _Verify: `npx vitest --run tests/engine/combat.test.ts tests/engine/input.test.ts && ! grep -rnE "'flee'|startFlee|resolveFlee|finishEscape|'escape'|gateOpen" src/engine`_
+  - [ ] 11.3 Change the `move` action to `{ type: "move"; to: Pos }` in `src/engine/state.ts` and `src/engine/step.ts`: status gate, `checkMove`/`applyMove`, `moved` event, `enterTile` for monster, chest, wisp, fog (`restDay` from progression task 13.1), and the boss node; remove the `blocked` event; extend `tests/engine/step.test.ts` with legal and refused moves and every entry kind
+    - _Requirements: 1.1, 22.1–22.4 (FR-MOV-1, FR-MOV-3, FR-MOV-8)_
+    - _Verify: `npx vitest --run tests/engine/step.test.ts`_
+  - [ ] 11.4 Implement `makeBoss` and `bossShardLine` in `src/engine/monsters.ts` (and the risen-label rule in `sourceLabel`), `startBossFight` in `src/engine/combat.ts`, `bound` in `checkPhase2`; extend `tests/engine/monsters.test.ts` (69, 62, 56, 49 HP at start level 3 for 0–3 shards) and `tests/engine/patterns.test.ts` (bound boss at half HP stays in phase 1)
+    - _Requirements: 1.1, 2.4, 2.6, 14.3 (FR-COM-2, FR-COM-3, FR-COM-5, FR-MOV-7)_
+    - _Verify: `npx vitest --run tests/engine/monsters.test.ts tests/engine/patterns.test.ts`_
+  - [ ] 11.5 Change `winFight`: the CI Cache heal after non-boss wins, and the boss win (bossDown, bossHpLeft, new log line, `monsterDown`, `endRun("won")`, no Gate); extend `tests/engine/combat.test.ts`
+    - _Requirements: 17.1, 17.2, 17.3, 17.6 (FR-PRO-3, FR-REL-1)_
+    - _Verify: `npx vitest --run tests/engine/combat.test.ts`_
+  - [ ] 11.6 Update `tests/engine/rng-order.test.ts`: skip the recorded flee fights, drop flee from the coverage check, and replay the boss recording with `shards = 0`; do not re-record `demo-fight.json`
+    - _Requirements: 20.5, 2.6 (FR-COM-5, FR-MAP-3)_
+    - _Verify: `npx vitest --run tests/engine/rng-order.test.ts`_
+  - [ ] 11.7 Add P23 to `tests/engine/combat.prop.test.ts` and write `tests/engine/step.prop.test.ts` for P24 (action sequences with random legal and illegal `move` targets)
+    - _Requirements: 2.6, 14.3, 22.1–22.4 (FR-MOV-3, FR-MOV-7, P23, P24)_
+    - _Verify: `npx vitest --run tests/engine/combat.prop.test.ts tests/engine/step.prop.test.ts`_
+
+- [ ] 12. Module check (v1.6)
+  - [ ] 12.1 Run the engine suite and the type check; confirm the engine purity rules still hold and that no Flee or Gate code is left in `src/engine`
+    - _Requirements: 20.1, 22.1–22.5 (FR-COM-1 to FR-COM-7, FR-MOV-8)_
+    - _Verify: `npm run typecheck && npx vitest --run tests/engine && ! grep -rnE "Math\.random|Date\.now|performance\.now|document\.|window\.|localStorage|from ['\"]\.\./(render|audio|main)" src/engine && ! grep -rnE "'flee'|resolveFlee|gateOpen|gateIdx" src/engine`_
