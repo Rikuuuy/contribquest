@@ -1,9 +1,12 @@
+import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
+import { readRun } from '../../src/data/runstore';
 import { continueLabel, restore, serialize } from '../../src/engine/save';
 import { newRun, type RunSettings } from '../../src/engine/run';
 import { step } from '../../src/engine/step';
 import type { Action, RunState } from '../../src/engine/state';
 import { demoSet, makeFightRun } from '../fixtures/run';
+import { memoryStorage } from '../fixtures/storage';
 
 const SETTINGS: RunSettings = { heroClass: 'wanderer', heroRace: 'human', calm: false, assist: false };
 
@@ -75,5 +78,46 @@ describe('FR-COM-7: restoring a fight', () => {
 describe('FR-SAV-1: continue label', () => {
   it("names the map set's username", () => {
     expect(continueLabel(serialize(demoRun()))).toBe("Continue demo-necromancer's run");
+  });
+});
+
+/**
+ * `localStorage["cq:v1:run"]` written by prototype/index.html after "Play the demo", "Enter the graph",
+ * picking the Commit Blessing relic, and four moves. It shares the origin and the key, so it must be ignored.
+ */
+const prototypeSave = JSON.parse(readFileSync(new URL('../fixtures/prototype-save.json', import.meta.url), 'utf8')) as Record<
+  string,
+  unknown
+>;
+
+describe('FR-SAV-1: invalid saves are "no save"', () => {
+  it('rejects version 2', () => {
+    const saved = throughJson(serialize(demoRun())) as Record<string, unknown>;
+    expect(restore({ ...saved, version: 2 })).toBeNull();
+  });
+
+  it('rejects a save with a missing or mistyped field', () => {
+    const saved = throughJson(serialize(demoRun())) as Record<string, unknown>;
+    for (const key of ['set', 'map', 'hero', 'opts', 'stats', 'newTrophies', 'undying']) {
+      const { [key]: _gone, ...rest } = saved;
+      expect(restore(rest), key).toBeNull();
+    }
+    expect(restore({ ...saved, status: 'paused' })).toBeNull();
+    expect(restore({ ...saved, hero: { ...(saved['hero'] as object), cls: 'bard' } })).toBeNull();
+    const map = saved['map'] as { tiles: unknown[] };
+    expect(restore({ ...saved, map: { ...map, tiles: map.tiles.slice(1) } })).toBeNull();
+  });
+
+  it('rejects the save captured from the prototype', () => {
+    expect(prototypeSave['version']).toBe(1);
+    expect((prototypeSave['map'] as { tiles: unknown[] }).tiles).toHaveLength(91);
+    expect(restore(prototypeSave)).toBeNull();
+    const storage = memoryStorage({ 'cq:v1:run': JSON.stringify(prototypeSave) });
+    expect(restore(readRun(storage))).toBeNull();
+  });
+
+  it('rejects non-JSON and non-objects without throwing', () => {
+    expect(restore(readRun(memoryStorage({ 'cq:v1:run': '{not json' })))).toBeNull();
+    for (const v of [null, undefined, 42, 'save', [], {}, '{"version":1}']) expect(restore(v)).toBeNull();
   });
 });

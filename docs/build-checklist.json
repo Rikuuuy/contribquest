@@ -948,7 +948,7 @@
       "spec": "progression",
       "task": "7.3",
       "title": "Write `tests/engine/save.test.ts`, including a save captured from the prototype (`localStorage[\"cq:v1:run\"]` after a few demo moves, stored in `tests/fixtures/prototype-save.json`) that must be rejected",
-      "status": "todo",
+      "status": "done",
       "verify": "npx vitest --run tests/engine/save.test.ts"
     },
     {
