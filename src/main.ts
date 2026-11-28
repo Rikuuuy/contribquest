@@ -240,7 +240,6 @@ function mountNext(): void {
     audio.setMute(settings.mute);
     saveSettings(storage, settings);
     refreshSoundBtn();
-  audio.setMode('menu');
   }
 
   // Audio starts on the first key or pointer input (requirement 14.4); later inputs resume a suspended context.
@@ -254,6 +253,7 @@ function mountNext(): void {
     if (b && b.id !== 'btn-qte' && b.id !== 'btn-sound') audio.play('ui');
   });
   refreshSoundBtn();
+  audio.setMode('menu');
   const demoMap = newRun(loadDemo(() => Date.now()), null, settings);
 
   loadWorld()
