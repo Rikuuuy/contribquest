@@ -1608,7 +1608,7 @@
       "spec": "presentation",
       "task": "9.2",
       "title": "Implement `soundsFor` (v1.6 sound set: no `blocked` or `gate`; `rest`, cache heal, `bound`) and `musicModeFor` in `src/audio/events.ts`, wire them in `main.ts`, and add the Sound button and M key; write `tests/audio/events.test.ts`",
-      "status": "todo",
+      "status": "done",
       "verify": "npx vitest --run tests/audio/events.test.ts && npm run build && ! find dist -iregex '.*\\.\\(mp3\\|ogg\\|wav\\|m4a\\|flac\\)' | grep ."
     },
     {

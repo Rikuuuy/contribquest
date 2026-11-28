@@ -78,6 +78,8 @@ declare global {
 const CONTEXT_GRACE_MS = 3000;
 const TEASER_LOOP_MS = 5200;
 const MAX_FRAME_FAILS = 3;
+/** Delay from a Perfect dodge to the counter swing (ms). */
+const COUNTER_MS = 330;
 
 /** A copy of `src` with each row shifted by `lean × (H − 1 − r) / (H − 1)` px (feet planted), padded on both sides. */
 function rigCanvas(src: HTMLCanvasElement, lean: number): HTMLCanvasElement {
@@ -415,9 +417,10 @@ export function createWorldRenderer(host: HTMLElement, deps: WorldRendererDeps =
         if (e.killed) later((e.grades.length - 1) * PACING.comboGap + 250, death);
         if (!e.grades.length) arenaStrike(a, 'hero', now);
       } else if (e.type === 'counter') {
-        arenaStrike(a, 'hero', now);
-        later(100, (x, t) => heroImpact(x, t, 'good', e.dmg, 'COUNTER '));
-        if (e.killed) later(250, death);
+        // The counter swing follows the dodge by 330 ms (prototype resolveDefend), as on the flat stage and in audio.
+        later(COUNTER_MS, (x, t) => arenaStrike(x, 'hero', t));
+        later(COUNTER_MS + 100, (x, t) => heroImpact(x, t, 'good', e.dmg, 'COUNTER '));
+        if (e.killed) later(COUNTER_MS + 250, death);
       } else if (e.type === 'monsterHit') {
         arenaStrike(a, 'foe', now);
         later(PACING.hpBarDelay, (x, t) => {

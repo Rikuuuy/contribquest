@@ -1,13 +1,16 @@
 // Entry point. Until the cutover, index.html redirects visitors to the prototype and this build runs at /next/.
 // This file wires input and timers to the engine (v1.6: moves go through the route view, presentation 12.2).
+import { musicModeFor, soundsFor, type ScreenId } from './audio/events';
+import { createAudio } from './audio/sfx';
 import { loadDemo } from './data/demo';
-import { loadSettings } from './data/settings';
-import { combatKey, newRun, nextDeadline, step, type Action, type InputEvent, type RunState } from './engine';
+import { loadSettings, saveSettings } from './data/settings';
+import { combatKey, newRun, nextDeadline, step, type Action, type InputEvent, type Mode, type RunState } from './engine';
 import { createBackground } from './render/background';
 import { $, show } from './render/dom';
 import { whiteOut } from './render/fx';
 import { pressError, recordHit, type HitLog } from './render/hit-meter';
-import { isArrowKey, relicKey, routeKey } from './render/input';
+import { hudView } from './render/hud';
+import { isArrowKey, isMuteKey, relicKey, routeKey } from './render/input';
 import { routeView, targetFor } from './render/map/route-view';
 import { onReducedChange, REDUCED } from './render/motion';
 import { Pacer, resolvedKind } from './render/pacing';
@@ -25,6 +28,8 @@ const timers: { deadline: ReturnType<typeof setTimeout> | null; advance: ReturnT
   advance: null,
 };
 const listeners = new Set<(s: RunState) => void>();
+/** The mode of the test the last step's press went to (the charge sound); null when the step was no press. */
+let lastPress: Mode | null = null;
 const pacer = new Pacer();
 /**
  * Timing feedback (requirement 17): the offset in ms subtracted from every press and release time (the summary's
@@ -41,6 +46,7 @@ const timing: { offset: number; hits: HitLog; lastError: number | null } = {
 export function setRun(s: RunState): void {
   state = s;
   testId = -1;
+  lastPress = null;
   afterStep();
 }
 
@@ -54,6 +60,7 @@ export function dispatch(action: Action): void {
   const before = state.combat;
   state = step(state, action);
   timing.lastError = null;
+  lastPress = action.type === 'press' && before?.phase === 'test' && before.test ? before.test.mode : null;
   if ((action.type === 'press' || action.type === 'release') && before?.phase === 'test' && before.test) {
     const e: InputEvent = { type: action.type === 'press' ? 'down' : 'up', t: action.t, key: action.key };
     const off = pressError(before.test, before.events, e);
@@ -207,6 +214,46 @@ function mountNext(): void {
   const teaser = document.getElementById('teaser');
   const bgCanvas = document.getElementById('bg');
   const background = bgCanvas instanceof HTMLCanvasElement ? createBackground(bgCanvas) : null;
+  const storage = globalThis.localStorage ?? null;
+  const audio = createAudio(() => settings.mute);
+  const soundBtn = document.getElementById('btn-sound');
+  let screenId: ScreenId = 'start';
+
+  /** Shows a screen and sets its music (requirement 14.2). */
+  function showScreen(id: ScreenId): void {
+    screenId = id;
+    show(`screen-${id}`);
+    audio.setMode(musicModeFor(id, state));
+    if (id !== 'map') audio.setLowHp(false);
+  }
+
+  function refreshSoundBtn(): void {
+    if (!soundBtn) return;
+    soundBtn.textContent = `Sound: ${settings.mute ? 'off' : 'on'} (M)`;
+    soundBtn.setAttribute('aria-pressed', String(!settings.mute));
+  }
+
+  /** Toggles mute, ramps the master gain, and saves the setting (requirement 14.5). */
+  function toggleMute(): void {
+    audio.init();
+    settings.mute = !settings.mute;
+    audio.setMute(settings.mute);
+    saveSettings(storage, settings);
+    refreshSoundBtn();
+  audio.setMode('menu');
+  }
+
+  // Audio starts on the first key or pointer input (requirement 14.4); later inputs resume a suspended context.
+  for (const ev of ['pointerdown', 'keydown'] as const) addEventListener(ev, () => audio.init(), { capture: true });
+  soundBtn?.addEventListener('click', toggleMute);
+  document.addEventListener('keydown', (e) => {
+    if (!e.repeat && isMuteKey(e)) toggleMute();
+  });
+  document.addEventListener('click', (e) => {
+    const b = (e.target as Element | null)?.closest?.('button');
+    if (b && b.id !== 'btn-qte' && b.id !== 'btn-sound') audio.play('ui');
+  });
+  refreshSoundBtn();
   const demoMap = newRun(loadDemo(() => Date.now()), null, settings);
 
   loadWorld()
@@ -242,15 +289,22 @@ function mountNext(): void {
       err.hidden = false;
       return;
     }
-    show('screen-map');
+    showScreen('map');
     fresh = true;
     if (renderer) screen.setRenderer(renderer);
+    if (!REDUCED) audio.play('rise');
     setRun(r.value);
     dispatch({ type: 'enterMap' });
     $('#map-host').focus({ preventScroll: true });
   }
 
   onState((s) => {
+    // Sounds for the step's events, on their effect timing; the music follows the screen and fight.
+    for (const c of soundsFor(s.events, { test: s.combat?.test ?? null, press: lastPress }))
+      if (c.at > 0) setTimeout(() => audio.play(c.name, c.gain), c.at);
+      else audio.play(c.name, c.gain);
+    if (screenId === 'map') audio.setMode(musicModeFor('map', s));
+    audio.setLowHp(s.status === 'exploring' && hudView(s).lowHp);
     if (s.status === 'won' || s.status === 'lost') {
       // End effects once, on the step that ends the run: white-out and confetti, or falling ash.
       const end = s.events.find((e) => e.type === 'runEnded');
@@ -260,7 +314,7 @@ function mountNext(): void {
       }
       combat.update(s);
       renderEndPanel(document, s);
-      show('screen-end');
+      showScreen('end');
       renderer?.stop();
       return;
     }
@@ -287,14 +341,15 @@ function mountNext(): void {
   });
   bindPointer($('#btn-qte'));
   $('#btn-again').addEventListener('click', () => {
-    show('screen-map');
+    showScreen('map');
     fresh = true;
     if (renderer) screen.setRenderer(renderer);
+    if (!REDUCED) audio.play('rise');
     dispatch({ type: 'retry' });
     dispatch({ type: 'enterMap' });
   });
   $('#btn-new').addEventListener('click', () => {
-    show('screen-start');
+    showScreen('start');
     if (renderer && teaser && demoMap.ok) {
       renderer.mount(teaser);
       renderer.showTeaser(demoMap.value.map);
