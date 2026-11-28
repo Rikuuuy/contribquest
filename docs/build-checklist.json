@@ -1545,7 +1545,7 @@
       "spec": "presentation",
       "task": "7.1",
       "title": "Port the `fx*` particle system and floating text to `src/render/fx.ts` (used on the flat stage and, for text, on the overlay canvas) and the stage to `src/render/stage.ts` (strike and hit effects, hit-stop, slow motion, death, phase 2; v1.6: the reduced flat background is task 13.2)",
-      "status": "todo",
+      "status": "done",
       "verify": "npm run build"
     },
     {

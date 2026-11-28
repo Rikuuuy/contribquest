@@ -23,7 +23,19 @@ import { PACING } from '../pacing';
 import { drawQte, GAUGE } from '../qte-gauge';
 import { MONSTER_SPRITE, monsterKey, spriteCache } from '../sprites/build';
 import { drawSprite } from '../sprites/draw';
-import { drawStage, newMarks, stageBg, STAGE, type StageMarks } from '../stage';
+import { flashFight, whiteOut } from '../fx';
+import {
+  drawStage,
+  stageBg,
+  stageCounter,
+  stageHeroHits,
+  stageIntro,
+  stageMonStrike,
+  stagePhase2,
+  stageReset,
+  STAGE,
+  type Stage,
+} from '../stage';
 
 export type CombatDeps = {
   dispatch: (a: Action) => void;
@@ -122,7 +134,9 @@ export function createCombatScreen(deps: CombatDeps, root: ParentNode = document
   let fightKey: string | null = null;
   let tab: 'hero' | 'foe' = 'foe';
   let bg: HTMLCanvasElement | null = null;
-  let marks: StageMarks = newMarks();
+  let stage: Stage | null = null;
+  /** Delayed DOM flashes of the current fight; cleared when the fight changes. */
+  const flashTimers = new Set<ReturnType<typeof setTimeout>>();
   let hpTimer: ReturnType<typeof setTimeout> | null = null;
   let raf = 0;
   let lastTestId = -1;
@@ -168,15 +182,45 @@ export function createCombatScreen(deps: CombatDeps, root: ParentNode = document
     if (num) num.textContent = `${Math.max(0, hp)}/${max}`;
   }
 
-  function onEvents(events: readonly GameEvent[], now: number): void {
-    const at = now + PACING.hpBarDelay;
+  /** Runs a DOM flash `ms` from now unless the fight has changed by then. */
+  function flashLater(ms: number, fn: () => void): void {
+    const key = fightKey;
+    const id = setTimeout(() => {
+      flashTimers.delete(id);
+      if (fightKey === key) fn();
+    }, ms);
+    flashTimers.add(id);
+  }
+
+  function clearFlashes(): void {
+    for (const id of flashTimers) clearTimeout(id);
+    flashTimers.clear();
+  }
+
+  /**
+   * The fight flashes and white-outs (requirements 13.1–13.4; both renderers), and the flat stage's effects while
+   * the 2D stage is the one shown.
+   */
+  function onEvents(s: RunState, f: Fight, events: readonly GameEvent[], now: number): void {
+    const flat = stage && !slot.querySelector('canvas.world') ? stage : null;
+    const boss = f.m.tier === 5;
     for (const e of events) {
-      if (e.type === 'heroHit' && e.dmgs.some((d) => d > 0)) {
-        marks.monHurt = at;
-        marks.crit = e.grades.includes('perfect');
-      } else if (e.type === 'counter' && e.dmg > 0) marks.monHurt = at;
-      else if (e.type === 'monsterHit' && e.dmg > 0) marks.heroHurt = at;
-      else if (e.type === 'monsterDown') marks.monDie = at;
+      if (e.type === 'heroHit') {
+        e.grades.forEach((g, i) => {
+          if (g === 'perfect') flashLater(i * PACING.comboGap + 100, () => flashFight('gold', REDUCED, root));
+        });
+        if (e.killed && boss) flashLater((e.grades.length - 1) * PACING.comboGap + 250, () => whiteOut(REDUCED, document));
+        if (flat) stageHeroHits(flat, now, e.grades, e.dmgs, e.killed, heroClass(s.hero).strike, REDUCED);
+      } else if (e.type === 'counter') {
+        if (e.killed && boss) flashLater(330 + 250, () => whiteOut(REDUCED, document));
+        if (flat) stageCounter(flat, now, e.dmg, e.killed, REDUCED);
+      } else if (e.type === 'monsterHit') {
+        if (e.grade !== 'good') flashLater(PACING.hpBarDelay, () => flashFight(e.grade === 'perfect' ? 'gold' : 'red', REDUCED, root));
+        if (flat) stageMonStrike(flat, now, e.grade, e.dmg, e.lethal, REDUCED);
+      } else if (e.type === 'phase2') {
+        flashLater(PACING.phase2Fx, () => whiteOut(REDUCED, document));
+        if (flat) stagePhase2(flat, now, REDUCED);
+      }
     }
   }
 
@@ -196,12 +240,15 @@ export function createCombatScreen(deps: CombatDeps, root: ParentNode = document
       hits: deps.hits(),
     });
     // The 2D stage is drawn only while the 3D arena canvas is not in the slot (WebGL missing or failed).
-    if (stageCtx && bg && !slot.querySelector('canvas.world')) drawStage(stageCtx, bg, s, marks, now, REDUCED);
+    if (stageCtx && bg && stage && !slot.querySelector('canvas.world'))
+      drawStage(stageCtx, bg, s, stage, now, REDUCED, test, now - deps.testStart());
   }
 
   function hide(): void {
     box.hidden = true;
     fightKey = null;
+    stage = null;
+    clearFlashes();
     if (hpTimer !== null) clearTimeout(hpTimer);
     hpTimer = null;
     if (raf) cancelAnimationFrame(raf);
@@ -219,15 +266,18 @@ export function createCombatScreen(deps: CombatDeps, root: ParentNode = document
       box.hidden = false;
       if (first) {
         fightKey = key;
+        clearFlashes();
         tab = 'foe';
-        marks = newMarks();
+        stage = stageReset(f.m.tier, f.m.phase2, now);
+        stageIntro(stage, now, f.m.tier === 5, REDUCED);
+        if (f.m.tier === 5 && s.events.some((e) => e.type === 'fightStart')) whiteOut(REDUCED, document);
         lastTestId = -1;
         grade.className = 'grade';
         grade.textContent = '';
         bg = stageBg(f.m.tier === 5, f.col * 7 + f.row);
         fightEl.classList.toggle('boss', f.m.tier === 5);
         buildBars(s, f);
-      } else onEvents(s.events, now);
+      } else onEvents(s, f, s.events, now);
 
       $('#m-name', root).textContent = f.m.name;
       const timing = timingPercent(s).pct;
