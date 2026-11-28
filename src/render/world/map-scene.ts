@@ -214,7 +214,7 @@ function slabMaterial(level: number): MeshStandardMaterial {
 }
 
 /** The sample tombstone (slab, half-cylinder top, dark cross) merged into one geometry with vertex colours. */
-function graveGeometry(): BufferGeometry {
+export function graveGeometry(): BufferGeometry {
   const paint = (g: BufferGeometry, hex: string) => {
     const c = new Color(hex);
     const n = g.getAttribute('position').count;

@@ -44,7 +44,7 @@ const MOON_FROM: Vec3 = [-8, 14, 6];
 const FILL_FROM: Vec3 = [2, 4, 12];
 const DISC_AT: Vec3 = [-22, 18, -40];
 
-export type LightRole = 'off' | 'lantern' | 'boss' | 'chest' | 'wisp';
+export type LightRole = 'off' | 'lantern' | 'boss' | 'chest' | 'wisp' | 'foe' | 'ember';
 
 /** One pooled point light with its base intensity; `lantern` slots flicker. */
 export type LightSlot = { light: PointLight; base: number; role: LightRole };
@@ -126,7 +126,7 @@ const LIGHT = {
   wisp: { color: '#8dffb0', intensity: 1.0, distance: 3, decay: 1.6, off: [0, 0.5, 0] },
 } as const;
 
-function setSlot(s: LightSlot, role: Exclude<LightRole, 'off'>, at: Vec3): void {
+function setSlot(s: LightSlot, role: keyof typeof LIGHT, at: Vec3): void {
   const d = LIGHT[role];
   s.role = role;
   s.base = d.intensity;
@@ -165,6 +165,34 @@ export function assignLights(rig: LightRig, targets: LightTargets): void {
   const lantern = slots.find((s) => s.role === 'lantern');
   rig.lanternGlow.visible = !!lantern;
   if (lantern) rig.lanternGlow.position.copy(lantern.light.position);
+}
+
+/** Arena lights (art-style.md "Lighting", sample): colour, intensity, distance, decay, position. */
+const ARENA_LIGHTS = [
+  { role: 'lantern', color: '#ffb35c', intensity: 3, distance: 6, decay: 1.6, at: [-1.6, 1.6, 0.6] },
+  { role: 'lantern', color: '#ffb35c', intensity: 2, distance: 6, decay: 1.6, at: [0, 2.4, -4.0] },
+  { role: 'foe', color: '#b060ff', intensity: 8, distance: 9, decay: 1.4, at: [2.2, 2.4, 1.4] },
+  { role: 'ember', color: '#ff7a3d', intensity: 5, distance: 6, decay: 1.5, at: [3.6, 1.6, -1.4] },
+] as const;
+
+/**
+ * Assigns the pool in the arena (requirement 22.2): the hero's lantern, the far lantern, the foe's purple glow
+ * (doubled for the boss), and the ember rim. Returns the foe glow's slot.
+ */
+export function assignArenaLights(rig: LightRig, boss: boolean): LightSlot {
+  ARENA_LIGHTS.forEach((d, i) => {
+    const s = rig.slots[i]!;
+    s.role = d.role;
+    s.base = d.role === 'foe' && boss ? d.intensity * 2 : d.intensity;
+    s.light.color.set(d.color);
+    s.light.intensity = s.base;
+    s.light.distance = d.distance;
+    s.light.decay = d.decay;
+    s.light.position.set(d.at[0], d.at[1], d.at[2]);
+  });
+  rig.lanternGlow.visible = true;
+  rig.lanternGlow.position.copy(rig.slots[0]!.light.position);
+  return rig.slots[2]!;
 }
 
 /** Lantern flicker, `base × (0.85 + 0.1 sin 13t + 0.05 sin 31t)` with t in seconds; base intensity when off. */
