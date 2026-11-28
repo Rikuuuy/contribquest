@@ -171,10 +171,26 @@ describe('requirement 21.3: sky fog and fireflies', () => {
 describe('requirement 21.4: the fog bank', () => {
   const map = { cols: 14, rows: 7, seed: 1234 };
 
-  it('has three layers at 0.25, 0.4, 0.6 above the level-4 top with opacity 0.18, 0.14, 0.10', () => {
+  it('has three layers at 0.22, 0.42, 0.66 above the level-4 top with opacity 0.42, 0.30, 0.20', () => {
     const bank = makeFogBank(map);
-    expect(bank.layers.map((l) => +(l.position.y - 0.66).toFixed(4))).toEqual([0.25, 0.4, 0.6]);
-    expect(bank.layers.map((l) => l.material.opacity)).toEqual([0.18, 0.14, 0.1]);
+    expect(bank.layers.map((l) => +(l.position.y - 0.66).toFixed(4))).toEqual([0.22, 0.42, 0.66]);
+    expect(bank.layers.map((l) => l.material.opacity)).toEqual([0.42, 0.3, 0.2]);
+  });
+
+  it('fades in from the near edge and out at the far and side edges (vertex alpha)', () => {
+    const bank = makeFogBank(map);
+    setFogStart(bank, 3);
+    const l = bank.layers[0]!;
+    const pos = l.geometry.attributes.position!;
+    const a = l.geometry.attributes.color!;
+    let near = -1, mid = -1;
+    for (let i = 0; i < pos.count; i++) {
+      if (pos.getX(i) === 0 && pos.getZ(i) === 0) near = a.getW(i);
+      if (Math.abs(pos.getX(i) - 0.5) < 1e-6 && Math.abs(pos.getZ(i)) < 1e-6) mid = a.getW(i);
+    }
+    expect(near).toBe(0);
+    expect(mid).toBe(1);
+    expect(l.material.vertexColors).toBe(true);
   });
 
   it('setFogStart puts the near edge at col − 0.5 and covers up to the last column only', () => {
@@ -201,5 +217,8 @@ describe('requirement 21.4: the fog bank', () => {
     expect(bank.noise.offset.x).toBe(0);
     driftFog(bank, 1);
     expect(bank.noise.offset.x).not.toBe(0);
+    // the layers move at different speeds, so they slide past each other
+    const d = bank.maps.map((t, i) => t.offset.x - i * 0.37);
+    expect(new Set(d.map((v) => v.toFixed(6))).size).toBe(3);
   });
 });

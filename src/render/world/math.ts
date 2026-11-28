@@ -42,13 +42,13 @@ export type SpriteRole =
  * monsters 3 / 3 / 3.5 / 4, boss 4.5).
  */
 export const PX: Readonly<Record<SpriteRole, number>> = {
-  hero: 1 / 17,
-  mon1: 1 / 18,
-  mon2: 1 / 18,
-  mon3: 1 / 17,
-  mon4: 1 / 17,
-  item: 1 / 20,
-  boss: 1 / 15,
+  hero: 1 / 24,
+  mon1: 1 / 26,
+  mon2: 1 / 26,
+  mon3: 1 / 24,
+  mon4: 1 / 24,
+  item: 1 / 28,
+  boss: 1 / 19,
   arenaHero: 2 / 32,
   arenaMon1: 3 / 32,
   arenaMon2: 3 / 32,
@@ -99,8 +99,10 @@ export const MAP_OFFSET: Vec3 = [-1.6, 7.2, 9.0];
 /** Battle camera position and look point (sample); the arena is built around the origin. */
 export const BATTLE_POS: Vec3 = [-0.6, 2.3, 7.4];
 export const BATTLE_LOOK: Vec3 = [0.1, 1.45, 0];
-/** Portrait map cameras pull back by this factor and widen the FOV to 55°. */
-export const PORTRAIT_PULL = 1.25;
+/** The landscape follow camera sits at this fraction of `MAP_OFFSET`, close enough that a tile reads at a glance. */
+export const FOLLOW_PULL = 0.8;
+/** Portrait map cameras use this factor of `MAP_OFFSET` and widen the FOV to 55°. */
+export const PORTRAIT_PULL = 0.85;
 const NEAR = 0.1;
 const FAR = 200;
 
@@ -128,7 +130,7 @@ export function cameraFor(view: CameraView, aim: Aim, aspect: number): CameraPos
     near: NEAR,
     far: FAR,
   });
-  if (view === 'follow') return at(portrait ? PORTRAIT_PULL : 1);
+  if (view === 'follow') return at(portrait ? PORTRAIT_PULL : FOLLOW_PULL);
   const [sx, sz] = aim.span ?? [0, 0];
   const corners: Vec3[] = [];
   for (const dx of [-sx, sx]) for (const dz of [-sz, sz]) for (const y of [0, ALTAR_H]) corners.push([aim.x + dx, y, aim.z + dz]);

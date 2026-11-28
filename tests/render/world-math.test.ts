@@ -67,14 +67,14 @@ describe('requirement 20.4: sprite pixel sizes', () => {
   });
 
   it('uses the art-style scale rules', () => {
-    expect(PX.hero).toBe(1 / 17);
-    expect([PX.mon1, PX.mon2, PX.mon3, PX.mon4]).toEqual([1 / 18, 1 / 18, 1 / 17, 1 / 17]);
-    expect(PX.item).toBe(1 / 20);
-    expect(PX.boss).toBe(1 / 15);
+    expect(PX.hero).toBe(1 / 24);
+    expect([PX.mon1, PX.mon2, PX.mon3, PX.mon4]).toEqual([1 / 26, 1 / 26, 1 / 24, 1 / 24]);
+    expect(PX.item).toBe(1 / 28);
+    expect(PX.boss).toBe(1 / 19);
     expect(PX.arenaHero).toBe(1 / 16);
     expect([PX.arenaMon1, PX.arenaMon2, PX.arenaMon3, PX.arenaMon4, PX.arenaBoss]).toEqual([3 / 32, 3 / 32, 3.5 / 32, 4 / 32, 4.5 / 32]);
-    // The map hero is about 1.5 units tall.
-    expect(spriteWorldSize(24, 24, 'hero').h).toBeCloseTo(1.53, 2);
+    // The map hero is about 1.1 units tall, so it stands on a 1-unit tile instead of towering over it.
+    expect(spriteWorldSize(24, 24, 'hero').h).toBeCloseTo(1.08, 2);
   });
 });
 
@@ -90,16 +90,16 @@ describe('requirements 19.3, 19.4: cameras', () => {
     expect(c.near).toBe(0.1);
     expect(c.far).toBe(200);
     expect(c.look).toEqual([3.5, 0, 3]);
-    expect(c.pos[0]).toBeCloseTo(3.5 - 1.6, 10);
-    expect(c.pos[1]).toBeCloseTo(7.2, 10);
-    expect(c.pos[2]).toBeCloseTo(3 + 9, 10);
+    expect(c.pos[0]).toBeCloseTo(3.5 - 1.6 * 0.8, 10);
+    expect(c.pos[1]).toBeCloseTo(7.2 * 0.8, 10);
+    expect(c.pos[2]).toBeCloseTo(3 + 9 * 0.8, 10);
   });
 
-  it('portrait follow camera widens to 55° and pulls back 1.25×', () => {
+  it('portrait follow camera widens to 55° at 0.85× the offset', () => {
     const c = cameraFor('follow', followAim({ col: 0, row: 0 }), 390 / 844);
     expect(c.fov).toBe(55);
-    expect(c.pos[1]).toBeCloseTo(7.2 * 1.25, 10);
-    expect(c.pos[2]).toBeCloseTo(3 + 9 * 1.25, 10);
+    expect(c.pos[1]).toBeCloseTo(7.2 * 0.85, 10);
+    expect(c.pos[2]).toBeCloseTo(3 + 9 * 0.85, 10);
   });
 
   it('battle camera at 8:3 matches the sample', () => {
