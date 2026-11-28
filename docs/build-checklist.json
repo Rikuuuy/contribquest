@@ -1717,7 +1717,7 @@
       "spec": "presentation",
       "task": "11.8",
       "title": "Implement `src/render/world/quality.ts` and `src/render/world/index.ts` (one `WebGLRenderer`, pixel ratio cap, antialias by pointer, `mount`, frame loop with no per-frame allocation, quality step-down, `window.__cqStats`, context loss and restore, `stop` on hidden pages and 2D-only screens) and `src/render/world/dispose.ts`; write `tests/render/quality.test.ts`",
-      "status": "todo",
+      "status": "done",
       "verify": "npx vitest --run tests/render/quality.test.ts && npm run build"
     },
     {

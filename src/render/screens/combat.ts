@@ -195,7 +195,8 @@ export function createCombatScreen(deps: CombatDeps, root: ParentNode = document
       offset: deps.offset(),
       hits: deps.hits(),
     });
-    if (stageCtx && bg) drawStage(stageCtx, bg, s, marks, now, REDUCED);
+    // The 2D stage is drawn only while the 3D arena canvas is not in the slot (WebGL missing or failed).
+    if (stageCtx && bg && !slot.querySelector('canvas.world')) drawStage(stageCtx, bg, s, marks, now, REDUCED);
   }
 
   function hide(): void {

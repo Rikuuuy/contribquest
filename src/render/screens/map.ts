@@ -68,12 +68,22 @@ export function createMapScreen(deps: MapScreenDeps, root: ParentNode = document
   const log = $('#log', root);
   const pad = $('#branch-pad', root);
   const danger = root.querySelector<HTMLElement>('#danger');
+  /** The battle screen's 8:3 stage slot: the renderer's canvas moves there during a fight (requirement 18.2). */
+  const stageSlot = root.querySelector<HTMLElement>('#stage-slot');
 
   let renderer: Renderer | null = null;
   let state: RunState | null = null;
   let view: RouteView | null = null;
   let shownMap = false;
   let pendingRise = false;
+  let mounted: HTMLElement | null = null;
+
+  /** Moves the renderer's canvas into `el` unless it is already there. */
+  function mountIn(el: HTMLElement): void {
+    if (!renderer || mounted === el) return;
+    renderer.mount(el);
+    mounted = el;
+  }
 
   const hideTip = () => {
     tip.hidden = true;
@@ -98,11 +108,13 @@ export function createMapScreen(deps: MapScreenDeps, root: ParentNode = document
     if (state.status === 'combat') {
       hideTip();
       renderer?.hover(null);
+      if (stageSlot) mountIn(stageSlot);
       renderer?.showFight(state);
       shownMap = false;
       return;
     }
     if (!renderer) return;
+    mountIn(host);
     renderer.showMap(state, view, { rise: fresh || pendingRise });
     pendingRise = false;
     shownMap = true;
@@ -160,8 +172,10 @@ export function createMapScreen(deps: MapScreenDeps, root: ParentNode = document
     setRenderer(r: Renderer | null): void {
       renderer = r;
       shownMap = false;
+      mounted = null;
       if (!r) return;
       r.mount(host);
+      mounted = host;
       pendingRise = true;
       draw(false);
     },
@@ -175,10 +189,10 @@ export function createMapScreen(deps: MapScreenDeps, root: ParentNode = document
       if (danger) renderDanger(danger, hv.lowHp, REDUCED);
       renderPad(pad, view);
       const events: readonly GameEvent[] = s.events;
-      // The hop starts from `moved` once the scene is synced to the new position.
+      // The hop starts from `moved` once the scene is synced to the new position; fight events go to the arena.
       const wasShown = shownMap;
       draw(fresh);
-      if (renderer && wasShown && !fresh && events.length) renderer.onEvents(s, events);
+      if (renderer && (wasShown || s.status === 'combat') && !fresh && events.length) renderer.onEvents(s, events);
     },
     view: () => view,
     moveFor(branch: Branch): Action | null {
