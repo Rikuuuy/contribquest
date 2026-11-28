@@ -1500,7 +1500,7 @@
       "spec": "presentation",
       "task": "6.1",
       "title": "Implement `Pacer`, `resolvedKind`, and `PACING` (v1.6: no flee row) in `src/render/pacing.ts`; write `tests/render/pacing.test.ts`",
-      "status": "todo",
+      "status": "done",
       "verify": "npx vitest --run tests/render/pacing.test.ts"
     },
     {
@@ -1509,7 +1509,7 @@
       "spec": "presentation",
       "task": "6.2",
       "title": "Implement `drawQte` and `gaugeHeadline` in `src/render/qte-gauge.ts`; write `tests/render/gauge.test.ts`",
-      "status": "todo",
+      "status": "done",
       "verify": "npx vitest --run tests/render/gauge.test.ts"
     },
     {
@@ -1518,7 +1518,7 @@
       "spec": "presentation",
       "task": "6.3",
       "title": "Combat panel in `src/render/screens/combat.ts` (stage slot, HP bars with the 110 ms delay, source label, hint, Attack button with no Flee button (v1.6), Now! button, grade line) and the `advance` scheduling in `main.ts`",
-      "status": "todo",
+      "status": "done",
       "verify": "npm run build"
     },
     {
@@ -1527,7 +1527,7 @@
       "spec": "presentation",
       "task": "6.4",
       "title": "Timing accuracy feedback: colour cue, approach strip, hit-error meter, timing offset (FR-FX-9)",
-      "status": "todo",
+      "status": "done",
       "verify": "npx vitest --run tests/render/hit-meter.test.ts"
     },
     {
@@ -1536,7 +1536,7 @@
       "spec": "presentation",
       "task": "6.5",
       "title": "Battle screen layout: boss bar, nameplate, HERO/FOE tabs, 7-line battle log, and the 8:3 stage slot in `src/render/screens/combat.ts` (v1.6: the 2D graveyard `stage-bg.ts` is dropped; the arena is task 11.6, the flat stage task 13.2) (FR-FX-10)",
-      "status": "todo",
+      "status": "done",
       "verify": "npm run build"
     },
     {
@@ -1545,7 +1545,7 @@
       "spec": "presentation",
       "task": "7.1",
       "title": "Port the `fx*` particle system and floating text to `src/render/fx.ts` (used on the flat stage and, for text, on the overlay canvas) and the stage to `src/render/stage.ts` (strike and hit effects, hit-stop, slow motion, death, phase 2; v1.6: the reduced flat background is task 13.2)",
-      "status": "todo",
+      "status": "done",
       "verify": "npm run build"
     },
     {
@@ -1554,7 +1554,7 @@
       "spec": "presentation",
       "task": "7.2",
       "title": "Effects for every event in the design table (v1.6 rows: `moved`, `rest`, wisp heal, cache heal, `shard` with `bound`; no `blocked` or `gateOpen`) in both renderers, white-out, fight flashes, background confetti and ash",
-      "status": "todo",
+      "status": "done",
       "verify": "npm run build && ! grep -rnE \"gateOpen|'blocked'|WARD BROKEN|GATE OPENS\" src/render"
     },
     {
@@ -1563,7 +1563,7 @@
       "spec": "presentation",
       "task": "7.3",
       "title": "Reduced motion: gate every item in requirement 13.6 on `REDUCED`, and add the CSS `prefers-reduced-motion` rule",
-      "status": "todo",
+      "status": "done",
       "verify": "npm run build"
     },
     {
@@ -1599,7 +1599,7 @@
       "spec": "presentation",
       "task": "9.1",
       "title": "Port `Sfx` to `src/audio/sfx.ts` (chain, drone, modes, bells, heartbeat, every effect, init on first input, mute ramp, hidden-page pause, all calls caught)",
-      "status": "todo",
+      "status": "done",
       "verify": "npx vitest --run tests/audio/events.test.ts && npm run build && ! find dist -iregex '.*\\.\\(mp3\\|ogg\\|wav\\|m4a\\|flac\\)' | grep ."
     },
     {
@@ -1608,7 +1608,7 @@
       "spec": "presentation",
       "task": "9.2",
       "title": "Implement `soundsFor` (v1.6 sound set: no `blocked` or `gate`; `rest`, cache heal, `bound`) and `musicModeFor` in `src/audio/events.ts`, wire them in `main.ts`, and add the Sound button and M key; write `tests/audio/events.test.ts`",
-      "status": "todo",
+      "status": "done",
       "verify": "npx vitest --run tests/audio/events.test.ts && npm run build && ! find dist -iregex '.*\\.\\(mp3\\|ogg\\|wav\\|m4a\\|flac\\)' | grep ."
     },
     {
@@ -1699,7 +1699,7 @@
       "spec": "presentation",
       "task": "11.6",
       "title": "Implement `src/render/world/arena-scene.ts`: the seeded graveyard arena from the sample, hero and foe billboards, boss variant, strike lunges and rig swaps, phase-2 tint, petals, battle camera; write `tests/render/arena-scene.test.ts`",
-      "status": "todo",
+      "status": "done",
       "verify": "npx vitest --run tests/render/arena-scene.test.ts"
     },
     {
@@ -1708,7 +1708,7 @@
       "spec": "presentation",
       "task": "11.7",
       "title": "Implement `src/render/world/fx3d.ts` (fixed particle pool, rings, slashes, camera shake, visual clock with hit-stop and slow motion) and `src/render/overlay.ts` (floating text and speech bubble at projected positions); write `tests/render/fx3d.test.ts`",
-      "status": "todo",
+      "status": "done",
       "verify": "npx vitest --run tests/render/fx3d.test.ts"
     },
     {
@@ -1717,7 +1717,7 @@
       "spec": "presentation",
       "task": "11.8",
       "title": "Implement `src/render/world/quality.ts` and `src/render/world/index.ts` (one `WebGLRenderer`, pixel ratio cap, antialias by pointer, `mount`, frame loop with no per-frame allocation, quality step-down, `window.__cqStats`, context loss and restore, `stop` on hidden pages and 2D-only screens) and `src/render/world/dispose.ts`; write `tests/render/quality.test.ts`",
-      "status": "todo",
+      "status": "done",
       "verify": "npx vitest --run tests/render/quality.test.ts && npm run build"
     },
     {
@@ -1726,7 +1726,7 @@
       "spec": "presentation",
       "task": "11.9",
       "title": "Reduced motion in the world renderer: drive every world module from `motionFlags(REDUCED)` and honour live `prefers-reduced-motion` changes through `renderer.setReduced`",
-      "status": "todo",
+      "status": "done",
       "verify": "npx vitest --run tests/render/motion-flags.test.ts tests/render/fx3d.test.ts && npm run build && ! grep -rn \"matchMedia\" src/render/world"
     },
     {

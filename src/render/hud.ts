@@ -92,7 +92,7 @@ export function starsHtml(n: number): string {
 const icons = new Map<RelicId, string>();
 
 /** A relic icon as a data URL of its sprite canvas, built once per relic. */
-function relicIcon(id: RelicId): string {
+export function relicIcon(id: RelicId): string {
   let u = icons.get(id);
   if (!u) {
     const key = itemKey(`r_${id}`);
