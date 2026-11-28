@@ -1509,7 +1509,7 @@
       "spec": "presentation",
       "task": "6.2",
       "title": "Implement `drawQte` and `gaugeHeadline` in `src/render/qte-gauge.ts`; write `tests/render/gauge.test.ts`",
-      "status": "todo",
+      "status": "done",
       "verify": "npx vitest --run tests/render/gauge.test.ts"
     },
     {
