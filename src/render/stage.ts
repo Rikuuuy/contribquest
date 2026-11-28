@@ -8,7 +8,8 @@ import { PACING } from './pacing';
 import { MONSTER_SPRITE, monsterKey, spriteCache } from './sprites/build';
 import { drawSprite, glow, shadow } from './sprites/draw';
 import { heroFrame, heroFX, heroKey } from './sprites/hero';
-import { heroRig, monRig } from './sprites/rig';
+import { MONSTERS34 } from './sprites/grids';
+import { heroRig, monRig, type Rig } from './sprites/rig';
 
 /** Logical stage units (prototype SW, SH, GROUND, HX, MX); the canvas is `zoom` times larger (880 × 330, 8:3). */
 export const STAGE = { w: 440, h: 165, ground: 131, hx: 115, mx: 320, zoom: 2 } as const;
@@ -199,6 +200,63 @@ export function stagePhase2(st: Stage, now: number, reduced: boolean): void {
   });
 }
 
+/** The Phantom's star (`z`) and eye (`e`) pixels in its 16 × 24 grid. */
+const BOSS_STARS: [number, number][] = [];
+const BOSS_EYES: [number, number][] = [];
+MONSTERS34.phantom.forEach((row, y) =>
+  [...row].forEach((ch, x) => {
+    if (ch === 'z') BOSS_STARS.push([x, y]);
+    if (ch === 'e') BOSS_EYES.push([x, y]);
+  }),
+);
+
+/**
+ * The Phantom's ember eyes and twinkling stars, drawn additively over its sprite and following its rig (prototype
+ * bossFX). With reduced motion the glow holds still.
+ */
+export function bossFX(
+  ctx: CanvasRenderingContext2D,
+  cx: number,
+  cy: number,
+  sc: number,
+  now: number,
+  flip: boolean,
+  alpha: number,
+  rig: Rig | null,
+  sy: number,
+  reduced: boolean,
+): void {
+  const img = spriteCache.get(monsterKey('phantom'))?.base;
+  if (!img || alpha <= 0) return;
+  const ox = (img.width - 16) / 2;
+  const oy = (img.height - 24) / 2;
+  const at = (px: number, py: number): [number, number] => {
+    const o = rig ? rig(py) : ([0, 0] as const);
+    const x = px + Math.round(o[0] || 0) + ox + 0.5 - img.width / 2;
+    const y = py + Math.round(o[1] || 0) + oy + 0.5 - img.height / 2;
+    return [cx + (flip ? -x : x) * sc, cy + (img.height / 2) * sc - (img.height / 2 - y) * sc * sy];
+  };
+  ctx.save();
+  ctx.globalAlpha *= alpha;
+  ctx.globalCompositeOperation = 'lighter';
+  const t = reduced ? 0 : now;
+  for (const [ex, ey] of BOSS_EYES) {
+    const [x, y] = at(ex, ey);
+    glow(ctx, x, y, sc * 2.4, 'rgba(255,138,61,A)', 0.7 + 0.2 * Math.sin(t / 240));
+  }
+  BOSS_STARS.forEach(([sx, sy2], i) => {
+    const k = reduced ? 0.6 : Math.max(0, Math.sin(t / 380 + i * 1.9));
+    const [x, y] = at(sx, sy2);
+    glow(ctx, x, y, sc * 1.8, 'rgba(255,244,208,A)', 0.25 + 0.55 * k);
+    if (k > 0.85) {
+      ctx.fillStyle = `rgba(255,250,230,${(k - 0.85) * 6})`;
+      ctx.fillRect(x - sc * 1.5, y - sc * 0.25, sc * 3, sc * 0.5);
+      ctx.fillRect(x - sc * 0.25, y - sc * 1.5, sc * 0.5, sc * 3);
+    }
+  });
+  ctx.restore();
+}
+
 /** Seeded so each fight's stars stay put. */
 function lcg(seed: number): () => number {
   let s = seed >>> 0 || 1;
@@ -329,6 +387,7 @@ export function drawStage(
     const mrig =
       dieK >= 0 ? null : monRig(tier, now, { windup: defending ? qk : 0, lunge: lunge(now - st.mon.atk), hurt: hurtK >= 0 && hurtK < 1 ? 1 - hurtK : 0 }, reduced);
     drawSprite(ctx, mKey, mx, my, ms, alpha, { flip: true, sy: sy2, white, red, rig: mrig });
+    if (tier === 5 && !white && !red && dieK < 0) bossFX(ctx, mx, my, ms, now, true, alpha, mrig, sy2, reduced);
   }
 
   // Hero

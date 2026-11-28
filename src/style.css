@@ -282,4 +282,6 @@ button:hover { filter: brightness(1.15) drop-shadow(0 0 8px rgba(180,140,255,.4)
 .compare dt { color: var(--muted); } .compare dd { margin: 0; font-weight: 700; text-align: right; }
 .today { text-align: center; color: var(--orange); margin: 6px 0 16px; }
 footer { text-align: center; color: var(--muted); font-size: 12px; margin-top: 28px; }
-@media (prefers-reduced-motion: reduce) { * { animation: none !important; } }
+/* Reduced motion (requirement 13.6): no CSS animations or transitions; the scripts gate shake, flashes, white-outs,
+   hit-stop, slow motion, rigs, bobbing, and particles on REDUCED, and the timing gauges keep moving. */
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; } }

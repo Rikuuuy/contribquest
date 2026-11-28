@@ -1563,7 +1563,7 @@
       "spec": "presentation",
       "task": "7.3",
       "title": "Reduced motion: gate every item in requirement 13.6 on `REDUCED`, and add the CSS `prefers-reduced-motion` rule",
-      "status": "todo",
+      "status": "done",
       "verify": "npm run build"
     },
     {
