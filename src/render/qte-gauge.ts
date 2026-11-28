@@ -1,6 +1,7 @@
 // The timing-test gauge (presentation requirement 11.2; prototype drawQte). A 2D canvas drawn over or under
 // the arena, independent of WebGL (requirement 22.6). Times are test time: ms since the test started.
 import { QTE, type Grade, type InputEvent, type QteTest } from '../engine';
+import { drawHitMeter, type HitLog } from './hit-meter';
 import { GRADE_COLORS } from './palette';
 import { glow, rrect } from './sprites/draw';
 
@@ -14,9 +15,14 @@ export type GaugeOpts = {
   reduced: boolean;
   /** The test's input events so far (test time, after the offset), for charge, shield, and combo state. */
   events: readonly InputEvent[];
+  /** The timing offset in ms (settings), subtracted from `t` for the colour cue and the approach strip. */
+  offset?: number;
+  /** The hit-error history, drawn as the meter while no test runs (requirement 17.4). */
+  hits?: Readonly<HitLog>;
 };
 
 const GOLD = GRADE_COLORS.perfect;
+const GREEN = GRADE_COLORS.good;
 const RED = GRADE_COLORS.miss;
 const GOOD_FILL = 'rgba(38,166,65,.85)';
 const TRACK = '#1b2233';
@@ -98,6 +104,39 @@ export function ringTime(test: QteTest, t: number): { eff: number; paused: boole
   const pause = test.pause!;
   const paused = t >= pauseAt && t < pauseAt + pause;
   return { eff: t < pauseAt ? t : paused ? pauseAt : t - pause, paused, base: test.target - pause };
+}
+
+/**
+ * The colour cue (requirement 17.1): `perfect` while the offset-corrected time is inside the Perfect window,
+ * `good` inside the Good window, else null.
+ */
+export function ringCue(test: QteTest, t: number, offset = 0): 'perfect' | 'good' | null {
+  const d = Math.abs(t - offset - test.target);
+  return d <= test.P ? 'perfect' : d <= test.G ? 'good' : null;
+}
+
+/** The approach strip's track (requirement 17.2): from the test start to impact plus G, in CSS px. */
+export const STRIP = { x0: 30, w: GAUGE.w - 60, y: 134, h: 10 } as const;
+
+/** The strip x of test time `ms` for a ring whose impact (without a flaky pause) is `base`. */
+export function stripX(test: QteTest, base: number, ms: number): number {
+  return STRIP.x0 + STRIP.w * clamp(ms / (base + test.G), 0, 1);
+}
+
+function drawStrip(ctx: CanvasRenderingContext2D, q: QteTest, eff: number, base: number, blink: boolean, offset: number): void {
+  const { y, h } = STRIP;
+  const X = (ms: number) => stripX(q, base, ms);
+  ctx.fillStyle = TRACK;
+  rrect(ctx, STRIP.x0, y - h / 2, STRIP.w, h, 4);
+  ctx.fill();
+  band(ctx, X(base), (X(base + q.G) - X(base - q.G)) / 2, y - h / 2, h, GOOD_FILL, false);
+  band(ctx, X(base), (X(base + q.P) - X(base - q.P)) / 2, y - h / 2, h, GOLD, true);
+  if (q.decoy !== undefined && q.pattern !== 'flaky') {
+    ctx.fillStyle = 'rgba(200,170,255,.9)';
+    for (let yy = -h / 2; yy < h / 2; yy += 3) ctx.fillRect(X(q.decoy) - 1, y + yy, 2, 2);
+  }
+  ctx.fillStyle = blink ? '#9fe3b0' : '#ffffff';
+  ctx.fillRect(X(eff - offset) - 2, y - h / 2 - 5, 4, h + 10);
 }
 
 function panel(ctx: CanvasRenderingContext2D): void {
@@ -254,7 +293,10 @@ function drawRing(ctx: CanvasRenderingContext2D, q: QteTest, t: number, o: Gauge
     ctx.stroke();
     ctx.restore();
   }
-  // The Good band around the target ring, then the gold target ring as thick as the Perfect window.
+  // The cue glow, the Good band around the target ring, then the gold target ring as thick as the Perfect window.
+  const offset = o.offset ?? 0;
+  const cue = ringCue(q, t, offset);
+  if (cue) glow(ctx, cx, cy, r0 * 3.4, cue === 'perfect' ? 'rgba(255,210,87,A)' : 'rgba(57,211,83,A)', cue === 'perfect' ? 0.6 : 0.35);
   ctx.fillStyle = 'rgba(38,166,65,.25)';
   ctx.beginPath();
   ctx.arc(cx, cy, r0 + gr, 0, Math.PI * 2);
@@ -266,20 +308,30 @@ function drawRing(ctx: CanvasRenderingContext2D, q: QteTest, t: number, o: Gauge
   ctx.stroke();
   const jit = paused && !o.reduced ? (Math.random() - 0.5) * 3 : 0;
   const r = Math.max(2, r0 + (R - r0) * (1 - k) + jit);
-  ctx.strokeStyle = k > 1 ? 'rgba(255,107,107,.5)' : blink ? '#9fe3b0' : RED;
-  ctx.lineWidth = q.pattern === 'quick' ? 4 : 3;
+  ctx.strokeStyle =
+    cue === 'perfect' ? GOLD : cue === 'good' ? GREEN : k > 1 ? 'rgba(255,107,107,.5)' : blink ? '#9fe3b0' : RED;
+  ctx.lineWidth = cue === 'perfect' ? 5 : q.pattern === 'quick' ? 4 : 3;
   ctx.beginPath();
   ctx.arc(cx, cy, r, 0, Math.PI * 2);
   ctx.stroke();
+  drawStrip(ctx, q, eff, base, blink, offset);
   if (q.mode === 'shield') drawShieldIcon(ctx, cx, cy, shieldHeld(o.events));
 }
 
-/** Draws the gauge for `test` at test time `t` on a `GAUGE`-sized context. Draws only the panel when `test` is null. */
+/**
+ * Draws the gauge for `test` at test time `t` (ms since the test started, before the offset) on a `GAUGE`-sized
+ * context. With no test it draws the hit-error meter when there is one, else nothing.
+ */
 export function drawQte(ctx: CanvasRenderingContext2D, test: QteTest | null, t: number, opts: GaugeOpts): void {
   ctx.clearRect(0, 0, GAUGE.w, GAUGE.h);
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
-  if (!test) return;
+  if (!test) {
+    if (!opts.hits?.log.length) return;
+    panel(ctx);
+    drawHitMeter(ctx, opts.hits, GAUGE.w, 70);
+    return;
+  }
   panel(ctx);
   ctx.font = FONT;
   if (test.mode === 'combo') drawCombo(ctx, test, t, opts);

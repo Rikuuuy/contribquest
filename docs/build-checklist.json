@@ -1527,7 +1527,7 @@
       "spec": "presentation",
       "task": "6.4",
       "title": "Timing accuracy feedback: colour cue, approach strip, hit-error meter, timing offset (FR-FX-9)",
-      "status": "todo",
+      "status": "done",
       "verify": "npx vitest --run tests/render/hit-meter.test.ts"
     },
     {
