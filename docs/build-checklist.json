@@ -1708,7 +1708,7 @@
       "spec": "presentation",
       "task": "11.7",
       "title": "Implement `src/render/world/fx3d.ts` (fixed particle pool, rings, slashes, camera shake, visual clock with hit-stop and slow motion) and `src/render/overlay.ts` (floating text and speech bubble at projected positions); write `tests/render/fx3d.test.ts`",
-      "status": "todo",
+      "status": "done",
       "verify": "npx vitest --run tests/render/fx3d.test.ts"
     },
     {
