@@ -1,10 +1,15 @@
-// Entry point. Until the Phase 1 build replaces the root page, index.html redirects visitors to the prototype.
-// This file wires input and timers to the engine. Until the presentation spec's screens exist, a page with an
-// `#app` element gets a plain-text DOM view of the run (presentation task 1.3).
+// Entry point. Until the cutover, index.html redirects visitors to the prototype and this build runs at /next/.
+// This file wires input and timers to the engine (v1.6: moves go through the route view, presentation 12.2).
 import { loadDemo } from './data/demo';
 import { loadSettings } from './data/settings';
-import { combatKey, isVisible, legalMoves, newRun, nextDeadline, step, type Action, type RunState } from './engine';
-import { tileAt } from './mapgen';
+import { combatKey, newRun, nextDeadline, step, type Action, type RunState } from './engine';
+import { $, show } from './render/dom';
+import { isArrowKey, relicKey, routeKey } from './render/input';
+import { routeView, targetFor } from './render/map/route-view';
+import { onReducedChange, REDUCED } from './render/motion';
+import type { Renderer } from './render/renderer';
+import { renderEndPanel, renderFightPanel, renderRelicPanel } from './render/screens/debug-panels';
+import { createMapScreen } from './render/screens/map';
 
 let state: RunState | null = null;
 /** `performance.now()` when the current test (by `testId`) was first rendered. */
@@ -82,31 +87,19 @@ function schedule(): void {
 const inTest = (): boolean => state?.status === 'combat' && state.combat?.phase === 'test';
 const testTime = (timeStamp: number): number => timeStamp - testStart;
 
-/** Phase 1 debug input until presentation task 12.2: up, right, and down pick the upper, middle, or lower legal move. */
-type Pick = 'up' | 'right' | 'down';
-const MOVE_KEYS: Readonly<Record<string, Pick>> = {
-  arrowup: 'up',
-  w: 'up',
-  arrowdown: 'down',
-  s: 'down',
-  arrowright: 'right',
-  d: 'right',
-};
-
-/** The v1.6 `move` action for a pick, or null when there is no legal move. A single option takes any pick. */
-function moveFor(s: RunState, pick: Pick): Action | null {
-  const opts = legalMoves(s);
-  if (!opts.length) return null;
-  const o = pick === 'up' ? opts[0] : pick === 'down' ? opts[opts.length - 1] : opts[Math.floor((opts.length - 1) / 2)];
-  return o ? { type: 'move', to: { col: o.col, row: o.row } } : null;
+/** True while typing in a text field, where letter keys must reach the field. */
+function typing(t: EventTarget | null): boolean {
+  const el = t as { tagName?: unknown; isContentEditable?: unknown } | null;
+  return !!el && (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA' || el.tagName === 'SELECT' || el.isContentEditable === true);
 }
 
 /**
- * Combat keys go through `combatKey` while a fight is shown and movement keys are ignored (FR-COM-6);
- * otherwise Arrow keys and WASD move while exploring (FR-MOV-1).
+ * Combat keys go through `combatKey` while a fight is shown and movement keys are ignored (FR-COM-6). While a
+ * relic offer is open, 1, 2, 3 pick a relic. Otherwise Arrow keys and W, D, S pick a branch through `routeKey`
+ * and `targetFor`; a branch with no legal move sends nothing (FR-MOV-1, FR-MOV-8).
  */
 function onKeyDown(e: KeyboardEvent): void {
-  if (!state) return;
+  if (!state || typing(e.target)) return;
   if (state.status === 'combat') {
     const k = combatKey(e.key);
     if (!k) return;
@@ -117,11 +110,21 @@ function onKeyDown(e: KeyboardEvent): void {
     } else if (state.combat?.phase === 'choose') dispatch({ type: 'attack' });
     return;
   }
-  const pick = MOVE_KEYS[e.key.toLowerCase()];
-  const a = pick && state.status === 'exploring' ? moveFor(state, pick) : null;
-  if (a) {
+  if (state.status === 'relic') {
+    const i = relicKey(e.key);
+    if (i !== null) {
+      e.preventDefault();
+      dispatch({ type: 'pickRelic', i });
+    }
+    return;
+  }
+  if (state.status !== 'exploring') return;
+  if (isArrowKey(e.key)) e.preventDefault();
+  const branch = routeKey(e.key);
+  const to = branch ? targetFor(routeView(state), branch) : null;
+  if (to) {
     e.preventDefault();
-    dispatch(a);
+    dispatch({ type: 'move', to });
   }
 }
 
@@ -143,83 +146,118 @@ export function bindPointer(el: HTMLElement): void {
     });
 }
 
-/** D-pad buttons (`button[data-dir]`) send the same `move` actions as the keys (FR-MOV-2). */
-export function bindDpad(root: ParentNode): void {
-  root.querySelectorAll<HTMLButtonElement>('button[data-dir]').forEach((b) =>
-    b.addEventListener('click', () => {
-      const pick = b.dataset['dir'] as Pick | undefined;
-      const a = pick && state?.status === 'exploring' ? moveFor(state, pick) : null;
-      if (a) dispatch(a);
-    }),
-  );
-}
-
 document.addEventListener('keydown', onKeyDown);
 document.addEventListener('keyup', onKeyUp);
 
-// ---------- Plain DOM view (Phase 1 only; replaced by the presentation spec's screens) ----------
-
-/** One character per cell: @ hero, ? unseen, . empty or resolved, w wisp, c chest, 1–4 monster tier, S start, B the boss node. */
-function tileChar(s: RunState, col: number, row: number): string {
-  if (s.pos.col === col && s.pos.row === row) return '@';
-  if (col === s.map.bossNode.col) return row === s.map.bossNode.row && !s.bossDown ? 'B' : ' ';
-  const t = tileAt(s.map, col, row);
-  if (!t) return ' ';
-  if (!isVisible(t)) return '?';
-  if (t.kind === 'start') return 'S';
-  if (t.resolved || t.kind === 'fog') return '.';
-  if (t.kind === 'wisp') return 'w';
-  if (t.kind === 'chest') return 'c';
-  return String(t.tier);
+/** Loads the world renderer chunk (and `three`) on demand; the start screen never waits for it (requirement 25.7). */
+export function loadWorld(): Promise<typeof import('./render/world/index')> {
+  return import('./render/world/index');
 }
 
-function plainText(s: RunState): string {
-  const h = s.hero;
-  const rows: string[] = [];
-  for (let r = 0; r < s.map.rows; r++) {
-    let line = '';
-    for (let c = 0; c <= s.map.cols; c++) line += tileChar(s, c, r) + ' ';
-    rows.push(line);
-  }
-  const out = [
-    `${h.name} · level ${h.level} · XP ${h.xp} · HP ${h.hp}/${h.maxHp} · ATK ${h.atk} · treasure ${h.treasure} · shards ${s.shards}/3 · ${s.status}`,
-    '',
-    ...rows,
-    '',
-    ...s.log,
-  ];
-  const f = s.combat;
-  if (f) {
-    out.push('', `${f.m.name}: HP ${f.m.hp}/${f.m.maxHp}`, ...f.lines);
-    if (f.phase === 'choose') out.push('Attack (A).');
-    if (f.phase === 'test' && f.test) out.push(`${f.test.kind} test: ${f.test.mode} (${f.test.pattern}). Press Space on the beat.`);
-  }
-  if (s.status === 'won') out.push('', 'The Phantom is banished. Your graph is exorcised.');
-  if (s.status === 'lost') out.push('', 'You became part of the graph.');
-  return out.join('\n');
-}
+// ---------- The /next/ page (presentation spec, v1.6) ----------
 
-function mountPlain(app: HTMLElement): void {
+const BLESSING_DELAY_MS = 600;
+
+/**
+ * Wires the /next/ page: the demo starts from "Play the demo" or `?demo`, the map screen draws every state, and
+ * the plain fight, relic, and end panels stand in until their screens exist. The world renderer loads in the
+ * background; the map is playable with the HUD and the pad before it arrives.
+ */
+function mountNext(): void {
   const settings = loadSettings(globalThis.localStorage ?? null);
-  const r = newRun(loadDemo(() => Date.now()), null, settings);
-  if (!r.ok) {
-    app.textContent = r.error.message;
-    return;
+  const screen = createMapScreen({ dispatch });
+  let renderer: Renderer | null = null;
+  let fresh = false;
+  let blessing: ReturnType<typeof setTimeout> | null = null;
+  const teaser = document.getElementById('teaser');
+  const demoMap = newRun(loadDemo(() => Date.now()), null, settings);
+
+  loadWorld()
+    .then((w) => {
+      const coarse = globalThis.matchMedia?.('(pointer: coarse)').matches ?? false;
+      try {
+        renderer = w.createWorldRenderer(teaser ?? $('#map-host'), {
+          coarse,
+          reduced: REDUCED,
+          onFail: () => {
+            renderer = null;
+            screen.setRenderer(null);
+          },
+        });
+      } catch (e) {
+        console.warn('3D view unavailable:', e instanceof Error ? e.message : e);
+        return;
+      }
+      onReducedChange((on) => renderer?.setReduced(on));
+      if (state && !$('#screen-map').hidden) screen.setRenderer(renderer);
+      else if (teaser && demoMap.ok) {
+        renderer.mount(teaser);
+        renderer.showTeaser(demoMap.value.map);
+      }
+    })
+    .catch((e: unknown) => console.warn('3D view unavailable:', e instanceof Error ? e.message : e));
+
+  function start(): void {
+    const r = newRun(loadDemo(() => Date.now()), null, settings);
+    if (!r.ok) {
+      const err = $('#start-error');
+      err.textContent = r.error.message;
+      err.hidden = false;
+      return;
+    }
+    show('screen-map');
+    fresh = true;
+    if (renderer) screen.setRenderer(renderer);
+    setRun(r.value);
+    dispatch({ type: 'enterMap' });
+    $('#map-host').focus({ preventScroll: true });
   }
-  app.innerHTML = `<pre id="cq-view" aria-live="polite"></pre>
-<div class="dpad" aria-label="Route buttons">
-  <button data-dir="up" aria-label="Upper path">↗</button><button data-dir="right" aria-label="Middle path">→</button><button data-dir="down" aria-label="Lower path">↘</button>
-</div>
-<p><button id="cq-attack" type="button">Attack (A)</button> <button id="cq-now" type="button">Now! (Space)</button></p>`;
-  const view = app.querySelector('#cq-view') as HTMLElement;
-  bindDpad(app);
-  bindPointer(app.querySelector('#cq-now') as HTMLElement);
-  (app.querySelector('#cq-attack') as HTMLElement).addEventListener('click', () => dispatch({ type: 'attack' }));
+
   onState((s) => {
-    view.textContent = plainText(s);
+    if (s.status === 'won' || s.status === 'lost') {
+      renderEndPanel(document, s);
+      show('screen-end');
+      renderer?.stop();
+      return;
+    }
+    screen.update(s, fresh);
+    fresh = false;
+    renderFightPanel(document, s);
+    renderRelicPanel(document, s, (i) => dispatch({ type: 'pickRelic', i }));
+    if (s.events.some((e) => e.type === 'blessingDue')) {
+      if (blessing !== null) clearTimeout(blessing);
+      blessing = setTimeout(() => {
+        blessing = null;
+        dispatch({ type: 'offerBlessing' });
+      }, BLESSING_DELAY_MS);
+    }
   });
-  setRun(r.value);
+
+  $('#btn-demo').addEventListener('click', start);
+  $('#form').addEventListener('submit', (e) => {
+    // Live graphs need the start and summary screens (presentation tasks 5.x); the demo is playable now.
+    e.preventDefault();
+    const err = $('#start-error');
+    err.textContent = 'Live graphs arrive with the next build. Play the demo for now.';
+    err.hidden = false;
+  });
+  $('#btn-attack').addEventListener('click', () => dispatch({ type: 'attack' }));
+  bindPointer($('#btn-qte'));
+  $('#btn-again').addEventListener('click', () => {
+    show('screen-map');
+    fresh = true;
+    if (renderer) screen.setRenderer(renderer);
+    dispatch({ type: 'retry' });
+    dispatch({ type: 'enterMap' });
+  });
+  $('#btn-new').addEventListener('click', () => {
+    show('screen-start');
+    if (renderer && teaser && demoMap.ok) {
+      renderer.mount(teaser);
+      renderer.showTeaser(demoMap.value.map);
+    }
+  });
+  if (new URLSearchParams(location.search).has('demo')) start();
 }
 
-const app = document.getElementById('app');
-if (app) mountPlain(app);
+if (document.getElementById('map-host')) mountNext();

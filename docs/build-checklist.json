@@ -1364,7 +1364,7 @@
       "spec": "presentation",
       "task": "1.1",
       "title": "Split the prototype's markup and CSS into `index.html` and `src/style.css` (screens, overlays, footer with \"Not affiliated with GitHub.\"), and add `src/render/dom.ts`, `src/render/motion.ts`, `src/render/palette.ts`",
-      "status": "todo",
+      "status": "done",
       "verify": "npm run build"
     },
     {
@@ -1373,7 +1373,7 @@
       "spec": "presentation",
       "task": "1.2",
       "title": "Implement `src/render/input.ts` (v1.6: `routeKey`, `isArrowKey`, no `moveKey`) and `src/render/layout.ts`; write `tests/render/input.test.ts` and `tests/render/layout.test.ts`",
-      "status": "todo",
+      "status": "done",
       "verify": "npx vitest --run tests/render/input.test.ts tests/render/layout.test.ts"
     },
     {
@@ -1391,7 +1391,7 @@
       "spec": "presentation",
       "task": "2.1",
       "title": "Copy `SPRITES` and `OUTFITS` into `src/render/sprites/grids.ts` and implement `buildSprite`, `outline`, `silhouette`, `drawSprite`, `shadow`, `glow`, `rrect`",
-      "status": "todo",
+      "status": "done",
       "verify": "npm run typecheck"
     },
     {
@@ -1400,7 +1400,7 @@
       "spec": "presentation",
       "task": "2.2",
       "title": "Implement `heroPixels`, `heroKey`, `heroFrame`, `heroFX` in `src/render/sprites/hero.ts`, using `RACE_INFO` from progression for face colours and features",
-      "status": "todo",
+      "status": "done",
       "verify": "npx vitest --run tests/render/hero-sprite.test.ts"
     },
     {
@@ -1409,7 +1409,7 @@
       "spec": "presentation",
       "task": "2.3",
       "title": "Write `tests/render/hero-sprite.test.ts`",
-      "status": "todo",
+      "status": "done",
       "verify": "npx vitest --run tests/render/hero-sprite.test.ts"
     },
     {
@@ -1437,7 +1437,7 @@
       "spec": "presentation",
       "task": "3.3",
       "title": "Implement `tileInfo` and write `tests/render/tooltip.test.ts`",
-      "status": "todo",
+      "status": "done",
       "verify": "npx vitest --run tests/render/tooltip.test.ts"
     },
     {
@@ -1446,7 +1446,7 @@
       "spec": "presentation",
       "task": "3.4",
       "title": "Add the map screen in `src/render/screens/map.ts`: the renderer host, pointer tap on a legal tile through `renderer.pick`, hero tap, hover tooltip (v1.6: `moved` comes from combat-timing task 11.3; no blocked feedback)",
-      "status": "todo",
+      "status": "done",
       "verify": "npm run build && npx vitest --run tests/engine/step.test.ts"
     },
     {
@@ -1455,7 +1455,7 @@
       "spec": "presentation",
       "task": "4.1",
       "title": "Implement `hudView` (v1.6: week label, shards `{ have, max: 3 }`, the four boss lines), `renderHud` (bump and level flash), `renderLog`, and the danger overlay in `src/render/hud.ts`; write `tests/render/hud.test.ts`",
-      "status": "todo",
+      "status": "done",
       "verify": "npx vitest --run tests/render/hud.test.ts"
     },
     {
@@ -1654,7 +1654,7 @@
       "spec": "presentation",
       "task": "11.1",
       "title": "Add `three` (`^0.187.0`) to `dependencies` and `@types/three` (`^0.187.0`) to `devDependencies`; put `three` in its own chunk named `three` with `build.rolldownOptions.output.codeSplitting.groups` (`{ name: \"three\", test: /node_modules[\\\\/]three[\\\\/]/ }`) in `vite.config.ts` (Vite 8 uses Rolldown, where `manualChunks` is deprecated); add the empty `src/render/world/index.ts` entry loaded with a dynamic `import()`",
-      "status": "todo",
+      "status": "done",
       "verify": "npm ls three @types/three && npm run build && f=$(ls dist/assets/three-*.js) && test \"$(gzip -9c $f | wc -c)\" -le 184320"
     },
     {
@@ -1663,7 +1663,7 @@
       "spec": "presentation",
       "task": "11.2",
       "title": "Implement the pure world maths in `src/render/world/math.ts` (`slabHeight`, `tileWorld`, `bossNodeWorld`, `spriteWorldSize`, `followAim`, `overviewAim`, `cameraFor`, `easeOutBack`, `riseDelay`) and the reduced-motion flags in `src/render/world/motion-flags.ts`; write `tests/render/world-math.test.ts` and `tests/render/motion-flags.test.ts`",
-      "status": "todo",
+      "status": "done",
       "verify": "npx vitest --run tests/render/world-math.test.ts tests/render/motion-flags.test.ts"
     },
     {
@@ -1672,7 +1672,7 @@
       "spec": "presentation",
       "task": "11.3",
       "title": "Implement `src/render/world/textures.ts` (sprite texture cache from the `buildSprite` canvases, glow and label textures) and `src/render/world/billboard.ts` (`makeBillboard`, `setFacing`, `setFrame`, `faceCamera`); write `tests/render/billboard.test.ts`",
-      "status": "todo",
+      "status": "done",
       "verify": "npx vitest --run tests/render/billboard.test.ts"
     },
     {
@@ -1681,7 +1681,7 @@
       "spec": "presentation",
       "task": "11.4",
       "title": "Implement `src/render/world/atmosphere.ts`: the light rig with the pool of 4 point lights, `assignLights`, `flicker`, `FogExp2`, fireflies, and the fog bank over fog columns; write `tests/render/atmosphere.test.ts`",
-      "status": "todo",
+      "status": "done",
       "verify": "npx vitest --run tests/render/atmosphere.test.ts"
     },
     {
@@ -1690,7 +1690,7 @@
       "spec": "presentation",
       "task": "11.5",
       "title": "Implement `src/render/world/map-scene.ts`: instanced slabs per level, instanced gravestones, ground labels, rise, seen tint, content billboards, visited frames, crossed bones, hero hop and aura, `pickTile`; write `tests/render/map-scene.test.ts`",
-      "status": "todo",
+      "status": "done",
       "verify": "npx vitest --run tests/render/map-scene.test.ts"
     },
     {
@@ -1735,7 +1735,7 @@
       "spec": "presentation",
       "task": "12.1",
       "title": "Implement `routeView` and `targetFor` in `src/render/map/route-view.ts`; write `tests/render/route-view.test.ts`",
-      "status": "todo",
+      "status": "done",
       "verify": "npx vitest --run tests/render/route-view.test.ts"
     },
     {
@@ -1744,7 +1744,7 @@
       "spec": "presentation",
       "task": "12.2",
       "title": "Change the movement wiring from task 1.3 in `src/main.ts`: keys through `routeKey` and `targetFor` send `{ type: \"move\", to }`, the D-pad becomes the three-button branch pad rebuilt from `RouteView`, taps go through `renderer.pick`, and the Flee button and F/Escape handling are removed",
-      "status": "todo",
+      "status": "done",
       "verify": "npx vitest --run tests/render/input.test.ts tests/render/route-view.test.ts && npm run build && ! grep -rnE \"['\\\"]flee['\\\"]|moveKey\" src/main.ts src/render"
     },
     {

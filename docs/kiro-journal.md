@@ -132,6 +132,14 @@ Wanderer grade policies on the demo graph (route target: 6–10 fights, the boss
 
 **Follow-up for the `balance-tuner` agent:** the demo route takes 11–12 fights in the winning policies (10 for All Miss), above the 6–10 fights target, and the simulator averages 10.3–12.6 fights per run. Fight count is mostly set by the map (`MIN_ROUTE_FIGHTS` and the route shortfall) and the bot's tier-first policy, not by the tuner's v1.6 tunables, so this may need a spec decision rather than tuning. Win rates also moved: Knight 96.6% → 100%, Wanderer 78.8% → 88.1% (now passing), Rogue σ 60 41.6% → 31.9% (now passing).
 
+## Sat 28 Nov 2026: renderer run A, the 3D billboard map with week routes at /next/
+
+- **Kiro client:** Kiro Web, workflow run (four sequential subagent steps: foundations and sprites, the Three.js foundation, map scene and HUD, then routes, map screen, and the final gate).
+- **Specs and tasks:** presentation 1.1, 1.2, 2.1, 2.2, 2.3, 11.1, 11.2, 11.3, 11.4, 11.5, 3.3, 4.1, 12.1, 3.4, 12.2 done (see docs/build-checklist.json). Presentation 11.8 stays `todo`: its verify passes, but `showFight` only stops 3D frames until run B adds the arena scene (11.6, 11.7). The progression 14.4 demo-route target was raised to 8–13 fights first (PRD changelog row of 28 Nov).
+- **Hooks and agents:** none fired. The final gate ran `npm run typecheck && npm test && npm run build` (647 of 647 tests in 65 files) and the 94 unique `verify` commands of the 161 done items in all phases; all passed. A headless Chrome run of the built `/contribquest/next/?demo` played a demo run with the keyboard from the start tile to the end screen.
+- **Commits / PRs:** branch `feature/render-a-map` from `3d34015`, 20 commits (`5e621b5` … this entry); PR *Render the map in 3D with billboard sprites and week routes*.
+- **Notes:** the new build is a second Vite page (`next/index.html`, served at `/contribquest/next/`); the root still redirects to `prototype/`, and `dist/` holds `index.html`, `next/index.html`, and `prototype/index.html`. `three` loads lazily in its own chunk (137 KB gzipped, under the 180 KB budget). The fight, relic, and end screens are plain text panels until runs B and C; live usernames wait for the start and summary screens (5.x). Kiro's 12.1 commit passed its vitest verify but not `tsc` (a literal type on `fogFrom`); a follow-up fix commit caught it before the gate. `next/index.html` loads Press Start 2P from Google Fonts like the prototype, because self-hosting would copy a third-party asset.
+
 <!--
 Template for future days. Copy the block below, newest day last.
 

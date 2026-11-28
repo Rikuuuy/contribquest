@@ -27,6 +27,21 @@ export default defineConfig({
   build: {
     outDir: 'dist',
     emptyOutDir: true,
+    rolldownOptions: {
+      // Two pages: the root keeps redirecting players to the prototype until the cutover,
+      // and the TypeScript build is served at /contribquest/next/.
+      input: {
+        main: resolve(root, 'index.html'),
+        next: resolve(root, 'next/index.html'),
+      },
+      // `three` goes into its own lazily loaded chunk (`dist/assets/three-[hash].js`, budget 180 KB gzip).
+      // Vite 8 bundles with Rolldown, where `manualChunks` is deprecated.
+      output: {
+        codeSplitting: {
+          groups: [{ name: 'three', test: /node_modules[\\/]three[\\/]/ }],
+        },
+      },
+    },
   },
   plugins: [copyPrototype()],
 });

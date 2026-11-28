@@ -32,6 +32,7 @@ Two decisions by the author on 27 Nov 2026, after playing the prototype: every f
 | 1.6 | 27 Nov 2026 | Minimum fights | Every route from the crypt to the boss enters at least 4 monster tiles. After the count shortfall (6 monsters), a second seeded step turns fog (then wisps, then chests) on the fight-poorest route into Lost Ghosts until the rule holds | FR-MAP-3, FR-MAP-4 |
 | 1.6 | 27 Nov 2026 | Saves | The run save moves to `cq:v2:run` with `version: 2`. Old saves are ignored; `cq:v1:run` is left for the prototype | FR-SAV-1 |
 | 1.6 | 27 Nov 2026 | Simulator | The route bot picks among the legal moves: chest, wisp, then fog when HP is low (below 45%, or 75% in the last two weeks), otherwise the strongest monster. Balance targets are re-measured after implementation | — |
+| 1.6 | 28 Nov 2026 | Run-length target | The demo route's fights target becomes 8–13 fights, the boss included (was 6–10). Every v1.6 route is 14 steps with at least 4 mandatory fights, and measured runs average 10–12 fights, so 6–10 no longer fits. The simulator and the grade-policy regression print the new target | FR-COM-5, FR-PRO-1 |
 | 1.6 | 27 Nov 2026 | Renderer (Three.js billboard) | The TypeScript build renders with Three.js: a 3D world where tiles are slabs whose height and green tint follow the contribution level, with fog, moonlight, lantern point lights, and fireflies, and the existing pixel-art sprites drawn as camera-facing planes (nearest-neighbour, 1 px outline). The combat screen is a 3D graveyard arena with the same billboards. HUD, battle log, and menus stay HTML over the canvas; audio stays Web Audio. Without WebGL 2 (or with `?renderer=flat`) a reduced Canvas 2D renderer runs the same game: flat tiles and sprites, highlights, fog cover, boss node, and a simple stage. Phone budgets: pixel ratio capped at 2 with an automatic quality step-down, instanced slabs, at most 4 point lights, no per-frame allocations, a median frame of 33 ms or less on a throttled phone profile. Reduced motion also stops camera moves, bobbing, flicker, and drifting fog in 3D. `three` becomes the second runtime dependency. Specified in `tech.md`, `art-style.md` ("3D billboard world"), and the presentation spec (requirements 19–26) | FR-FX-1 to FR-FX-10, FR-MOV-6, FR-MOV-8, NFRs, Technology |
 
 Property changes: P3 and P4 are restated for routes, P10 (shard feasibility) is retired, and P20–P24 are added (route completeness, minimum fights, visibility window, shard weakening, forward-only with no skipping). See "Testing and quality strategy".
@@ -234,7 +235,7 @@ Kiro is how the chimera is built, not one of its parts. Every entry uses Kiro, s
 | Metric | Target |
 | --- | --- |
 | Username input to playable map | Under 3 s on a typical connection; hard limit 10 s, after which the error screen offers demo mode |
-| Demo dataset run length | 6–10 fights on the bot's route (v1.6: every route is 14 steps on the demo), about 2 minutes of play |
+| Demo dataset run length | 8–13 fights on the bot's route, the boss included (v1.6: every route is 14 steps on the demo; was 6–10 before v1.6), about 2 minutes of play |
 | Map validity | 100% of property-test cases and all fixture profiles produce a valid map |
 | Run completion | The balance simulator's bot wins every fixture profile |
 | Demo resilience | The full game works with the network disabled, in demo mode |
@@ -795,7 +796,7 @@ Generated once by `scripts/make-demo-data.ts`, reviewed by hand, frozen as `src/
 - One visible empty week in the first third (the "graveyard" stretch that tells the habit story).
 - A 15-day streak ending on the last day, giving aura tier 2.
 - One clear best day about two weeks before the end, hosting the boss.
-- A bot route with 6–10 fights, confirmed by the simulator (v1.6: every route is 14 steps and has at least 4 fights plus the boss).
+- A bot route with 8–13 fights, the boss included, confirmed by the simulator (v1.6: every route is 14 steps and has at least 4 fights plus the boss; the target was 6–10 before v1.6).
 
 ## Using Kiro — the evidence plan
 
