@@ -6,9 +6,24 @@
 /** Projects a world point to CSS pixels inside the overlay; false when it is behind the camera. */
 export type Projector = (x: number, y: number, z: number, out: { x: number; y: number }) => boolean;
 
-export type TextOpts = { color?: string; size?: number; life?: number };
+/** An icon drawn left of the text (a sprite canvas, e.g. the CI Cache relic). */
+export type TextIcon = CanvasImageSource & { width: number; height: number };
 
-type TextSlot = { text: string; font: string; color: string; size: number; x: number; y: number; z: number; born: number; max: number; active: boolean };
+export type TextOpts = { color?: string; size?: number; life?: number; icon?: TextIcon | null };
+
+type TextSlot = {
+  text: string;
+  font: string;
+  color: string;
+  size: number;
+  x: number;
+  y: number;
+  z: number;
+  born: number;
+  max: number;
+  active: boolean;
+  icon: TextIcon | null;
+};
 type Bubble = { text: string; x: number; y: number; z: number; born: number; max: number; active: boolean };
 
 export type Overlay = {
@@ -61,7 +76,7 @@ export function createOverlay(doc: Document = document): Overlay {
     w: 1,
     h: 1,
     dpr: 1,
-    texts: Array.from({ length: MAX_TEXTS }, () => ({ text: '', font: '', color: '#fff', size: 10, x: 0, y: 0, z: 0, born: 0, max: 1, active: false })),
+    texts: Array.from({ length: MAX_TEXTS }, () => ({ text: '', font: '', color: '#fff', size: 10, x: 0, y: 0, z: 0, born: 0, max: 1, active: false, icon: null })),
     bubble: { text: '', x: 0, y: 0, z: 0, born: 0, max: 1, active: false },
     dirty: true,
     p: { x: 0, y: 0 },
@@ -93,6 +108,7 @@ export function floatText(o: Overlay, text: string, x: number, y: number, z: num
   slot.z = z;
   slot.born = now;
   slot.max = (opts.life ?? 0.9) * 1000;
+  slot.icon = opts.icon ?? null;
   slot.active = true;
 }
 
@@ -135,15 +151,22 @@ export function drawOverlay(o: Overlay, now: number, project: Projector, rise: b
     const px = Math.max(6, Math.round(t.size * k));
     if (!t.font) t.font = `${px}px ${FONT}`;
     x.font = t.font;
-    const half = x.measureText(t.text).width / 2 + 4;
+    const iw = t.icon ? Math.round(px * 1.6) : 0;
+    const half = x.measureText(t.text).width / 2 + 4 + iw / 2;
     const cx = clampInside(o.p.x, half, o.w);
     const cy = clampInside(o.p.y - riseOffset(age, rise) * k, px, o.h);
+    const tx = cx + iw / 2;
     x.globalAlpha = textAlpha(age, t.max / 1000);
+    if (t.icon) {
+      x.imageSmoothingEnabled = false;
+      const ih = Math.round((iw * t.icon.height) / Math.max(1, t.icon.width));
+      x.drawImage(t.icon, Math.round(cx - half + 2), Math.round(cy - ih / 2), iw, ih);
+    }
     x.lineWidth = Math.max(2, px / 4);
     x.strokeStyle = STROKE;
-    x.strokeText(t.text, cx, cy);
+    x.strokeText(t.text, tx, cy);
     x.fillStyle = t.color;
-    x.fillText(t.text, cx, cy);
+    x.fillText(t.text, tx, cy);
   }
   const b = o.bubble;
   if (b.active && project(b.x, b.y, b.z, o.p)) {

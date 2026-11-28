@@ -3,7 +3,9 @@
 import { loadDemo } from './data/demo';
 import { loadSettings } from './data/settings';
 import { combatKey, newRun, nextDeadline, step, type Action, type InputEvent, type RunState } from './engine';
+import { createBackground } from './render/background';
 import { $, show } from './render/dom';
+import { whiteOut } from './render/fx';
 import { pressError, recordHit, type HitLog } from './render/hit-meter';
 import { isArrowKey, relicKey, routeKey } from './render/input';
 import { routeView, targetFor } from './render/map/route-view';
@@ -203,6 +205,8 @@ function mountNext(): void {
   let fresh = false;
   let blessing: ReturnType<typeof setTimeout> | null = null;
   const teaser = document.getElementById('teaser');
+  const bgCanvas = document.getElementById('bg');
+  const background = bgCanvas instanceof HTMLCanvasElement ? createBackground(bgCanvas) : null;
   const demoMap = newRun(loadDemo(() => Date.now()), null, settings);
 
   loadWorld()
@@ -248,6 +252,12 @@ function mountNext(): void {
 
   onState((s) => {
     if (s.status === 'won' || s.status === 'lost') {
+      // End effects once, on the step that ends the run: white-out and confetti, or falling ash.
+      const end = s.events.find((e) => e.type === 'runEnded');
+      if (end) {
+        if (end.won) whiteOut(REDUCED);
+        background?.celebrate(end.won, REDUCED);
+      }
       combat.update(s);
       renderEndPanel(document, s);
       show('screen-end');

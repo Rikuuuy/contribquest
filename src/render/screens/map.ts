@@ -189,10 +189,10 @@ export function createMapScreen(deps: MapScreenDeps, root: ParentNode = document
       if (danger) renderDanger(danger, hv.lowHp, REDUCED);
       renderPad(pad, view);
       const events: readonly GameEvent[] = s.events;
-      // The hop starts from `moved` once the scene is synced to the new position; fight events go to the arena.
-      const wasShown = shownMap;
+      // Effects start once the scene is synced to the new state: the hop from `moved`, the map effects (also on the
+      // step that closes a fight, when the map is shown again), and fight events on the arena.
       draw(fresh);
-      if (renderer && (wasShown || s.status === 'combat') && !fresh && events.length) renderer.onEvents(s, events);
+      if (renderer && !fresh && events.length) renderer.onEvents(s, events);
     },
     view: () => view,
     moveFor(branch: Branch): Action | null {

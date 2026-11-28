@@ -46,6 +46,7 @@ import { HERO_FRAMES, heroFrame, type FrameOpts, type HeroFrame } from '../sprit
 import { applySky, assignLights, driftFireflies, driftFog, flicker, makeFireflies, makeFogBank, makeLightRig, placeRig, setFogStart, type Fireflies, type FogBank, type LightItem, type LightRig } from './atmosphere';
 import { faceCamera, makeBillboard, setFacing, setFrame, type Billboard } from './billboard';
 import { disposeTree } from './dispose';
+import { makeFx3d, tickFx, type Fx3d } from './fx3d';
 import {
   bossNodeWorld,
   cameraFor,
@@ -63,7 +64,7 @@ import {
   type Vec3,
 } from './math';
 import type { MotionFlags } from './motion-flags';
-import type { Quality } from './quality';
+import { FRAME_BUDGET, type Quality } from './quality';
 import { cachedTexture, glowTexture, spriteTexture, textTexture, type CanvasSource } from './textures';
 
 /** Canvas sources for the scene builders; Node tests pass `{ width, height }` stubs. */
@@ -173,6 +174,9 @@ export type MapScene = {
   frameOpts: FrameOpts;
   /** False until the first `syncMap`, which cuts the camera and the fog edge instead of easing them. */
   synced: boolean;
+  /** Map effects (requirement 13.5): the particle, ring, and slash pool, and the shake applied last frame. */
+  fx: Fx3d;
+  shakeApplied: Vector3;
 };
 
 const _m = new Matrix4();
@@ -471,14 +475,17 @@ export function buildMapScene(map: GameMap, deps: WorldDeps, quality: Quality, a
     ndc: new Vector2(),
     frameOpts: { moving: false, seed: 0, reduced: false },
     synced: false,
+    fx: makeFx3d(FRAME_BUDGET.poolMap, quality),
+    shakeApplied: new Vector3(),
   };
+  scene.add(ms.fx.root);
   for (const t of map.tiles) if (ms.seen[t.idx]) showTile(ms, t);
   setAspect(ms, aspect);
   return ms;
 }
 
 /** Anchor (slab top + 0.01) of a tile or the boss node at full height. */
-function anchorOf(ms: MapScene, p: Pos, out: Vector3): Vector3 {
+export function anchorOf(ms: MapScene, p: Pos, out: Vector3): Vector3 {
   if (p.col >= ms.map.cols) {
     const [x, z] = bossNodeWorld(ms.map);
     return out.set(x, ALTAR.h + 0.01, z);
@@ -836,12 +843,16 @@ export function tickMap(ms: MapScene, now: number, dt: number, flags: Readonly<M
   }
   driftFog(ms.fog, dt, flags.fogDrift);
 
-  // Camera.
+  // Camera, then the effects and their shake on top (last frame's shake removed first).
   const cam = ms.cam;
+  ms.camera.position.sub(ms.shakeApplied);
   if (cam.start > -Infinity) {
     const k = cam.dur > 0 ? easeOut(clamp01((now - cam.start) / cam.dur)) : 1;
     ms.camera.position.lerpVectors(cam.from, cam.to, k);
   }
+  tickFx(ms.fx, dt, ms.camera);
+  ms.camera.position.add(ms.fx.shakeOff);
+  ms.shakeApplied.copy(ms.fx.shakeOff);
   placeRig(ms.rig, ms.aim);
 
   // Lantern follows the hero; flicker; fireflies.

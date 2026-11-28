@@ -1554,7 +1554,7 @@
       "spec": "presentation",
       "task": "7.2",
       "title": "Effects for every event in the design table (v1.6 rows: `moved`, `rest`, wisp heal, cache heal, `shard` with `bound`; no `blocked` or `gateOpen`) in both renderers, white-out, fight flashes, background confetti and ash",
-      "status": "todo",
+      "status": "done",
       "verify": "npm run build && ! grep -rnE \"gateOpen|'blocked'|WARD BROKEN|GATE OPENS\" src/render"
     },
     {

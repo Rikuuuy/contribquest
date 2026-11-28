@@ -5,7 +5,7 @@
 // and the overlay canvas.
 import { ACESFilmicToneMapping, PCFShadowMap, SRGBColorSpace, Vector3, WebGLRenderer } from 'three';
 import type { ClassId, RaceId } from '../../data/schema';
-import type { GameEvent, RunState } from '../../engine';
+import { relicById, type GameEvent, type RunState } from '../../engine';
 import type { GameMap, Pos } from '../../mapgen';
 import type { RouteView } from '../map/route-view';
 import { clearOverlay, createOverlay, drawOverlay, floatText, sizeOverlay, type Projector } from '../overlay';
@@ -32,7 +32,20 @@ import {
 } from './arena-scene';
 import { setFireflyQuality, setRigQuality } from './atmosphere';
 import { burst, clearFx, hitStop, ring, setFxQuality, shake, slash, slowMo, visualDt } from './fx3d';
-import { buildMapScene, disposeMapScene, heroHop, pickTile, setAspect, setHover, startRise, syncMap, tickMap, type MapScene, type WorldDeps } from './map-scene';
+import {
+  anchorOf,
+  buildMapScene,
+  disposeMapScene,
+  heroHop,
+  pickTile,
+  setAspect,
+  setHover,
+  startRise,
+  syncMap,
+  tickMap,
+  type MapScene,
+  type WorldDeps,
+} from './map-scene';
 import { motionFlags, type MotionFlags } from './motion-flags';
 import { FrameStats, initialQuality, nextQuality, pixelRatio, QUALITY, WARMUP_FRAMES, type Quality } from './quality';
 
@@ -154,8 +167,9 @@ export function createWorldRenderer(host: HTMLElement, deps: WorldRendererDeps =
   const _p = new Vector3();
   const _a = new Vector3();
   const project: Projector = (x, y, z, out) => {
-    if (!arena) return false;
-    _p.set(x, y, z).project(arena.camera);
+    const cam = shown === 'fight' ? arena?.camera : ms?.camera;
+    if (!cam) return false;
+    _p.set(x, y, z).project(cam);
     if (_p.z > 1) return false;
     out.x = ((_p.x + 1) / 2) * overlay.w;
     out.y = ((1 - _p.y) / 2) * overlay.h;
@@ -201,6 +215,7 @@ export function createWorldRenderer(host: HTMLElement, deps: WorldRendererDeps =
       shadow.map = null;
       setRigQuality(ms.rig, q);
       setFireflyQuality(ms.fireflies, q);
+      setFxQuality(ms.fx, q);
     }
     if (arena) {
       const shadow = arena.rig.moon.shadow;
@@ -426,6 +441,8 @@ export function createWorldRenderer(host: HTMLElement, deps: WorldRendererDeps =
           }
           if (e.lethal) arenaHeroDown(x);
         });
+      } else if (e.type === 'heal' && e.source === 'cache') {
+        later(PACING.hpBarDelay, (x, t) => text(x, 'hero', `+${e.amount} HP`, t, '#8dffa0', 10));
       } else if (e.type === 'phase2') {
         arenaPhase2(a, now, flags);
         later(PACING.phase2Fx, (x) => {
@@ -435,6 +452,105 @@ export function createWorldRenderer(host: HTMLElement, deps: WorldRendererDeps =
           burst(x.fx, at.x, at.y, at.z, { n: 40, color: '#ff3a3a', speed: 4 });
           text(x, 'foe', 'PHASE 2', performance.now(), '#ff5a6a', 16);
         });
+      }
+    }
+  }
+
+  /** Runs `fn` after `ms` while the same map scene is still shown (map effects of a closed scene are dropped). */
+  function mapLater(delay: number, fn: (m: MapScene, now: number) => void): void {
+    const scene = ms;
+    setTimeout(() => {
+      if (scene && ms === scene && shown !== 'fight') fn(scene, performance.now());
+    }, delay);
+  }
+
+  /** Map text size in overlay units (the overlay scales sizes from a 440 px stage). */
+  const MAP_TEXT = 5.5;
+
+  /** Floating text above a map position (tile or boss node). */
+  function mapText(m: MapScene, at: Pos, s: string, now: number, color: string, o: { dy?: number; size?: number; life?: number; icon?: HTMLCanvasElement | null } = {}): void {
+    anchorOf(m, at, _a);
+    floatText(overlay, s, _a.x, _a.y + 0.75 + (o.dy ?? 0), _a.z, now, { color, size: o.size ?? MAP_TEXT, life: o.life ?? 1.1, icon: o.icon ?? null });
+  }
+
+  /** A particle burst at a map position, `dy` above its slab top. */
+  function mapBurst(m: MapScene, at: Pos, dy: number, o: Parameters<typeof burst>[4]): void {
+    anchorOf(m, at, _a);
+    burst(m.fx, _a.x, _a.y + dy, _a.z, o);
+  }
+
+  function mapRing(m: MapScene, at: Pos, o: Parameters<typeof ring>[4]): void {
+    anchorOf(m, at, _a);
+    ring(m.fx, _a.x, _a.y + 0.35, _a.z, o);
+  }
+
+  /** An icon canvas for floating text, or null when the sprite is unavailable. */
+  function iconFor(key: string): HTMLCanvasElement | null {
+    try {
+      return spriteCanvasFor(key);
+    } catch {
+      return null;
+    }
+  }
+
+  /** Map effects for a step's events (requirement 13.5, design "Event → sound and effect map"). */
+  function mapEffects(m: MapScene, state: RunState, events: readonly GameEvent[]): void {
+    const now = performance.now();
+    const hero = state.pos;
+    const killed = events.some((e) => e.type === 'monsterDown');
+    for (const e of events) {
+      if (e.type === 'moved') {
+        heroHop(m, e.from, e.to, now, flags);
+        if (e.from.col !== e.to.col || e.from.row !== e.to.row) mapBurst(m, e.from, 0.08, { n: 6, color: '#bebed7', speed: 0.6, up: 0.4, grav: -0.3, life: 0.45, jitter: 0.25 });
+      } else if (e.type === 'wisp') {
+        const at = { col: e.col, row: e.row };
+        mapBurst(m, at, 0.35, { n: 10, color: '#8dffa0', speed: 1.4, up: 1, grav: -1.5, drag: 3, life: 1 });
+        mapBurst(m, at, 0.35, { n: 4, color: '#e6fff0', speed: 1, up: 1, grav: -1.5, drag: 3, life: 1 });
+        mapText(m, at, `+${e.xp} XP`, now, '#8dffa0');
+        if (e.healed > 0) mapLater(220, (x, t) => mapText(x, at, `+${e.healed} HP`, t, '#ff8a8a', { dy: -0.18 }));
+      } else if (e.type === 'rest') {
+        const at = { col: e.col, row: e.row };
+        mapBurst(m, at, 0.2, { n: 12, color: '#8dffa0', speed: 0.4, up: 0.6, grav: -0.4, drag: 1, life: 1.4, jitter: 0.5 });
+        mapText(m, at, e.healed > 0 ? `+${e.healed} HP` : 'RESTED', now, e.healed > 0 ? '#8dffa0' : '#cfe8d6');
+      } else if (e.type === 'chest') {
+        const at = { col: e.col, row: e.row };
+        mapBurst(m, at, 0.3, { n: 10, color: '#ffd257', speed: 1.6, up: 2.2, grav: 7, life: 0.9 });
+        mapBurst(m, at, 0.3, { n: 6, color: '#ffb13c', speed: 1.6, up: 2.2, grav: 7, life: 0.9 });
+        mapRing(m, at, { color: '#ffd257', r: 0.1, vr: 1.6, life: 0.45 });
+        mapText(m, at, `+${e.gold} GOLD`, now, '#ffd257');
+        if (e.healed > 0) mapLater(220, (x, t) => mapText(x, at, `+${e.healed} HP`, t, '#ff8a8a', { dy: -0.18 }));
+      } else if (e.type === 'heal' && e.source === 'cache') {
+        mapText(m, hero, `+${e.amount} HP`, now, '#8dffa0', { dy: 0.2, icon: iconFor('r_cache') });
+      } else if (e.type === 'levelUp') {
+        mapLater(PACING.levelUpFx, (x, t) => {
+          mapRing(x, hero, { color: '#ffd257', r: 0.1, vr: 1.8, life: 0.6 });
+          mapLater(150, (y) => mapRing(y, hero, { color: '#fff3b0', r: 0.1, vr: 1.3, life: 0.5 }));
+          mapBurst(x, hero, 0.4, { n: 24, color: '#ffd257', speed: 1, up: 0.6, grav: -1.6, drag: 1, life: 1.1, jitter: 0.3 });
+          mapText(x, hero, 'LEVEL UP!', t, '#ffd257', { dy: 0.35, size: MAP_TEXT * 1.25, life: 1.4 });
+        });
+      } else if (e.type === 'xp' && killed) {
+        mapBurst(m, hero, 0.4, { n: 16, color: '#e7d8ff', speed: 0.7, up: 0.3, grav: -1.8, drag: 1.2, life: 1.2, jitter: 0.25 });
+        mapBurst(m, hero, 0.3, { n: 10, color: '#ffd257', speed: 1.6, up: 2, grav: 7, life: 0.8 });
+        mapText(m, hero, `+${e.amount} XP`, now, '#8fd3ff');
+      } else if (e.type === 'timing') {
+        mapLater(650, (x, t) => mapText(x, hero, `TIMING ${e.pct}%`, t, e.maxed ? '#ff6b6b' : '#ffb38a', { dy: -0.2, size: MAP_TEXT * 0.9, life: 1.4 }));
+      } else if (e.type === 'shard') {
+        mapLater(300, (x, t) => {
+          mapText(x, hero, `SHARD ${e.have}/${e.max}`, t, '#d9c6ff', { dy: 0.2, life: 1.3 });
+          mapBurst(x, hero, 0.4, { n: 14, color: '#d9c6ff', speed: 2, drag: 2.5, grav: 0, life: 0.8 });
+        });
+        if (e.bound)
+          mapLater(750, (x, t) => {
+            const boss = state.map.bossNode;
+            shake(x.fx, 6, flags);
+            mapRing(x, boss, { color: '#ffd257', r: 0.1, vr: 3, life: 0.7 });
+            mapBurst(x, boss, 0.5, { n: 30, color: '#e7d8ff', speed: 2.6, grav: 2.5, life: 0.9 });
+            mapText(x, boss, 'PHANTOM BOUND', t, '#ffd257', { life: 1.6 });
+          });
+      } else if (e.type === 'relicPicked') {
+        mapRing(m, hero, { color: '#ffb13c', r: 0.1, vr: 1.6, life: 0.5 });
+        mapBurst(m, hero, 0.45, { n: 16, color: '#ffd257', speed: 1.4, up: 0.5, grav: -1, life: 0.8 });
+        mapText(m, hero, relicById(e.id).name, now, '#ffb13c', { dy: 0.2, life: 1.4 });
       }
     }
   }
@@ -491,11 +607,9 @@ export function createWorldRenderer(host: HTMLElement, deps: WorldRendererDeps =
       resize();
       startLoop();
     },
-    onEvents(_state: RunState, events: readonly GameEvent[]): void {
+    onEvents(state: RunState, events: readonly GameEvent[]): void {
       if (shown === 'fight') return fightEffects(events);
-      if (!ms) return;
-      const now = performance.now();
-      for (const e of events) if (e.type === 'moved') heroHop(ms, e.from, e.to, now, flags);
+      if (ms) mapEffects(ms, state, events);
     },
     pick(clientX: number, clientY: number): Pos | null {
       if (!ms || !Number.isFinite(clientX) || !Number.isFinite(clientY)) return null;
