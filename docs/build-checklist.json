@@ -1599,7 +1599,7 @@
       "spec": "presentation",
       "task": "9.1",
       "title": "Port `Sfx` to `src/audio/sfx.ts` (chain, drone, modes, bells, heartbeat, every effect, init on first input, mute ramp, hidden-page pause, all calls caught)",
-      "status": "todo",
+      "status": "done",
       "verify": "npx vitest --run tests/audio/events.test.ts && npm run build && ! find dist -iregex '.*\\.\\(mp3\\|ogg\\|wav\\|m4a\\|flac\\)' | grep ."
     },
     {
