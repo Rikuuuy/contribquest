@@ -137,8 +137,8 @@ The world renderer (`src/render/world/`, Three.js) follows the billboard sample 
 
 | Camera | Projection | Position | Looks at | Notes |
 | --- | --- | --- | --- | --- |
-| Map follow | Perspective, FOV 40°, near 0.1, far 200 | aim + (−1.6, 7.2, 9.0) | aim = (hero x + 1.5, 0, z of row 3) | Sample framing: about 38° down, 10° yaw from the left. Translates only; its orientation never changes during play. Eases 400 ms (ease-out cubic) after each move |
-| Map follow, portrait (aspect < 1) | FOV 55° | aim + 1.25 × (−1.6, 7.2, 9.0) | same aim | Keeps the hero's column, the next two, and all 7 rows in view at 390 × 844 |
+| Map follow | Perspective, FOV 40°, near 0.1, far 200 | aim + 0.8 × (−1.6, 7.2, 9.0) | aim = (hero x + 1.5, 0, z of row 3) | Sample framing: about 38° down, 10° yaw from the left. Translates only; its orientation never changes during play. Eases 400 ms (ease-out cubic) after each move |
+| Map follow, portrait (aspect < 1) | FOV 55° | aim + 0.85 × (−1.6, 7.2, 9.0) | same aim | Keeps the hero's column, the next two, and all 7 rows in view at 390 × 844 |
 | Map overview (rise, teaser) | FOV 40° (55° portrait) | centre + k × (−1.6, 7.2, 9.0) | centre of the map including the boss node | `k ≥ 1`, the smallest value that fits all columns and the boss node with 1 unit margin. Eases to the follow camera over 600 ms after the rise |
 | Battle | Perspective, FOV 40° | (−0.6, 2.3, 7.4) | (0.1, 1.45, 0) | Sample: near eye level, hero on the left, foe on the right. The stage is always 8:3, so it never changes with the screen width |
 
@@ -167,7 +167,7 @@ Camera shake moves the camera position only, by `n / 100` units for a prototype 
 ### Fog and atmosphere
 
 - **Sky and distance fog:** background and `FogExp2` colour `#140d26`; density 0.035 on the map, 0.05 in the arena (sample). Boss arena: `#0d0718`, moon halo opacity 0.8. Phase 2: fog and background ease to `#2a0d1a` over 400 ms.
-- **Fog columns (visibility window):** every slab whose tile is not `seen` keeps its shape and level tint at 45% brightness with no emissive glow and no contents. A fog bank of three stacked planes with a seeded noise texture (pale `#968cbe` at opacity 0.18, 0.14, 0.10, at heights 0.25, 0.4, 0.6 above the level-4 slab top) covers the fog columns; its near edge sits half a unit before the first fog column and moves with the window over 400 ms. The texture drifts along +x at 0.05 units per second. The start and the boss node are never fogged.
+- **Fog columns (visibility window):** every slab whose tile is not `seen` keeps its shape and level tint at 45% brightness with no emissive glow and no contents. A fog bank of three stacked planes covers the fog columns: a seeded, squared value-noise texture (`#7a70a8`) at opacity 0.42, 0.30, 0.20, at heights 0.22, 0.42, 0.66 above the level-4 slab top. Vertex alpha fades the bank in over 1.8 units from its near edge and out over 1 unit at the far and side edges, so it reads as mist, not a sheet. Its near edge sits half a unit before the first fog column and moves with the window over 400 ms. Each layer has its own texture repeat and drifts along x at 0.05 units per second times 1, −0.7, and 1.6, so the layers slide past each other. The start and the boss node are never fogged.
 - **Fireflies:** one `Points` cloud, size 0.22, colour `#8dffb0`, additive, opacity 0.85, between 0.5 and 3 units above the ground (sample); 60 on the map, 50 in the arena, half at quality `low`. Each drifts on a slow sine path.
 - **Petals** (arena only): 40 points in `#c77dce`, falling at 0.3 units per second with a sideways sway.
 
@@ -198,7 +198,8 @@ Camera shake moves the camera position only, by `n / 100` units for a prototype 
 ### Scale rules
 
 - One world unit is one tile pitch; slabs are 0.9 wide with a 0.1 gap. One sprite pixel is `px` world units; pixels are always square (x and y scale together, except the mirror and the 80 ms landing squash, y × 0.85 and x × 1.08).
-- **Map:** hero `px = 1/17`; monsters tiers 1–2 `1/18`, tiers 3–4 `1/17`; chest, wisp, coffin, gravestone sprite, and crossed bones `1/20`; the Phantom on the boss node `1/15` (sample values). The hero is about 1.5 units tall, so it reads as standing on a tile, not filling it.
+- **Map:** hero `px = 1/24`; monsters tiers 1–2 `1/26`, tiers 3–4 `1/24`; chest, wisp, coffin, gravestone sprite, and crossed bones `1/28`; the Phantom on the boss node `1/19`. The hero is about 1.1 units tall, so it stands on a 1-unit tile and neighbouring sprites do not overlap. (The sample's 1/17 made sprites crowd each other in play.)
+- **Passed columns:** contents of tiles in columns behind the hero that it did not visit are hidden; those tiles can no longer be reached.
 - **Arena:** `px = stage scale / 32`, using the stage scales in "Slim proportions": hero 2 (`1/16`), monsters 3, 3.5, 4 by tier, boss 4.5 (about `1/7`, close to the sample's `1/7.5`). The hero stands at x = −2.6, the foe at x = 2.4; the boss hovers 0.12 above the floor with a ±0.08 bob at 1.4 rad/s (sample).
 - **Motion sizes:** hop arc 0.35 units over 140 ms; strike lunge 0.6 units out and back; idle bob `|sin(2t + k)| × 0.02` (sample); aura motes 0.06; particles 0.05–0.12.
 - Floating text and speech bubbles are drawn on the 2D overlay canvas at the projected anchor, in the prototype's pixel-font sizes, not as 3D text.

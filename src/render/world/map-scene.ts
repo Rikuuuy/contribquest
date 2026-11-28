@@ -106,6 +106,8 @@ export type Content = {
   /** Slab-top anchor y at full height; the rise scales it. */
   top: number;
   resolved: boolean;
+  /** In a column the hero has left without visiting it: unreachable, so its contents are hidden. */
+  behind?: boolean;
 };
 
 export type Highlight = {
@@ -407,7 +409,8 @@ export function buildMapScene(map: GameMap, deps: WorldDeps, quality: Quality, a
 
   // The hero and its aura (requirement 19.5).
   const heroKeys = heroKeysFor('wanderer', 'human');
-  const hero = billboardFor(holder, useSprite(deps, heroKeys.idle), 'hero');
+  for (const f of HERO_FRAMES) useSprite(deps, heroKeys[f]);
+  const hero = billboardFor(holder, heroKeys.idle, 'hero');
   hero.root.visible = false;
   const auraGeo = new BufferGeometry();
   auraGeo.setAttribute('position', new BufferAttribute(new Float32Array(MOTES * 3), 3));
@@ -623,6 +626,12 @@ export function syncMap(ms: MapScene, state: RunState, view: MapSyncView, now: n
     if (seen) showTile(ms, t);
     const c = ms.contents[t.idx];
     if (c && t.resolved && !c.resolved && c.kind !== 'coffin') resolveContent(ms, c);
+    if (c && c.kind !== 'coffin') {
+      const behind = t.col < state.pos.col && !t.visited;
+      c.behind = behind;
+      if (c.bb) c.bb.root.visible = !behind;
+      if (c.glow) c.glow.visible = !behind && !c.resolved;
+    }
   }
   for (const lv of tinted) {
     const ic = ms.slabs[lv]!.instanceColor;
@@ -699,7 +708,7 @@ export function syncMap(ms: MapScene, state: RunState, view: MapSyncView, now: n
   // Lights: the lantern, the boss node, and the two nearest seen, unresolved chests or wisps.
   const items: LightItem[] = [];
   for (const t of map.tiles)
-    if (t.kind === 'chest' || t.kind === 'wisp') {
+    if ((t.kind === 'chest' || t.kind === 'wisp') && !(t.col < state.pos.col && !t.visited)) {
       const [x, z] = tileWorld(t.col, t.row);
       items.push({ kind: t.kind, top: [x, slabHeight(t.day.level), z], seen: t.seen, resolved: t.resolved });
     }
@@ -742,8 +751,8 @@ export function tickMap(ms: MapScene, now: number, dt: number, flags: Readonly<M
         mesh.setMatrixAt(id, _m.makeScale(1, slabHeight(lv) * e, 1).setPosition(tile.col, 0, tile.row));
         const c = ms.contents[tile.idx];
         const show = p >= RISE_CONTENT_AT;
-        if (c?.bb) c.bb.root.visible = show;
-        if (c?.glow) c.glow.visible = show && !c.resolved;
+        if (c?.bb) c.bb.root.visible = show && !c.behind;
+        if (c?.glow) c.glow.visible = show && !c.resolved && !c.behind;
       }
       mesh.instanceMatrix.needsUpdate = true;
     }
@@ -775,7 +784,7 @@ export function tickMap(ms: MapScene, now: number, dt: number, flags: Readonly<M
   hero.mesh.scale.set((squash ? 1.08 : 1) * dir, squash ? 0.85 : 1, 1);
   ms.frameOpts.moving = moving;
   ms.frameOpts.reduced = !flags.frames;
-  setFrame(hero, ms.heroKeys[heroFrame(now, ms.frameOpts)]);
+  setFrame(hero, useSprite(ms.deps, ms.heroKeys[heroFrame(now, ms.frameOpts)]));
 
   // Aura glow and motes around the hero.
   const hp = hero.root.position;
@@ -867,6 +876,6 @@ export function pickTile(ms: MapScene, ndcX: number, ndcY: number): Pos | null {
 export function disposeMapScene(ms: MapScene): void {
   disposeTree(ms.scene);
   for (const k of Object.keys(ms.keyTex)) ms.keyTex[k]?.dispose();
-  ms.fog.noise.dispose();
+  for (const t of ms.fog.maps) t.dispose();
   ms.billboards.length = 0;
 }

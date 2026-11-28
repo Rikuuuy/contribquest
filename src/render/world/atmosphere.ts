@@ -233,10 +233,22 @@ export function driftFireflies(ff: Fireflies, t: number, on = true): void {
 
 /** Fog-bank layers: opacity and height above the level-4 slab top. */
 const FOG_LAYERS = [
-  [0.18, 0.25],
-  [0.14, 0.4],
-  [0.1, 0.6],
+  [0.42, 0.22],
+  [0.3, 0.42],
+  [0.2, 0.66],
 ] as const;
+/** Per-layer texture repeat and drift speed factor, so the layers slide past each other instead of moving as one sheet. */
+const FOG_LAYER_MOTION = [
+  [2, 1, 1],
+  [3, 1.5, -0.7],
+  [1.4, 0.8, 1.6],
+] as const;
+/** The bank fades in over this many units from its near edge, and out over 1 unit at its other edges. */
+const FOG_FADE_NEAR = 1.8;
+const FOG_FADE_EDGE = 1;
+/** Plane subdivisions along x and z, for the vertex-alpha fade. */
+const FOG_SEG_X = 32;
+const FOG_SEG_Z = 8;
 /** Texture drift along +x in world units per second. */
 const FOG_DRIFT = 0.05;
 const NOISE = 64;
@@ -245,9 +257,9 @@ const NOISE = 64;
  * The fog bank over the fog columns. `root.position.x` is the near edge; the layers extend right to the last
  * column's far side (`cols − 0.5`) and never reach the boss node.
  */
-export type FogBank = { root: Group; layers: Mesh<PlaneGeometry, MeshBasicMaterial>[]; noise: DataTexture; cols: number; edge: number };
+export type FogBank = { root: Group; layers: Mesh<PlaneGeometry, MeshBasicMaterial>[]; noise: DataTexture; maps: DataTexture[]; cols: number; depth: number; edge: number };
 
-/** A soft, tileable value-noise alpha texture from a seed (pale `#968cbe`). */
+/** A soft, tileable value-noise alpha texture from a seed (`#7a70a8`); squared so it forms wisps with clear gaps. */
 function fogNoise(seed: number): DataTexture {
   const rng = makeRng(seed);
   const G = 8;
@@ -266,10 +278,10 @@ function fogNoise(seed: number): DataTexture {
       const bot = at(x0, y0 + 1) * (1 - sx) + at(x0 + 1, y0 + 1) * sx;
       const v = top * (1 - sy) + bot * sy;
       const i = (y * NOISE + x) * 4;
-      data[i] = 0x96;
-      data[i + 1] = 0x8c;
-      data[i + 2] = 0xbe;
-      data[i + 3] = Math.round(255 * (0.35 + 0.65 * v));
+      data[i] = 0x7a;
+      data[i + 1] = 0x70;
+      data[i + 2] = 0xa8;
+      data[i + 3] = Math.round(255 * v * v);
     }
   const t = new DataTexture(data, NOISE, NOISE);
   t.wrapS = RepeatWrapping;
@@ -285,19 +297,28 @@ function fogNoise(seed: number): DataTexture {
 export function makeFogBank(map: { cols: number; rows: number; seed: number }): FogBank {
   const noise = fogNoise(map.seed);
   const root = new Group();
-  const depth = map.rows;
-  const layers = FOG_LAYERS.map(([opacity, above]) => {
-    // A unit-wide plane whose left edge is at x = 0, lying flat; its x scale is the covered width.
-    const g = new PlaneGeometry(1, depth);
+  const depth = map.rows + 2;
+  const maps: DataTexture[] = [];
+  const layers = FOG_LAYERS.map(([opacity, above], li) => {
+    // A unit-wide plane whose left edge is at x = 0, lying flat; its x scale is the covered width. Vertex alpha
+    // (set in `setFogStart`) fades every edge, so the bank reads as mist rather than a sheet.
+    const g = new PlaneGeometry(1, depth, FOG_SEG_X, FOG_SEG_Z);
     g.rotateX(-Math.PI / 2);
     g.translate(0.5, 0, 0);
-    const m = new Mesh(g, new MeshBasicMaterial({ map: noise, transparent: true, opacity, depthWrite: false }));
+    g.setAttribute('color', new BufferAttribute(new Float32Array(g.attributes.position!.count * 4).fill(1), 4));
+    const [rx, ry] = FOG_LAYER_MOTION[li]!;
+    const tex = li === 0 ? noise : (noise.clone() as DataTexture);
+    tex.repeat.set(rx, ry);
+    tex.offset.set(li * 0.37, li * 0.21);
+    tex.needsUpdate = true;
+    maps.push(tex);
+    const m = new Mesh(g, new MeshBasicMaterial({ map: tex, transparent: true, opacity, depthWrite: false, vertexColors: true }));
     m.position.set(0, slabHeight(4) + above, (map.rows - 1) / 2);
     m.renderOrder = 1;
     root.add(m);
     return m;
   });
-  const bank: FogBank = { root, layers, noise, cols: map.cols, edge: 0 };
+  const bank: FogBank = { root, layers, noise, maps, cols: map.cols, depth, edge: 0 };
   setFogStart(bank, map.cols);
   return bank;
 }
@@ -308,12 +329,30 @@ export function setFogStart(bank: FogBank, col: number): void {
   bank.root.position.x = bank.edge;
   const width = bank.cols - 0.5 - bank.edge;
   bank.root.visible = width > 0;
-  for (const m of bank.layers) m.scale.x = Math.max(width, 1e-3);
+  const w = Math.max(width, 1e-3);
+  const smooth = (e: number, x: number) => {
+    const k = Math.min(1, Math.max(0, x / e));
+    return k * k * (3 - 2 * k);
+  };
+  for (const m of bank.layers) {
+    m.scale.x = w;
+    const pos = m.geometry.attributes.position!;
+    const col = m.geometry.attributes.color as BufferAttribute;
+    for (let i = 0; i < pos.count; i++) {
+      const dx = pos.getX(i) * w;
+      const dz = bank.depth / 2 - Math.abs(pos.getZ(i));
+      col.setW(i, smooth(FOG_FADE_NEAR, dx) * smooth(FOG_FADE_EDGE, w - dx) * smooth(FOG_FADE_EDGE, dz));
+    }
+    col.needsUpdate = true;
+  }
 }
 
 /** Drifts the bank's texture along +x by `dt` seconds; frozen when `on` is false. */
 export function driftFog(bank: FogBank, dt: number, on = true): void {
-  if (on) bank.noise.offset.x -= (FOG_DRIFT * dt * bank.noise.repeat.x) / bank.cols;
+  if (!on) return;
+  bank.maps.forEach((t, i) => {
+    t.offset.x -= (FOG_DRIFT * FOG_LAYER_MOTION[i]![2] * dt * t.repeat.x) / bank.cols;
+  });
 }
 
 /** Counts the lights under `root` by type (tests and the frame-budget check). */
