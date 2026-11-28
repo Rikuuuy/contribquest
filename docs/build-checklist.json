@@ -1536,7 +1536,7 @@
       "spec": "presentation",
       "task": "6.5",
       "title": "Battle screen layout: boss bar, nameplate, HERO/FOE tabs, 7-line battle log, and the 8:3 stage slot in `src/render/screens/combat.ts` (v1.6: the 2D graveyard `stage-bg.ts` is dropped; the arena is task 11.6, the flat stage task 13.2) (FR-FX-10)",
-      "status": "todo",
+      "status": "done",
       "verify": "npm run build"
     },
     {
