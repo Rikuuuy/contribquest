@@ -1518,7 +1518,7 @@
       "spec": "presentation",
       "task": "6.3",
       "title": "Combat panel in `src/render/screens/combat.ts` (stage slot, HP bars with the 110 ms delay, source label, hint, Attack button with no Flee button (v1.6), Now! button, grade line) and the `advance` scheduling in `main.ts`",
-      "status": "todo",
+      "status": "done",
       "verify": "npm run build"
     },
     {

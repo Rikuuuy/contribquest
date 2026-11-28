@@ -2,13 +2,16 @@
 // This file wires input and timers to the engine (v1.6: moves go through the route view, presentation 12.2).
 import { loadDemo } from './data/demo';
 import { loadSettings } from './data/settings';
-import { combatKey, newRun, nextDeadline, step, type Action, type RunState } from './engine';
+import { combatKey, newRun, nextDeadline, step, type Action, type InputEvent, type RunState } from './engine';
 import { $, show } from './render/dom';
+import { pressError, recordHit, type HitLog } from './render/hit-meter';
 import { isArrowKey, relicKey, routeKey } from './render/input';
 import { routeView, targetFor } from './render/map/route-view';
 import { onReducedChange, REDUCED } from './render/motion';
+import { Pacer, resolvedKind } from './render/pacing';
 import type { Renderer } from './render/renderer';
-import { renderEndPanel, renderFightPanel, renderRelicPanel } from './render/screens/debug-panels';
+import { createCombatScreen } from './render/screens/combat';
+import { renderEndPanel, renderRelicPanel } from './render/screens/debug-panels';
 import { createMapScreen } from './render/screens/map';
 
 let state: RunState | null = null;
@@ -20,6 +23,17 @@ const timers: { deadline: ReturnType<typeof setTimeout> | null; advance: ReturnT
   advance: null,
 };
 const listeners = new Set<(s: RunState) => void>();
+const pacer = new Pacer();
+/**
+ * Timing feedback (requirement 17): the offset in ms subtracted from every press and release time (the summary's
+ * slider sets it with task 5.2; 0 until then), the hit-error history, and the error of the input the last step
+ * graded against a target (null when it graded none).
+ */
+const timing: { offset: number; hits: HitLog; lastError: number | null } = {
+  offset: 0,
+  hits: { log: [], hist: [] },
+  lastError: null,
+};
 
 /** Starts driving a run (called by the screens once a run exists). */
 export function setRun(s: RunState): void {
@@ -35,13 +49,24 @@ export function onState(fn: (s: RunState) => void): () => void {
 
 export function dispatch(action: Action): void {
   if (!state) return;
+  const before = state.combat;
   state = step(state, action);
+  timing.lastError = null;
+  if ((action.type === 'press' || action.type === 'release') && before?.phase === 'test' && before.test) {
+    const e: InputEvent = { type: action.type === 'press' ? 'down' : 'up', t: action.t, key: action.key };
+    const off = pressError(before.test, before.events, e);
+    if (off !== null) {
+      timing.hits = recordHit(timing.hits, { off, P: before.test.P, G: before.test.G });
+      timing.lastError = off;
+    }
+  }
   afterStep();
 }
 
 function afterStep(): void {
   if (!state) return;
   const c = state.combat;
+  if (state.events.some((e) => e.type === 'fightStart')) pacer.reset();
   if (c && c.phase === 'test' && c.testId !== testId) {
     testId = c.testId;
     testStart = performance.now();
@@ -58,8 +83,8 @@ function clearTimers(): void {
 
 /**
  * During a test: sends `timeout` when the engine's next deadline passes, in test time (requirement 11.5).
- * In `wait`: sends `advance` at once; the pacing delays come with presentation group 6. A timer whose
- * fight changed before it fires sends nothing (requirement 12.3).
+ * In `wait`: sends `advance` after the pacing delay (requirement 12.1). A timer whose fight changed before it
+ * fires sends nothing (requirement 12.3).
  */
 function schedule(): void {
   clearTimers();
@@ -77,15 +102,17 @@ function schedule(): void {
       Math.max(0, testStart + d.t - performance.now()),
     );
   } else if (f.phase === 'wait') {
+    const ms = pacer.delayFor({ fight: f, events: state.events, resolved: resolvedKind(state.events, f.next) });
     timers.advance = setTimeout(() => {
       timers.advance = null;
       if (state?.status === 'combat' && state.combat?.testId === id && state.combat.phase === 'wait') dispatch({ type: 'advance' });
-    }, 0);
+    }, ms);
   }
 }
 
 const inTest = (): boolean => state?.status === 'combat' && state.combat?.phase === 'test';
-const testTime = (timeStamp: number): number => timeStamp - testStart;
+/** Test time of an input, after the timing offset (requirement 17.5). */
+const testTime = (timeStamp: number): number => timeStamp - testStart - timing.offset;
 
 /** True while typing in a text field, where letter keys must reach the field. */
 function typing(t: EventTarget | null): boolean {
@@ -159,13 +186,19 @@ export function loadWorld(): Promise<typeof import('./render/world/index')> {
 const BLESSING_DELAY_MS = 600;
 
 /**
- * Wires the /next/ page: the demo starts from "Play the demo" or `?demo`, the map screen draws every state, and
- * the plain fight, relic, and end panels stand in until their screens exist. The world renderer loads in the
+ * Wires the /next/ page: the demo starts from "Play the demo" or `?demo`, the map screen and the combat panel
+ * draw every state, and the plain relic and end panels stand in until their screens exist. The world renderer loads in the
  * background; the map is playable with the HUD and the pad before it arrives.
  */
 function mountNext(): void {
   const settings = loadSettings(globalThis.localStorage ?? null);
   const screen = createMapScreen({ dispatch });
+  const combat = createCombatScreen({
+    dispatch,
+    testStart: () => testStart,
+    offset: () => timing.offset,
+    hits: () => timing.hits,
+  });
   let renderer: Renderer | null = null;
   let fresh = false;
   let blessing: ReturnType<typeof setTimeout> | null = null;
@@ -215,6 +248,7 @@ function mountNext(): void {
 
   onState((s) => {
     if (s.status === 'won' || s.status === 'lost') {
+      combat.update(s);
       renderEndPanel(document, s);
       show('screen-end');
       renderer?.stop();
@@ -222,7 +256,7 @@ function mountNext(): void {
     }
     screen.update(s, fresh);
     fresh = false;
-    renderFightPanel(document, s);
+    combat.update(s, timing.lastError);
     renderRelicPanel(document, s, (i) => dispatch({ type: 'pickRelic', i }));
     if (s.events.some((e) => e.type === 'blessingDue')) {
       if (blessing !== null) clearTimeout(blessing);
@@ -241,7 +275,6 @@ function mountNext(): void {
     err.textContent = 'Live graphs arrive with the next build. Play the demo for now.';
     err.hidden = false;
   });
-  $('#btn-attack').addEventListener('click', () => dispatch({ type: 'attack' }));
   bindPointer($('#btn-qte'));
   $('#btn-again').addEventListener('click', () => {
     show('screen-map');
