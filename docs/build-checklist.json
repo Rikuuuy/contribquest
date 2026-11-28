@@ -1726,7 +1726,7 @@
       "spec": "presentation",
       "task": "11.9",
       "title": "Reduced motion in the world renderer: drive every world module from `motionFlags(REDUCED)` and honour live `prefers-reduced-motion` changes through `renderer.setReduced`",
-      "status": "todo",
+      "status": "done",
       "verify": "npx vitest --run tests/render/motion-flags.test.ts tests/render/fx3d.test.ts && npm run build && ! grep -rn \"matchMedia\" src/render/world"
     },
     {
